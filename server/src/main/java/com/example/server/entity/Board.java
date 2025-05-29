@@ -51,4 +51,12 @@ public class Board extends Base {
     // return member != null ? member.getUsername() : null;
     // }
 
+    public void changeTitle(String title) {
+        this.title = title;
+    }
+
+    public void changeContent(String content) {
+        this.content = content;
+    }
+
 }

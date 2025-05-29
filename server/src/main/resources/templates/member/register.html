@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layouts/layout}">
+  <div layout:fragment="content">
+    <h1>Register</h1>
+
+    <form method="post" th:action="@{/member/register}" th:object="${memberDTO}">
+      <div class="mb-3">
+        <label for="username" class="form-label">이메일</label>
+        <input type="text" class="form-control" id="email" name="email" th:value="${memberDTO.email}" />
+        <div th:if="${#fields.hasErrors('email')}" th:errors="*{email}" class="text-danger"></div>
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">비밀번호</label>
+        <input type="password" class="form-control" id="password" name="password" th:value="${memberDTO.password}" />
+        <div th:if="${#fields.hasErrors('password')}" th:errors="*{password}" class="text-danger"></div>
+      </div>
+      <div class="mb-3">
+        <label for="name" class="form-label">이름</label>
+        <input type="text" class="form-control" id="name" name="name" th:value="${memberDTO.name}" />
+        <div th:if="${#fields.hasErrors('name')}" th:errors="*{name}" class="text-danger"></div>
+      </div>
+
+      <div th:if="${error}" th:text="${error}" class="text-danger mb-3"></div>
+      <button class="btn btn-primary" type="submit">회원가입</button>
+    </form>
+  </div>
+</html>

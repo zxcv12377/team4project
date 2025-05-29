@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en" layout:decorate="~{layouts/layout}">
+  <div layout:fragment="content">
+    <h1>Login</h1>
+
+    <form method="post" th:action="@{/member/login}">
+      <div class="mb-3">
+        <label for="username" class="form-label">이메일</label>
+        <input type="text" class="form-control" id="username" name="username" />
+      </div>
+      <div class="mb-3">
+        <label for="password" class="form-label">비밀번호</label>
+        <input type="password" class="form-control" id="password" name="password" />
+      </div>
+      <button class="btn btn-primary" type="submit">로그인</button>
+    </form>
+  </div>
+</html>
