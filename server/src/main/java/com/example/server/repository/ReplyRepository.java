@@ -12,10 +12,10 @@ import com.example.server.entity.Reply;
 public interface ReplyRepository extends JpaRepository<Reply, Long> {
 
     @Modifying
-    @Query("DELETE FROM Reply r WHERE r.board.bno = :bno")
+    @Query("DELETE FROM Reply r WHERE r.board.bno =:bno")
     void deleteByBoardBno(Long bno);
 
-    // 댓글 불러오기
+    // 글 조회시 댓글 모두 불러오기
     // List<Reply> findByBoardByRno(Board board);
 
 }

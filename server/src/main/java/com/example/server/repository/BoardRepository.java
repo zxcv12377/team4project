@@ -6,5 +6,4 @@ import com.example.server.entity.Board;
 
 public interface BoardRepository extends JpaRepository<Board, Long> {
 
-    Board findByBno(Long bno);
 }
