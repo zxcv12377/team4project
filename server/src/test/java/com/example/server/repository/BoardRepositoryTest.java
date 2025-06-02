@@ -74,6 +74,30 @@ public class BoardRepositoryTest {
     }
 
     @Test
+    public void updateBoardTest() {
+        // 게시글 번호 3번을 업데이트한다고 가정
+        Board board = boardRepository.findByBno(3L);
+        if (board != null) {
+            board.changeTitle("Updated Title");
+            board.changeContent("Updated Content");
+            boardRepository.save(board);
+        }
+    }
+
+    @Test
+    public void deleteBoardTest() {
+        // 게시글 번호 3번을 삭제
+        Long bno = 3L;
+
+        if (boardRepository.existsById(bno)) {
+            boardRepository.deleteById(bno);
+            System.out.println("Deleted board with bno: " + bno);
+        } else {
+            System.out.println("Board not found for bno: " + bno);
+        }
+    }
+
+    @Test
     public void readBoardTest() {
         Board board = boardRepository.findByBno(3L);
         System.out.println(board);
