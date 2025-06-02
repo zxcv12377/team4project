@@ -1,10 +1,12 @@
 package com.example.server.repository;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.server.entity.Board;
+import com.example.server.repository.search.SearchBoardRepository;
 
-public interface BoardRepository extends JpaRepository<Board, Long> {
+public interface BoardRepository extends JpaRepository<Board, Long>, SearchBoardRepository {
 
-    Board findByBno(Long bno);
 }

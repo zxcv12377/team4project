@@ -43,6 +43,7 @@ public class Board extends Base {
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Reply> replies;
 
+    // 작성자 이름 반환
     // public String getWriterName() {
     // return member != null ? member.getName() : null;
     // }
