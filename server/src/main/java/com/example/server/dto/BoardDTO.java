@@ -20,7 +20,7 @@ public class BoardDTO {
     private String title;
 
     @NotBlank(message = "내용을 입력해 주세요")
-    private String contant;
+    private String content;
 
     // Member
     private Long id;

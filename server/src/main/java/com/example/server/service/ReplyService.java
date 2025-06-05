@@ -1,5 +1,6 @@
 package com.example.server.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -9,6 +10,8 @@ import com.example.server.dto.ReplyDTO;
 import com.example.server.entity.Board;
 import com.example.server.entity.Member;
 import com.example.server.entity.Reply;
+import com.example.server.repository.BoardRepository;
+import com.example.server.repository.MemberRepository;
 import com.example.server.repository.ReplyRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -20,21 +23,36 @@ import lombok.extern.log4j.Log4j2;
 public class ReplyService {
 
     private final ReplyRepository replyRepository;
+    private final MemberRepository memberRepository;
+    private final BoardRepository boardRepository;
 
     // 댓글 삽입
     public Long create(ReplyDTO dto) {
-        Reply reply = dtoToEntity(dto);
+        Member member = memberRepository.findById(dto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+
+        Board board = boardRepository.findById(dto.getBno())
+                .orElseThrow(() -> new IllegalArgumentException("Board not found"));
+
+        Reply reply = Reply.builder()
+                .text(dto.getText())
+                .member(member)
+                .board(board)
+                .build();
 
         return replyRepository.save(reply).getRno();
     }
 
-    // public List<ReplyDTO> getList(Long bno) {
-    // Board board = Board.builder().bno(bno).build();
-    // List<Reply> result = replyRepository.findByBoardByRno(board);
+    public List<ReplyDTO> getList(Long bno) {
+        List<Reply> replies = replyRepository.findByBoardBno(bno);
+        List<ReplyDTO> result = new ArrayList<>();
 
-    // return result.stream().map(reply ->
-    // entityToDto(reply)).collect(Collectors.toList());
-    // }
+        for (Reply reply : replies) {
+            result.add(entityToDto(reply));
+        }
+
+        return result;
+    }
 
     // 댓글 하나 가져오기
     public ReplyDTO get(Long rno) {
@@ -44,7 +62,7 @@ public class ReplyService {
 
     // 댓글 수정하기
     public Long update(ReplyDTO dto) {
-        Reply reply = replyRepository.findById(dto.getBno()).get();
+        Reply reply = replyRepository.findById(dto.getRno()).get();
         reply.updateText(dto.getText());
         return replyRepository.save(reply).getRno();
     }
@@ -67,15 +85,12 @@ public class ReplyService {
         return dto;
     }
 
-    private Reply dtoToEntity(ReplyDTO dto) {
-        Reply reply = Reply.builder()
-                .rno(dto.getRno())
+    private Reply dtoToEntity(ReplyDTO dto, Member member, Board board) {
+        return Reply.builder()
                 .text(dto.getText())
-                .member(Member.builder().nickname(dto.getNickname()).build())
-                .board(Board.builder().bno(dto.getBno()).build())
+                .member(member)
+                .board(board)
                 .build();
-
-        return reply;
     }
 
 }

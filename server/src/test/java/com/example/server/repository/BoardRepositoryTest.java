@@ -76,16 +76,16 @@ public class BoardRepositoryTest {
     // });
     // }
 
-    @Test
-    public void updateBoardTest() {
-        // 게시글 번호 3번을 업데이트한다고 가정
-        Board board = boardRepository.findByBno(3L);
-        if (board != null) {
-            board.changeTitle("Updated Title");
-            board.changeContent("Updated Content");
-            boardRepository.save(board);
-        }
-    }
+    // @Test
+    // public void updateBoardTest() {
+    // // 게시글 번호 3번을 업데이트한다고 가정
+    // Board board = boardRepository.findByBno(3L);
+    // if (board != null) {
+    // board.changeTitle("Updated Title");
+    // board.changeContent("Updated Content");
+    // boardRepository.save(board);
+    // }
+    // }
 
     @Test
     public void deleteBoardTest() {
@@ -109,6 +109,23 @@ public class BoardRepositoryTest {
     // @Transactional
     public void removeBoardTest() {
         boardRepository.deleteById(20L);
+    }
+
+    @Test
+    public void readReplyTest() {
+        replyRepository.findById(3L);
+    }
+
+    @Test
+    // @Transactional
+    public void removeReplyTest() {
+        replyRepository.deleteById(105L);
+    }
+
+    @Test
+    public void updateReplyTest() {
+        Reply reply = replyRepository.findById(104L).orElseThrow();
+        reply.updateText("수정된 댓글입니다.");
     }
 
 }

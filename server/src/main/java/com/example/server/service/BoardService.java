@@ -54,7 +54,7 @@ public class BoardService {
         Board board = boardRepository.findById(dto.getBno()).orElseThrow();
         // 내용 업데이트
         board.changeTitle(dto.getTitle());
-        board.changeContent(dto.getContant());
+        board.changeContent(dto.getContent());
         // 저장
         boardRepository.save(board);
 
@@ -65,16 +65,19 @@ public class BoardService {
     public PageResultDTO<BoardDTO> getList(PageRequestDTO pageRequestDTO) {
 
         // 페이지 설정 객체 생성
-        Pageable pageable = PageRequest.of(pageRequestDTO.getPage() - 1, pageRequestDTO.getSize(),
+        Pageable pageable = PageRequest.of(pageRequestDTO.getPage() - 1,
+                pageRequestDTO.getSize(),
                 Sort.by("bno").descending());
 
         // DB에서 페이징+검색 쿼리 실행
-        Page<Object[]> result = boardRepository.list(pageRequestDTO.getType(), pageRequestDTO.getKeyword(),
+        Page<Object[]> result = boardRepository.list(pageRequestDTO.getType(),
+                pageRequestDTO.getKeyword(),
                 pageable);
 
         // 엔티티 => DTO로 변환
         // Function<T,R> : T => R 로 변환
-        Function<Object[], BoardDTO> fn = (entity -> entityToDto((Board) entity[0], (Member) entity[1],
+        Function<Object[], BoardDTO> fn = (entity -> entityToDto((Board) entity[0],
+                (Member) entity[1],
                 (Long) entity[2])); // Function<Object[], BoardDTO>: 배열 형태의 결과 → BoardDTO로 변환
 
         // 스트림을 이용해 DTO 리스트 생성
@@ -96,7 +99,7 @@ public class BoardService {
         BoardDTO dto = BoardDTO.builder()
                 .bno(board.getBno())
                 .title(board.getTitle())
-                .contant(board.getContent())
+                .content(board.getContent())
                 .nickname(member.getNickname())
                 .replyCount(replyCount)
                 .build();
@@ -108,7 +111,7 @@ public class BoardService {
         Board board = Board.builder()
                 .bno(dto.getBno())
                 .title(dto.getTitle())
-                .content(dto.getContant())
+                .content(dto.getContent())
                 .member(Member.builder().nickname(dto.getNickname()).build())
                 .build();
 
