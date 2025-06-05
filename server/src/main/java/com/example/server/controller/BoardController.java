@@ -25,13 +25,13 @@ public class BoardController {
 
     private final BoardService boardService;
 
-    @GetMapping("/list")
-    public void getList(Model model, PageRequestDTO pageRequestDTO) {
-        log.info("List 요청 {}", pageRequestDTO);
+    // @GetMapping("/list")
+    // public void getList(Model model, PageRequestDTO pageRequestDTO) {
+    // log.info("List 요청 {}", pageRequestDTO);
 
-        PageResultDTO<BoardDTO> result = boardService.getList(pageRequestDTO);
-        model.addAttribute("result", result);
-    }
+    // PageResultDTO<BoardDTO> result = boardService.getList(pageRequestDTO);
+    // model.addAttribute("result", result);
+    // }
 
     @GetMapping("/create")
     public void getCreate(BoardDTO dto) {

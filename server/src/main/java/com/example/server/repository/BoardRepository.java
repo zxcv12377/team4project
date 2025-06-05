@@ -5,8 +5,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.server.entity.Board;
-import com.example.server.repository.search.SearchBoardRepository;
+import java.util.List;
 
-public interface BoardRepository extends JpaRepository<Board, Long>, SearchBoardRepository {
+public interface BoardRepository extends JpaRepository<Board, Long> {
 
 }

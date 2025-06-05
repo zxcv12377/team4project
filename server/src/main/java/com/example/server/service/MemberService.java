@@ -1,9 +1,10 @@
 package com.example.server.service;
 
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+// import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.example.server.dto.MemberRequestDTO;
+import com.example.server.dto.MemberResponseDTO;
 import com.example.server.entity.Member;
 import com.example.server.repository.MemberRepository;
 
@@ -18,35 +19,46 @@ public class MemberService {
     private final MemberRepository memberRepository;
 
     // 회원가입
-    public void register(MemberRequestDTO dto) throws IllegalStateException {
-
+    public MemberResponseDTO register(MemberRequestDTO dto) {
         Member member = Member.builder()
+                .email(dto.getEmail())
                 .nickname(dto.getNickname())
                 .password(dto.getPassword())
-                .email(dto.getEmail())
-                .agree(true)
-                .emailVerified(true)
+                .profileimg(dto.getProfileimg() != null ? dto.getProfileimg() : "/img/default.png")
                 .build();
 
-        memberRepository.save(member);
+        Member saved = memberRepository.save(member);
+
+        return MemberResponseDTO.builder()
+                .mno(saved.getId())
+                .email(saved.getEmail())
+                .nickname(saved.getNickname())
+                .profileimg(saved.getProfileimg())
+                .build();
     }
 
-    // 로그인
-    // public MemberRequestDTO loginUser(String nickname) {
-    // log.info("nickname {}", nickname);
+    // 로그인 검증에만 씀
+    public boolean authenticate(String nickname, String password) {
+        Member member = memberRepository.findByNickname(nickname);
+        return member != null && member.getPassword().equals(password);
+    }
 
-    // Member member = memberRepository.findByNickname(nickname);
+    // 로그인 정보 조회만 씀
+    public MemberRequestDTO loginUser(String nickname, String password) {
+        log.info("nickname {}", nickname);
 
-    // if (member == null)
-    // throw new UsernameNotFoundException("닉네임 확인");
+        Member member = memberRepository.findByNickname(nickname);
 
-    // MemberRequestDTO memberDTO = MemberRequestDTO
-    // .builder()
-    // .nickname(member.getNickname())
-    // .password(member.getPassword())
-    // .build();
+        // if (member == null)
+        // throw new UsernameNotFoundException("닉네임 확인");
 
-    // return memberDTO;
-    // }
+        MemberRequestDTO memberDTO = MemberRequestDTO
+                .builder()
+                .nickname(member.getNickname())
+                .password(member.getPassword())
+                .build();
+
+        return memberDTO;
+    }
 
 }
