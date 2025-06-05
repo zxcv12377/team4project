@@ -61,4 +61,34 @@ public class MemberService {
         return memberDTO;
     }
 
+    // 프로필 수정단
+    public Member findByNickname(String nickname) {
+        return memberRepository.findByNickname(nickname);
+    }
+
+    public void updateUserInfo(String nickname, MemberRequestDTO dto) {
+        Member member = memberRepository.findByNickname(nickname);
+        if (member == null) {
+            throw new RuntimeException("사용자 없음");
+        }
+
+        member.setEmail(dto.getEmail());
+        member.setProfileimg(dto.getProfileimg());
+        memberRepository.save(member);
+    }
+
+    public void changePassword(String nickname, String currentPw, String newPw) {
+        Member member = memberRepository.findByNickname(nickname);
+        if (member == null) {
+            throw new RuntimeException("사용자 없음");
+        }
+
+        if (!member.getPassword().equals(currentPw)) {
+            throw new RuntimeException("기존 비밀번호가 일치하지 않습니다.");
+        }
+
+        member.setPassword(newPw);
+        memberRepository.save(member);
+    }
+
 }

@@ -1,5 +1,7 @@
 package com.example.server.controller;
 
+import java.util.Map;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 // import org.springframework.security.authentication.AuthenticationManager;
@@ -8,15 +10,16 @@ import org.springframework.http.ResponseEntity;
 // import org.springframework.security.core.AuthenticationException;
 // import org.springframework.security.core.context.SecurityContext;
 // import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.server.dto.MemberRequestDTO;
 import com.example.server.dto.MemberResponseDTO;
+import com.example.server.entity.Member;
 import com.example.server.service.MemberService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -29,9 +32,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequiredArgsConstructor
 @RequestMapping("/member")
 @RestController
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class MemberController {
 
-    private final MemberService service;
+    private final MemberService memberService;
 
     // private final AuthenticationManager authenticationManager;
 
@@ -54,10 +58,32 @@ public class MemberController {
         return "member/register";
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getUserInfo(HttpServletRequest request) {
+        String nickname = (String) request.getSession().getAttribute("loginUser");
+        if (nickname == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        Member member = memberService.findByNickname(nickname);
+        if (member == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자 없음");
+        }
+
+        MemberResponseDTO dto = MemberResponseDTO.builder()
+                .mno(member.getId())
+                .nickname(member.getNickname())
+                .email(member.getEmail())
+                .profileimg(member.getProfileimg())
+                .build();
+
+        return ResponseEntity.ok(dto);
+    }
+
     @PostMapping("/register") // json 형식으로 회원가입 요청
     public ResponseEntity<?> register(@RequestBody @Valid MemberRequestDTO dto) {
         try {
-            MemberResponseDTO response = service.register(dto);
+            MemberResponseDTO response = memberService.register(dto);
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("회원가입 실패");
@@ -66,7 +92,7 @@ public class MemberController {
 
     @PostMapping("/login")
     public String loginUser(@RequestBody MemberRequestDTO dto, HttpServletRequest request) {
-        boolean authenticated = service.authenticate(dto.getNickname(), dto.getPassword());
+        boolean authenticated = memberService.authenticate(dto.getNickname(), dto.getPassword());
         log.info("로그인 요청: nickname={}, password={}", dto.getNickname(), dto.getPassword());
 
         if (authenticated) {
@@ -83,6 +109,39 @@ public class MemberController {
     public ResponseEntity<?> logout(HttpServletRequest request) {
         request.getSession().invalidate(); // 세션 제거
         return ResponseEntity.ok("로그아웃 완료");
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<?> updateUser(@RequestBody MemberRequestDTO dto, HttpServletRequest request) {
+        String nickname = (String) request.getSession().getAttribute("loginUser");
+        if (nickname == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        try {
+            memberService.updateUserInfo(nickname, dto);
+            return ResponseEntity.ok("수정 완료");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("수정 실패: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> body, HttpServletRequest request) {
+        String nickname = (String) request.getSession().getAttribute("loginUser");
+        if (nickname == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        String currentPassword = body.get("currentPassword");
+        String newPassword = body.get("newPassword");
+
+        try {
+            memberService.changePassword(nickname, currentPassword, newPassword);
+            return ResponseEntity.ok("비밀번호 변경 완료");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
 }
