@@ -26,7 +26,7 @@ public class MemberController {
         log.info("로그인 요청");
     }
 
-    @PostMapping()
+    @PostMapping("/register")
     public String postMember(@Valid MemberRequestDTO memberDTO, BindingResult result) {
         log.info("회원가입 요청 {}", memberDTO);
 

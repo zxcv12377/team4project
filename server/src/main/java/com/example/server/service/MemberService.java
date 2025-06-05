@@ -1,6 +1,6 @@
 package com.example.server.service;
 
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+// import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.example.server.dto.MemberRequestDTO;

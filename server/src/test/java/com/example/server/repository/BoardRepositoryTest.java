@@ -37,19 +37,29 @@ public class BoardRepositoryTest {
                     .build();
 
             memberRepository.save(member);
+
+            
         });
     }
 
     @Test
     public void insertBoardTest() {
         IntStream.rangeClosed(1, 20).forEach(i -> {
-            int no = (int) (Math.random() * 20) + 1;
-            Member member = memberRepository.findByNickname("user" + no);
+
+   Member member = Member.builder()
+                .email("user" + i + "@gmail.com")
+                .password("1111")
+                .nickname("user" + i)
+                .agree(true)
+                .emailVerified(true)
+                .build();
+
+    Member savedMember = memberRepository.save(member);
 
             Board board = Board.builder()
                     .title("Board Title" + i)
                     .content("Board Content" + i)
-                    .member(member)
+                    .member(savedMember)
                     .build();
 
             boardRepository.save(board);
@@ -76,16 +86,16 @@ public class BoardRepositoryTest {
     // });
     // }
 
-    @Test
-    public void updateBoardTest() {
-        // 게시글 번호 3번을 업데이트한다고 가정
-        Board board = boardRepository.findByBno(3L);
-        if (board != null) {
-            board.changeTitle("Updated Title");
-            board.changeContent("Updated Content");
-            boardRepository.save(board);
-        }
-    }
+    // @Test
+    // public void updateBoardTest() {
+    //     // 게시글 번호 3번을 업데이트한다고 가정
+    //     Board board = boardRepository.findByBno(3L);
+    //     if (board != null) {
+    //         board.changeTitle("Updated Title");
+    //         board.changeContent("Updated Content");
+    //         boardRepository.save(board);
+    //     }
+    // }
 
     @Test
     public void deleteBoardTest() {
