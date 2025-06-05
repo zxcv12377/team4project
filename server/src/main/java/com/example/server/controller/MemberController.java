@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 // import org.springframework.security.core.context.SecurityContext;
 // import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,7 +42,7 @@ public class MemberController {
     }
 
     @GetMapping("/logout")
-    public String logout(HttpServletRequest request) {
+    public String getLogout(HttpServletRequest request) {
         log.info("로그아웃 요청");
         request.getSession().invalidate(); // 세션 무효화
         return "redirect:/"; // 홈으로 리다이렉트
@@ -75,6 +76,13 @@ public class MemberController {
             log.warn("로그인 실패: 아이디 또는 비밀번호 틀림");
             return "member/login";
         }
+    }
+
+    @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        request.getSession().invalidate(); // 세션 제거
+        return ResponseEntity.ok("로그아웃 완료");
     }
 
 }
