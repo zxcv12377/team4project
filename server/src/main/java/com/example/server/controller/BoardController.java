@@ -34,6 +34,9 @@ public class BoardController {
 
     private final BoardService boardService;
 
+    // @GetMapping("/list")
+    // public void getList(Model model, PageRequestDTO pageRequestDTO) {
+    // log.info("List 요청 {}", pageRequestDTO);
 
 
     @GetMapping("/create")

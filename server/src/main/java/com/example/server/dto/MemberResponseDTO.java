@@ -11,4 +11,5 @@ public class MemberResponseDTO {
     private Long mno;
     private String email;
     private String nickname;
+    private String profileimg;
 }

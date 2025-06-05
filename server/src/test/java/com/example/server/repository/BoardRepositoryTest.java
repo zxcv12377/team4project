@@ -9,6 +9,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import com.example.server.entity.Board;
 import com.example.server.entity.Member;
+import com.example.server.entity.MemberRole;
 import com.example.server.entity.Reply;
 
 import jakarta.transaction.Transactional;
@@ -34,7 +35,10 @@ public class BoardRepositoryTest {
                     .nickname("user" + i)
                     .agree(true)
                     .emailVerified(true)
+                    .profileimg(null)
                     .build();
+
+            member.addMemberRole(MemberRole.USER);
 
             memberRepository.save(member);
 

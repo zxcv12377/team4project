@@ -1,46 +1,147 @@
 package com.example.server.controller;
 
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
+import java.util.Map;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+// import org.springframework.security.authentication.AuthenticationManager;
+// import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+// import org.springframework.security.core.Authentication;
+// import org.springframework.security.core.AuthenticationException;
+// import org.springframework.security.core.context.SecurityContext;
+// import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.server.dto.MemberRequestDTO;
+import com.example.server.dto.MemberResponseDTO;
+import com.example.server.entity.Member;
 import com.example.server.service.MemberService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @Log4j2
 @RequiredArgsConstructor
-@RequestMapping
-@Controller
+@RequestMapping("/member")
+@RestController
+@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
 public class MemberController {
 
-    private final MemberService service;
+    private final MemberService memberService;
+
+    // private final AuthenticationManager authenticationManager;
 
     @GetMapping("/login")
-    public void getLogin() {
+    public String getLogin() {
         log.info("로그인 요청");
+        return "member/login";
     }
 
-    @PostMapping("/register")
-    public String postMember(@Valid MemberRequestDTO memberDTO, BindingResult result) {
-        log.info("회원가입 요청 {}", memberDTO);
+    @GetMapping("/logout")
+    public String getLogout(HttpServletRequest request) {
+        log.info("로그아웃 요청");
+        request.getSession().invalidate(); // 세션 무효화
+        return "redirect:/"; // 홈으로 리다이렉트
+    }
 
-        if (result.hasErrors()) {
-            return "member/register";
+    @GetMapping("/register")
+    public String getRegister() {
+        log.info("회원가입 요청");
+        return "member/register";
+    }
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getUserInfo(HttpServletRequest request) {
+        String nickname = (String) request.getSession().getAttribute("loginUser");
+        if (nickname == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+        }
+
+        Member member = memberService.findByNickname(nickname);
+        if (member == null) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자 없음");
+        }
+
+        MemberResponseDTO dto = MemberResponseDTO.builder()
+                .mno(member.getId())
+                .nickname(member.getNickname())
+                .email(member.getEmail())
+                .profileimg(member.getProfileimg())
+                .build();
+
+        return ResponseEntity.ok(dto);
+    }
+
+    @PostMapping("/register") // json 형식으로 회원가입 요청
+    public ResponseEntity<?> register(@RequestBody @Valid MemberRequestDTO dto) {
+        try {
+            MemberResponseDTO response = memberService.register(dto);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("회원가입 실패");
+        }
+    }
+
+    @PostMapping("/login")
+    public String loginUser(@RequestBody MemberRequestDTO dto, HttpServletRequest request) {
+        boolean authenticated = memberService.authenticate(dto.getNickname(), dto.getPassword());
+        log.info("로그인 요청: nickname={}, password={}", dto.getNickname(), dto.getPassword());
+
+        if (authenticated) {
+            request.getSession().setAttribute("loginUser", dto.getNickname());
+            return "redirect:/";
+        } else {
+            log.warn("로그인 실패: 아이디 또는 비밀번호 틀림");
+            return "member/login";
+        }
+    }
+
+    @CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletRequest request) {
+        request.getSession().invalidate(); // 세션 제거
+        return ResponseEntity.ok("로그아웃 완료");
+    }
+
+    @PutMapping("/update")
+    public ResponseEntity<?> updateUser(@RequestBody MemberRequestDTO dto, HttpServletRequest request) {
+        String nickname = (String) request.getSession().getAttribute("loginUser");
+        if (nickname == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
         }
 
         try {
-            service.register(memberDTO);
+            memberService.updateUserInfo(nickname, dto);
+            return ResponseEntity.ok("수정 완료");
         } catch (Exception e) {
-            return "member/register";
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("수정 실패: " + e.getMessage());
+        }
+    }
+
+    @PutMapping("/password")
+    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> body, HttpServletRequest request) {
+        String nickname = (String) request.getSession().getAttribute("loginUser");
+        if (nickname == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
         }
 
-        return "redirect:/member/login";
+        String currentPassword = body.get("currentPassword");
+        String newPassword = body.get("newPassword");
+
+        try {
+            memberService.changePassword(nickname, currentPassword, newPassword);
+            return ResponseEntity.ok("비밀번호 변경 완료");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 
 }
