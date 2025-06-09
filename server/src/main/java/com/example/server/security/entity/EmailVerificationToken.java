@@ -11,27 +11,27 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-@Entity
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+// @Entity
+// @Data
+// @NoArgsConstructor
+// @AllArgsConstructor
+// @Builder
 public class EmailVerificationToken {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    // @Id
+    // @GeneratedValue(strategy = GenerationType.IDENTITY)
+    // private Long id;
 
-    @Column(unique = true, nullable = false)
-    private String email; // 이메일
+    // @Column(unique = true, nullable = false)
+    // private String email; // 이메일
 
-    @Column(unique = true, nullable = false)
-    private String token;
+    // @Column(unique = true, nullable = false)
+    // private String token;
 
-    private LocalDateTime expiryDate;
-    private boolean verified; // 이메일 인증 여부
+    // private LocalDateTime expiryDate;
+    // private boolean verified; // 이메일 인증 여부
 
-    public boolean isExpired() {
-        return LocalDateTime.now().isAfter(expiryDate);
-    }
+    // public boolean isExpired() {
+    //     return LocalDateTime.now().isAfter(expiryDate);
+    // }
 }
