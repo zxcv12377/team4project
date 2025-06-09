@@ -16,6 +16,6 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
     void deleteByBoardBno(Long bno);
 
     // 글 조회시 댓글 모두 불러오기
-    // List<Reply> findByBoardByRno(Board board);
+    List<Reply> findByBoardBno(Long bno);
 
 }
