@@ -26,11 +26,15 @@ function LoginForm() {
           withCredentials: true, // 쿠키포함요청
         }
       );
-      alert("로그인 성공");
-      localStorage.setItem("user", JSON.stringify(res.data.user));
-      window.location.href = "/board";
+      if (res.data && res.data.success) {
+        alert("로그인 성공");
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        window.location.href = "/board";
+      } else {
+        setErrorMsg(res.data.message || "로그인 실패");
+      }
     } catch (error) {
-      setErrorMsg(error.response?.data?.message || "Login failed");
+      setErrorMsg(error.response?.data?.message || "로그인 요청 실패");
     }
   };
 

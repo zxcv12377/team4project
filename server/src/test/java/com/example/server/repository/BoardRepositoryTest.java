@@ -35,14 +35,13 @@ public class BoardRepositoryTest {
                     .nickname("user" + i)
                     .agree(true)
                     .emailVerified(true)
-                    .profileimg(null)
+                    .profileimg("/img/default.png")
                     .build();
 
             member.addMemberRole(MemberRole.USER);
 
             memberRepository.save(member);
 
-            
         });
     }
 
@@ -50,15 +49,15 @@ public class BoardRepositoryTest {
     public void insertBoardTest() {
         IntStream.rangeClosed(1, 20).forEach(i -> {
 
-   Member member = Member.builder()
-                .email("user" + i + "@gmail.com")
-                .password("1111")
-                .nickname("user" + i)
-                .agree(true)
-                .emailVerified(true)
-                .build();
+            Member member = Member.builder()
+                    .email("user" + i + "@gmail.com")
+                    .password("1111")
+                    .nickname("user" + i)
+                    .agree(true)
+                    .emailVerified(true)
+                    .build();
 
-    Member savedMember = memberRepository.save(member);
+            Member savedMember = memberRepository.save(member);
 
             Board board = Board.builder()
                     .title("Board Title" + i)
@@ -92,13 +91,13 @@ public class BoardRepositoryTest {
 
     // @Test
     // public void updateBoardTest() {
-    //     // 게시글 번호 3번을 업데이트한다고 가정
-    //     Board board = boardRepository.findByBno(3L);
-    //     if (board != null) {
-    //         board.changeTitle("Updated Title");
-    //         board.changeContent("Updated Content");
-    //         boardRepository.save(board);
-    //     }
+    // // 게시글 번호 3번을 업데이트한다고 가정
+    // Board board = boardRepository.findByBno(3L);
+    // if (board != null) {
+    // board.changeTitle("Updated Title");
+    // board.changeContent("Updated Content");
+    // boardRepository.save(board);
+    // }
     // }
 
     @Test

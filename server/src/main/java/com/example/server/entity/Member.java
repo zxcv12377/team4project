@@ -43,7 +43,7 @@ public class Member extends Base {
 
     private boolean agree; // 약관 동의 입니다
 
-    private String profileimg; // 프로필 사진입니다(이미지 경로넣기)
+    private String profileimg = "./img/default.png"; // 프로필 사진입니다(이미지 경로넣기)
 
     private boolean emailVerified; // 이메일 인증여부
 

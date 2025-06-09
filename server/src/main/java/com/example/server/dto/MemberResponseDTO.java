@@ -1,6 +1,7 @@
 package com.example.server.dto;
 
 import lombok.*;
+import com.example.server.entity.Member;
 
 @Getter
 @Setter
@@ -12,4 +13,10 @@ public class MemberResponseDTO {
     private String email;
     private String nickname;
     private String profileimg;
+
+    public MemberResponseDTO(Member member) {
+        this.nickname = member.getNickname();
+        this.email = member.getEmail();
+        this.profileimg = member.getProfileimg();
+    }
 }
