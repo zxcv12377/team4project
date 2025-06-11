@@ -47,100 +47,102 @@ public class MemberService {
     }
 
     // 로그인 검증에만 씀
-    public Member authenticate(String nickname, String password) {
-        Member member = memberRepository.findByNickname(nickname);
-        if (member != null && member.getPassword().equals(password)) {
-            return member;
-        }
-        return null;
-    }
+    // public Member authenticate(String nickname, String password) {
+    // Member member = memberRepository.findByNickname(nickname);
+    // if (member != null && member.getPassword().equals(password)) {
+    // return member;
+    // }
+    // return null;
+    // }
 
     // 로그인 정보 조회만 씀
-    public MemberRequestDTO loginUser(String nickname, String password) {
-        log.info("nickname {}", nickname);
+    // public MemberRequestDTO loginUser(String nickname, String password) {
+    // log.info("nickname {}", nickname);
 
-        Member member = memberRepository.findByNickname(nickname);
+    // Member member = memberRepository.findByNickname(nickname);
 
-        // if (member == null)
-        // throw new UsernameNotFoundException("닉네임 확인");
+    // // if (member == null)
+    // // throw new UsernameNotFoundException("닉네임 확인");
 
-        MemberRequestDTO memberDTO = MemberRequestDTO
-                .builder()
-                .nickname(member.getNickname())
-                .password(member.getPassword())
-                .build();
+    // MemberRequestDTO memberDTO = MemberRequestDTO
+    // .builder()
+    // .nickname(member.getNickname())
+    // .password(member.getPassword())
+    // .build();
 
-        return memberDTO;
-    }
+    // return memberDTO;
+    // }
 
     // 프로필 수정단
-    public Member findByNickname(String nickname) {
-        return memberRepository.findByNickname(nickname);
-    }
+    // public Member findByNickname(String nickname) {
+    // return memberRepository.findByNickname(nickname);
+    // }
 
-    public void updateUserInfo(String nickname, MemberRequestDTO dto) {
-        Member member = memberRepository.findByNickname(nickname);
-        if (member == null) {
-            throw new RuntimeException("사용자 없음");
-        }
+    // public void updateUserInfo(String nickname, MemberRequestDTO dto) {
+    // Member member = memberRepository.findByNickname(nickname);
+    // if (member == null) {
+    // throw new RuntimeException("사용자 없음");
+    // }
 
-        member.setEmail(dto.getEmail());
-        member.setProfileimg(dto.getProfileimg());
-        memberRepository.save(member);
-    }
+    // member.setEmail(dto.getEmail());
+    // member.setProfileimg(dto.getProfileimg());
+    // memberRepository.save(member);
+    // }
 
-    public void changePassword(String nickname, String currentPw, String newPw) {
-        Member member = memberRepository.findByNickname(nickname);
-        if (member == null) {
-            throw new RuntimeException("사용자 없음");
-        }
+    // public void changePassword(String nickname, String currentPw, String newPw) {
+    // Member member = memberRepository.findByNickname(nickname);
+    // if (member == null) {
+    // throw new RuntimeException("사용자 없음");
+    // }
 
-        if (!member.getPassword().equals(currentPw)) {
-            throw new RuntimeException("기존 비밀번호가 일치하지 않습니다.");
-        }
+    // if (!member.getPassword().equals(currentPw)) {
+    // throw new RuntimeException("기존 비밀번호가 일치하지 않습니다.");
+    // }
 
-        member.setPassword(newPw);
-        memberRepository.save(member);
-    }
+    // member.setPassword(newPw);
+    // memberRepository.save(member);
+    // }
 
-    // 프로필 이미지 업로드, 삭제
-    public String updateProfileImageByNickname(String nickname, MultipartFile file) {
-        Member member = memberRepository.findByNickname(nickname);
-        if (member == null) {
-            throw new RuntimeException("사용자를 찾을 수 없습니다.");
-        }
+    // // 프로필 이미지 업로드, 삭제
+    // public String updateProfileImageByNickname(String nickname, MultipartFile
+    // file) {
+    // Member member = memberRepository.findByNickname(nickname);
+    // if (member == null) {
+    // throw new RuntimeException("사용자를 찾을 수 없습니다.");
+    // }
 
-        String uploadDir = "uploads/";
-        String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
+    // String uploadDir = "uploads/";
+    // String fileName = UUID.randomUUID() + "_" + file.getOriginalFilename();
 
-        try {
-            Path uploadPath = Paths.get(uploadDir);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-            }
+    // try {
+    // Path uploadPath = Paths.get(uploadDir);
+    // if (!Files.exists(uploadPath)) {
+    // Files.createDirectories(uploadPath);
+    // }
 
-            // 기존 이미지 삭제 (default는 건드리지 않음)
-            if (!member.getProfileimg().equals("./img/default.png")) {
-                Files.deleteIfExists(uploadPath.resolve(member.getProfileimg()));
-            }
+    // // 기존 이미지 삭제 (default는 건드리지 않음)
+    // if (!member.getProfileimg().equals("./img/default.png")) {
+    // Files.deleteIfExists(uploadPath.resolve(member.getProfileimg()));
+    // }
 
-            Files.copy(file.getInputStream(), uploadPath.resolve(fileName), StandardCopyOption.REPLACE_EXISTING);
+    // Files.copy(file.getInputStream(), uploadPath.resolve(fileName),
+    // StandardCopyOption.REPLACE_EXISTING);
 
-            member.setProfileimg(fileName);
-            memberRepository.save(member);
-            return "/images/" + fileName;
-        } catch (IOException e) {
-            throw new RuntimeException("프로필 이미지 저장 실패", e);
-        }
-    }
+    // member.setProfileimg(fileName);
+    // memberRepository.save(member);
+    // return "/images/" + fileName;
+    // } catch (IOException e) {
+    // throw new RuntimeException("프로필 이미지 저장 실패", e);
+    // }
+    // }
 
-    public void deleteByNickname(String nickname) {
-        Member member = memberRepository.findByNickname(nickname);
-        if (member != null) {
-            memberRepository.delete(member);
-        } else {
-            throw new RuntimeException("회원이 존재하지 않습니다");
-        }
-    }
+    // public void deleteByNickname(String nickname) {
+    // Member member = memberRepository.findByNickname(nickname);
+    // if (member != null) {
+    // memberRepository.delete(member);
+    // } else {
+    // throw new RuntimeException("회원이 존재하지 않습니다");
+    // }
+    // }
 
 }

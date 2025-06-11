@@ -64,26 +64,26 @@ public class MemberController {
     }
 
     @GetMapping("/me")
-    public ResponseEntity<?> getUserInfo(HttpServletRequest request) {
-        String nickname = (String) request.getSession().getAttribute("loginUser");
-        if (nickname == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-        }
+    // public ResponseEntity<?> getUserInfo(HttpServletRequest request) {
+    // String nickname = (String) request.getSession().getAttribute("loginUser");
+    // if (nickname == null) {
+    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+    // }
 
-        Member member = memberService.findByNickname(nickname);
-        if (member == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자 없음");
-        }
+    // Member member = memberService.findByNickname(nickname);
+    // if (member == null) {
+    // return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자 없음");
+    // }
 
-        MemberResponseDTO dto = MemberResponseDTO.builder()
-                .mno(member.getId())
-                .nickname(member.getNickname())
-                .email(member.getEmail())
-                .profileimg(member.getProfileimg())
-                .build();
+    // MemberResponseDTO dto = MemberResponseDTO.builder()
+    // .mno(member.getId())
+    // .nickname(member.getNickname())
+    // .email(member.getEmail())
+    // .profileimg(member.getProfileimg())
+    // .build();
 
-        return ResponseEntity.ok(dto);
-    }
+    // return ResponseEntity.ok(dto);
+    // }
 
     @PostMapping("/register") // json 형식으로 회원가입 요청
     public ResponseEntity<?> register(@RequestBody @Valid MemberRequestDTO dto) {
@@ -95,28 +95,31 @@ public class MemberController {
         }
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<?> loginUser(@RequestBody MemberRequestDTO dto, HttpServletRequest request) {
-        log.info("로그인 요청: nickname={}, password={}", dto.getNickname(), dto.getPassword());
+    // @PostMapping("/login")
+    // public ResponseEntity<?> loginUser(@RequestBody MemberRequestDTO dto,
+    // HttpServletRequest request) {
+    // log.info("로그인 요청: nickname={}, password={}", dto.getNickname(),
+    // dto.getPassword());
 
-        Member member = memberService.authenticate(dto.getNickname(), dto.getPassword());
+    // Member member = memberService.authenticate(dto.getNickname(),
+    // dto.getPassword());
 
-        if (member != null) {
-            request.getSession().setAttribute("loginUser", member.getNickname());
+    // if (member != null) {
+    // request.getSession().setAttribute("loginUser", member.getNickname());
 
-            // 로그인 성공 시 세션에 사용자 정보 저장(react에서 사용할 때 res.data success로 확인 가능)
-            Map<String, Object> response = new HashMap<>();
-            response.put("success", true);
-            response.put("user", new MemberResponseDTO(member));
-            return ResponseEntity.ok(response);
-        } else {
-            log.warn("로그인 실패: 아이디 또는 비밀번호 틀림");
-            Map<String, Object> error = new HashMap<>();
-            error.put("success", false);
-            error.put("message", "닉네임 또는 비밀번호가 틀렸습니다.");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-        }
-    }
+    // // 로그인 성공 시 세션에 사용자 정보 저장(react에서 사용할 때 res.data success로 확인 가능)
+    // Map<String, Object> response = new HashMap<>();
+    // response.put("success", true);
+    // response.put("user", new MemberResponseDTO(member));
+    // return ResponseEntity.ok(response);
+    // } else {
+    // log.warn("로그인 실패: 아이디 또는 비밀번호 틀림");
+    // Map<String, Object> error = new HashMap<>();
+    // error.put("success", false);
+    // error.put("message", "닉네임 또는 비밀번호가 틀렸습니다.");
+    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    // }
+    // }
 
     @PostMapping("/logout")
     public ResponseEntity<?> logout(HttpServletRequest request) {
@@ -124,61 +127,66 @@ public class MemberController {
         return ResponseEntity.ok("로그아웃 완료");
     }
 
-    @PostMapping("/profile-image")
-    public ResponseEntity<?> uploadProfileImage(@RequestParam("file") MultipartFile file,
-            HttpSession session) {
-        String nickname = (String) session.getAttribute("loginUser");
-        if (nickname == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-        }
+    // @PostMapping("/profile-image")
+    // public ResponseEntity<?> uploadProfileImage(@RequestParam("file")
+    // MultipartFile file,
+    // HttpSession session) {
+    // String nickname = (String) session.getAttribute("loginUser");
+    // if (nickname == null) {
+    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+    // }
 
-        String imagePath = memberService.updateProfileImageByNickname(nickname, file);
-        return ResponseEntity.ok(imagePath);
-    }
+    // String imagePath = memberService.updateProfileImageByNickname(nickname,
+    // file);
+    // return ResponseEntity.ok(imagePath);
+    // }
 
-    @PutMapping("/update")
-    public ResponseEntity<?> updateUser(@RequestBody MemberRequestDTO dto, HttpServletRequest request) {
-        String nickname = (String) request.getSession().getAttribute("loginUser");
-        if (nickname == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-        }
+    // @PutMapping("/update")
+    // public ResponseEntity<?> updateUser(@RequestBody MemberRequestDTO dto,
+    // HttpServletRequest request) {
+    // String nickname = (String) request.getSession().getAttribute("loginUser");
+    // if (nickname == null) {
+    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+    // }
 
-        try {
-            memberService.updateUserInfo(nickname, dto);
-            return ResponseEntity.ok("수정 완료");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("수정 실패: " + e.getMessage());
-        }
-    }
+    // try {
+    // memberService.updateUserInfo(nickname, dto);
+    // return ResponseEntity.ok("수정 완료");
+    // } catch (Exception e) {
+    // return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("수정 실패: " +
+    // e.getMessage());
+    // }
+    // }
 
-    @PutMapping("/password")
-    public ResponseEntity<?> changePassword(@RequestBody Map<String, String> body, HttpServletRequest request) {
-        String nickname = (String) request.getSession().getAttribute("loginUser");
-        if (nickname == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-        }
+    // @PutMapping("/password")
+    // public ResponseEntity<?> changePassword(@RequestBody Map<String, String>
+    // body, HttpServletRequest request) {
+    // String nickname = (String) request.getSession().getAttribute("loginUser");
+    // if (nickname == null) {
+    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
+    // }
 
-        String currentPassword = body.get("currentPassword");
-        String newPassword = body.get("newPassword");
+    // String currentPassword = body.get("currentPassword");
+    // String newPassword = body.get("newPassword");
 
-        try {
-            memberService.changePassword(nickname, currentPassword, newPassword);
-            return ResponseEntity.ok("비밀번호 변경 완료");
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
-    }
+    // try {
+    // memberService.changePassword(nickname, currentPassword, newPassword);
+    // return ResponseEntity.ok("비밀번호 변경 완료");
+    // } catch (Exception e) {
+    // return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    // }
+    // }
 
-    @DeleteMapping("/delete")
-    public ResponseEntity<String> deleteUser(HttpServletRequest request) {
-        String nickname = (String) request.getSession().getAttribute("loginUser");
-        if (nickname == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 필요");
-        }
+    // @DeleteMapping("/delete")
+    // public ResponseEntity<String> deleteUser(HttpServletRequest request) {
+    // String nickname = (String) request.getSession().getAttribute("loginUser");
+    // if (nickname == null) {
+    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 필요");
+    // }
 
-        memberService.deleteByNickname(nickname);
-        request.getSession().invalidate();
-        return ResponseEntity.ok("회원 탈퇴 완료");
-    }
+    // memberService.deleteByNickname(nickname);
+    // request.getSession().invalidate();
+    // return ResponseEntity.ok("회원 탈퇴 완료");
+    // }
 
 }
