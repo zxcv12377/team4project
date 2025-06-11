@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import AuthPage from "./components/authPage";
 import BoardPage from "./components/board";
 import MyProfile from "./components/myProfile";
+import ReplyList from "./components/replyList";
 
 function App() {
   return (
@@ -12,6 +13,7 @@ function App() {
         <Route path="/member/login" element={<AuthPage />} />
         <Route path="/board" element={<BoardPage />} />
         <Route path="/profile" element={<MyProfile />} />
+        <Route path="/reply" element={<ReplyList />} />
       </Routes>
     </Router>
   );
