@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.server.dto.ReplyDTO;
+import com.example.server.dto.ReplyResponseDTO;
 import com.example.server.service.ReplyService;
 
 import lombok.RequiredArgsConstructor;
@@ -34,7 +35,7 @@ public class ReplyController {
 
     // 특정 게시글 댓글 목록 조회
     @GetMapping("/board/{bno}")
-    public List<ReplyDTO> getReplies(@PathVariable Long bno) {
+    public List<ReplyResponseDTO> getReplies(@PathVariable Long bno) {
         log.info("댓글 목록 조회 {}", bno);
         return replyService.getList(bno);
     }

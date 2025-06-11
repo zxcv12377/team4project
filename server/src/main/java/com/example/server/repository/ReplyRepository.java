@@ -15,7 +15,7 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
     @Query("DELETE FROM Reply r WHERE r.board.bno =:bno")
     void deleteByBoardBno(Long bno);
 
-    // 글 조회시 댓글 모두 불러오기
-    List<Reply> findByBoardBno(Long bno);
+    // 게시글에 속한 최상위 댓글(부모 없음)만 조회, 생성일 오름차순
+    List<Reply> findByBoardBnoAndParentIsNullOrderByCreatedDateAsc(Long bno);
 
 }

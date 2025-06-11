@@ -3,10 +3,12 @@ package com.example.server.service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
 import com.example.server.dto.ReplyDTO;
+import com.example.server.dto.ReplyResponseDTO;
 import com.example.server.entity.Board;
 import com.example.server.entity.Member;
 import com.example.server.entity.Reply;
@@ -26,32 +28,35 @@ public class ReplyService {
     private final MemberRepository memberRepository;
     private final BoardRepository boardRepository;
 
-    // 댓글 삽입
+    // 댓글 등록
     public Long create(ReplyDTO dto) {
-        Member member = memberRepository.findById(dto.getId())
+        Member member = memberRepository.findByNickname(dto.getNickname())
                 .orElseThrow(() -> new IllegalArgumentException("Member not found"));
 
         Board board = boardRepository.findById(dto.getBno())
                 .orElseThrow(() -> new IllegalArgumentException("Board not found"));
 
+        Reply parent = null;
+        if (dto.getParentRno() != null) {
+            parent = replyRepository.findById(dto.getParentRno())
+                    .orElseThrow(() -> new IllegalArgumentException("Parent reply not found"));
+        }
+
         Reply reply = Reply.builder()
                 .text(dto.getText())
-                .member(member)
                 .board(board)
+                .member(member)
+                .parent(parent)
                 .build();
 
         return replyRepository.save(reply).getRno();
     }
 
-    public List<ReplyDTO> getList(Long bno) {
-        List<Reply> replies = replyRepository.findByBoardBno(bno);
-        List<ReplyDTO> result = new ArrayList<>();
-
-        for (Reply reply : replies) {
-            result.add(entityToDto(reply));
-        }
-
-        return result;
+    public List<ReplyResponseDTO> getList(Long bno) {
+        List<Reply> parentReplies = replyRepository.findByBoardBnoAndParentIsNullOrderByCreatedDateAsc(bno);
+        return parentReplies.stream()
+                .map(this::toResponseDTOWithChildren)
+                .collect(Collectors.toList());
     }
 
     // 댓글 하나 가져오기
@@ -85,11 +90,16 @@ public class ReplyService {
         return dto;
     }
 
-    private Reply dtoToEntity(ReplyDTO dto, Member member, Board board) {
-        return Reply.builder()
-                .text(dto.getText())
-                .member(member)
-                .board(board)
+    private ReplyResponseDTO toResponseDTOWithChildren(Reply reply) {
+        return ReplyResponseDTO.builder()
+                .rno(reply.getRno())
+                .text(reply.getText())
+                .nickname(reply.getMember().getNickname())
+                .createdDate(reply.getCreatedDate())
+                .deleted(reply.isDeleted())
+                .children(reply.getChildren().stream()
+                        .map(this::toResponseDTOWithChildren) // 재귀 호출
+                        .collect(Collectors.toList()))
                 .build();
     }
 

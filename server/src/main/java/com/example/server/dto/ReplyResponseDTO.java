@@ -1,6 +1,7 @@
 package com.example.server.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,22 +14,14 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ReplyDTO {
+public class ReplyResponseDTO {
 
     private Long rno;
-    // Board
-    private Long bno;
     private String text;
-
-    // Member
-    private Long id;
     private String nickname;
-
-    private Long parentRno;
-
     private LocalDateTime createdDate;
-    private LocalDateTime updatedDate;
-
     private boolean deleted;
+
+    private List<ReplyResponseDTO> children; // 대댓글 리스트
 
 }
