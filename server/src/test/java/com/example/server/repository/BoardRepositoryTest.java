@@ -56,12 +56,17 @@ public class BoardRepositoryTest {
     @Test
     public void insertBoardTest() {
         IntStream.rangeClosed(1, 20).forEach(i -> {
-            // 1~10번 member 순환 (10명)
-            Long memberId = (long) ((i - 1) % 10 + 1);
 
-            Member member = memberRepository.findById(memberId)
-                    .orElseThrow(() -> new RuntimeException("Member not found: " + memberId));
+   Member member = Member.builder()
+                .email("user" + i + "@gmail.com")
+                .password("1111")
+                .nickname("user" + i)
+                .agree(true)
+                .emailVerified(true)
+                .build();
 
+    Member savedMember = memberRepository.save(member);
+ 
             Board board = Board.builder()
                     .title("테스트 게시글 제목 " + i)
                     .content("이것은 테스트 게시글 내용입니다. 번호: " + i)
@@ -125,7 +130,7 @@ public class BoardRepositoryTest {
 
         for (Reply reply : replies) {
             int likeCount = random.nextInt(4); // 댓글 하나당 0~3명 추천
-            Set<Long> used = new HashSet<>();
+            Set<Long> used = new HashSet();
 
             for (int i = 0; i < likeCount; i++) {
                 int memberIdx;
@@ -171,5 +176,22 @@ public class BoardRepositoryTest {
 
         boolean existsAfter = replyRepository.existsById(targetRno);
         System.out.println("삭제 후 존재 여부: " + existsAfter);
+    }
+
+
+//QUERY DSL
+@Test
+public void listTest(){
+List<Object[]> result = boardRepository.list();
+for ( Object[] objects : result ){
+  Board board =   (Board)objects[0];   
+  Member member =   (Member)objects[1];   
+  Long replyCnt =   (Long)objects[2];   
+
+System.out.println(board);
+System.out.println(member);
+System.out.println(replyCnt);
+
+        }
     }
 }
