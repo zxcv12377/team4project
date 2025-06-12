@@ -24,4 +24,6 @@ public class ReplyResponseDTO {
 
     private List<ReplyResponseDTO> children; // 대댓글 리스트
 
+    private Long likeCount; // 추천 수
+
 }
