@@ -1,5 +1,6 @@
 package com.example.server.repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
@@ -55,7 +56,7 @@ public class BoardRepositoryTest {
                 .build();
 
     Member savedMember = memberRepository.save(member);
-
+ 
             Board board = Board.builder()
                     .title("Board Title" + i)
                     .content("Board Content" + i)
@@ -121,4 +122,20 @@ public class BoardRepositoryTest {
         boardRepository.deleteById(20L);
     }
 
+
+//QUERY DSL
+@Test
+public void listTest(){
+List<Object[]> result = boardRepository.list();
+for ( Object[] objects : result ){
+  Board board =   (Board)objects[0];   
+  Member member =   (Member)objects[1];   
+  Long replyCnt =   (Long)objects[2];   
+
+System.out.println(board);
+System.out.println(member);
+System.out.println(replyCnt);
+
+        }
+    }
 }
