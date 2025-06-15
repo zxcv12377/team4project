@@ -1,22 +1,36 @@
 import React from "react";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import AuthPage from "./components/authPage";
 import BoardPage from "./components/board";
 import MyProfile from "./components/myProfile";
 import ReplyList from "./components/replyList";
+import LoginForm from "./components/loginForm";
+import Layoutex from "./components/layoutex";
+import RegisterForm from "./components/registerForm";
+import ProtectedRoute from "./components/protectedRoute";
 
 function App() {
   return (
     <Router>
-      <Routes>
-        <Route path="/" element={<Navigate to="/board" replace />} />
-        <Route path="/member/login" element={<AuthPage />} />
-        <Route path="/board" element={<BoardPage />} />
-        <Route path="/profile" element={<MyProfile />} />
-        <Route path="/reply" element={<ReplyList />} />
-      </Routes>
+      <Layoutex>
+        <Routes>
+          <Route path="/" element={<Navigate to="/board" />} />
+          <Route path="/board" element={<BoardPage />} />
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/register" element={<RegisterForm />} />
+          
+          {/* 보호된 라우트(로그인 인증 후 접근 가능한 경로 지정) */}
+          <Route
+            path="/profile"
+            element={
+              <ProtectedRoute>
+                <MyProfile />
+              </ProtectedRoute>
+            }
+          />
+          <Route path="/reply" element={<ReplyList />} />
+        </Routes>
+      </Layoutex>
     </Router>
   );
 }
-
 export default App;

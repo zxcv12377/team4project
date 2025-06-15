@@ -1,230 +1,100 @@
 package com.example.server.controller;
 
-<<<<<<< HEAD
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.validation.BindingResult;
-=======
-import java.util.HashMap;
-import java.util.Map;
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-// import org.springframework.security.authentication.AuthenticationManager;
-// import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-// import org.springframework.security.core.Authentication;
-// import org.springframework.security.core.AuthenticationException;
-// import org.springframework.security.core.context.SecurityContext;
-// import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.DeleteMapping;
->>>>>>> c3d1471972a685d11d972f84ff0b7742010dc50b
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.example.server.dto.MemberRequestDTO;
-<<<<<<< HEAD
-import com.example.server.entity.Member;
-import com.example.server.repository.MemberRepository;
-import com.example.server.service.MemberService;
-
-=======
 import com.example.server.dto.MemberResponseDTO;
-import com.example.server.entity.Member;
+import com.example.server.jwt.JwtUtil;
+import com.example.server.security.CustomMemberDetails;
+import com.example.server.security.CustomMemberDetailsService;
 import com.example.server.service.MemberService;
-
-import jakarta.servlet.http.HttpServletRequest;
->>>>>>> c3d1471972a685d11d972f84ff0b7742010dc50b
-import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.web.bind.annotation.RequestBody;
-<<<<<<< HEAD
 
-=======
->>>>>>> c3d1471972a685d11d972f84ff0b7742010dc50b
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.Map;
 
 @Log4j2
-@RequiredArgsConstructor
-@RequestMapping("/member")
-<<<<<<< HEAD
-@Controller
-public class MemberController {
-
-    private final MemberService service;
-    
-=======
 @RestController
-@CrossOrigin(origins = "http://localhost:5173", allowCredentials = "true")
+@RequestMapping("/member")
+@RequiredArgsConstructor
 public class MemberController {
 
     private final MemberService memberService;
+    private final JwtUtil jwtUtil;
+    private final AuthenticationManager authenticationManager;
 
-    // private final AuthenticationManager authenticationManager;
->>>>>>> c3d1471972a685d11d972f84ff0b7742010dc50b
-
-    @GetMapping("/login")
-    public String getLogin() {
-        log.info("로그인 요청");
-        return "member/login";
-    }
-
-    @GetMapping("/logout")
-    public String getLogout(HttpServletRequest request) {
-        log.info("로그아웃 요청");
-        request.getSession().invalidate(); // 세션 무효화
-        return "redirect:/"; // 홈으로 리다이렉트
-    }
-
-    @GetMapping("/register")
-    public String getRegister() {
-        log.info("회원가입 요청");
-        return "member/register";
-    }
-
-    @GetMapping("/me")
-    // public ResponseEntity<?> getUserInfo(HttpServletRequest request) {
-    // String nickname = (String) request.getSession().getAttribute("loginUser");
-    // if (nickname == null) {
-    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-    // }
-
-    // Member member = memberService.findByNickname(nickname);
-    // if (member == null) {
-    // return ResponseEntity.status(HttpStatus.NOT_FOUND).body("사용자 없음");
-    // }
-
-    // MemberResponseDTO dto = MemberResponseDTO.builder()
-    // .mno(member.getId())
-    // .nickname(member.getNickname())
-    // .email(member.getEmail())
-    // .profileimg(member.getProfileimg())
-    // .build();
-
-    // return ResponseEntity.ok(dto);
-    // }
-
-    @PostMapping("/register") // json 형식으로 회원가입 요청
+    // POST: 회원가입
+    @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody @Valid MemberRequestDTO dto) {
-        try {
-            MemberResponseDTO response = memberService.register(dto);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("회원가입 실패");
-        }
+        memberService.register(dto);
+        return ResponseEntity.ok(Map.of("message", "회원가입 성공"));
     }
 
-<<<<<<< HEAD
+    // POST: 로그인
     @PostMapping("/login")
-public String login(String nickname, String password, HttpSession session) {
-    Member member = service.findByNickname(nickname);
-    if (member != null && member.getPassword().equals(password)) {
-        session.setAttribute("member", member);
-        return "redirect:/"; // 로그인 성공 후 홈으로 이동
+    public ResponseEntity<?> login(@RequestBody MemberRequestDTO dto) {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword()));
+        } catch (AuthenticationException e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Map.of("success", false, "message", "아이디 또는 비밀번호가 올바르지 않습니다."));
+        }
+
+        String token = jwtUtil.generateToken(dto.getEmail());
+        MemberResponseDTO user = memberService.getUserInfo(dto.getEmail());
+
+        return ResponseEntity.ok(Map.of(
+                "success", true,
+                "token", token,
+                "user", user));
     }
-    return "member/login"; // 로그인 실패시 로그인 폼으로 다시
-}
-    
-=======
-    // @PostMapping("/login")
-    // public ResponseEntity<?> loginUser(@RequestBody MemberRequestDTO dto,
-    // HttpServletRequest request) {
-    // log.info("로그인 요청: nickname={}, password={}", dto.getNickname(),
-    // dto.getPassword());
 
-    // Member member = memberService.authenticate(dto.getNickname(),
-    // dto.getPassword());
+    // GET: 내 정보 조회
+    @GetMapping("/me")
+    public ResponseEntity<?> getMyProfile(@AuthenticationPrincipal CustomMemberDetails userDetails) {
+        MemberResponseDTO user = memberService.getUserInfo(userDetails.getEmail());
+        return ResponseEntity.ok(user);
+    }
 
-    // if (member != null) {
-    // request.getSession().setAttribute("loginUser", member.getNickname());
+    // PUT: 내 정보 수정(닉네임, 프로필 사진)
+    @PutMapping("/update")
+    public ResponseEntity<?> update(@AuthenticationPrincipal CustomMemberDetails userDetails,
+            @RequestBody MemberRequestDTO dto) {
+        memberService.updateUserInfo(userDetails.getEmail(), dto);
+        return ResponseEntity.ok(Map.of("message", "닉네임 변경 성공"));
+    }
 
-    // // 로그인 성공 시 세션에 사용자 정보 저장(react에서 사용할 때 res.data success로 확인 가능)
-    // Map<String, Object> response = new HashMap<>();
-    // response.put("success", true);
-    // response.put("user", new MemberResponseDTO(member));
-    // return ResponseEntity.ok(response);
-    // } else {
-    // log.warn("로그인 실패: 아이디 또는 비밀번호 틀림");
-    // Map<String, Object> error = new HashMap<>();
-    // error.put("success", false);
-    // error.put("message", "닉네임 또는 비밀번호가 틀렸습니다.");
-    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
-    // }
-    // }
+    // PUT: 비밀번호 변경
+    @PutMapping("/password")
+    public ResponseEntity<?> changePassword(@AuthenticationPrincipal CustomMemberDetails userDetails,
+            @RequestBody Map<String, String> passwordMap) {
+        log.info("[Controller] userDetails.getEmail(): {}", userDetails.getEmail());
+        String currentPassword = passwordMap.get("currentPassword");
+        String newPassword = passwordMap.get("newPassword");
+        memberService.changePassword(userDetails.getEmail(), currentPassword, newPassword);
+        return ResponseEntity.ok(Map.of("message", "비밀번호 변경 성공"));
+    }
 
+    // POST: 로그아웃 (토큰 삭제는 프론트에서 처리)
     @PostMapping("/logout")
-    public ResponseEntity<?> logout(HttpServletRequest request) {
-        request.getSession().invalidate(); // 세션 제거
-        return ResponseEntity.ok("로그아웃 완료");
+    public ResponseEntity<?> logout() {
+        return ResponseEntity.ok(Map.of("message", "로그아웃 완료")); // JWT는 서버에서 무효화하지 않음
     }
 
-    // @PostMapping("/profile-image")
-    // public ResponseEntity<?> uploadProfileImage(@RequestParam("file")
-    // MultipartFile file,
-    // HttpSession session) {
-    // String nickname = (String) session.getAttribute("loginUser");
-    // if (nickname == null) {
-    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-    // }
-
-    // String imagePath = memberService.updateProfileImageByNickname(nickname,
-    // file);
-    // return ResponseEntity.ok(imagePath);
-    // }
-
-    // @PutMapping("/update")
-    // public ResponseEntity<?> updateUser(@RequestBody MemberRequestDTO dto,
-    // HttpServletRequest request) {
-    // String nickname = (String) request.getSession().getAttribute("loginUser");
-    // if (nickname == null) {
-    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-    // }
-
-    // try {
-    // memberService.updateUserInfo(nickname, dto);
-    // return ResponseEntity.ok("수정 완료");
-    // } catch (Exception e) {
-    // return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("수정 실패: " +
-    // e.getMessage());
-    // }
-    // }
-
-    // @PutMapping("/password")
-    // public ResponseEntity<?> changePassword(@RequestBody Map<String, String>
-    // body, HttpServletRequest request) {
-    // String nickname = (String) request.getSession().getAttribute("loginUser");
-    // if (nickname == null) {
-    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인이 필요합니다.");
-    // }
-
-    // String currentPassword = body.get("currentPassword");
-    // String newPassword = body.get("newPassword");
-
-    // try {
-    // memberService.changePassword(nickname, currentPassword, newPassword);
-    // return ResponseEntity.ok("비밀번호 변경 완료");
-    // } catch (Exception e) {
-    // return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-    // }
-    // }
-
-    // @DeleteMapping("/delete")
-    // public ResponseEntity<String> deleteUser(HttpServletRequest request) {
-    // String nickname = (String) request.getSession().getAttribute("loginUser");
-    // if (nickname == null) {
-    // return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("로그인 필요");
-    // }
-
-    // memberService.deleteByNickname(nickname);
-    // request.getSession().invalidate();
-    // return ResponseEntity.ok("회원 탈퇴 완료");
-    // }
->>>>>>> c3d1471972a685d11d972f84ff0b7742010dc50b
-
+    // DELETE: 회원 탈퇴
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteMember(@AuthenticationPrincipal CustomMemberDetails userDetails) {
+        memberService.delete(userDetails.getEmail());
+        return ResponseEntity.ok(Map.of("message", "회원 탈퇴 완료"));
+    }
 }

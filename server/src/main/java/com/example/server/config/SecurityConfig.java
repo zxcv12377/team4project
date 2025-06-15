@@ -2,35 +2,63 @@ package com.example.server.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.RememberMeServices;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices.RememberMeTokenAlgorithm;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
+import com.example.server.jwt.JwtAuthenticationEntryPoint;
+import com.example.server.jwt.JwtAuthenticationFilter;
+import com.example.server.jwt.JwtUtil;
+import com.example.server.security.CustomMemberDetailsService;
+
+import lombok.RequiredArgsConstructor;
 
 @EnableMethodSecurity // @PreAuthorize, @PostAuthorize 사용
 @EnableWebSecurity
 @Configuration
+@RequiredArgsConstructor
 public class SecurityConfig {
-      @Bean
+
+        private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
+        private final CustomMemberDetailsService userDetailsService;
+        private final JwtUtil jwtUtil;
+
+        @Bean
         SecurityFilterChain securityFilterChain(HttpSecurity http, RememberMeServices rememberMeServices)
                         throws Exception {
+
+                JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(jwtUtil, userDetailsService);
+
+                http.csrf(AbstractHttpConfigurer::disable);
 
                 http.authorizeHttpRequests(authorize -> authorize
                                 .requestMatchers("/", "/assets/**", "/css/**", "/js/**", "/upload/**").permitAll()
                                 .requestMatchers("/movie/list", "/movie/read").permitAll()
                                 .requestMatchers("/reviews/**", "/upload/display/**").permitAll()
-                                .requestMatchers("/member/register").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/member/register", "/member/login", "/error")
+                                .permitAll()
+
+                                .requestMatchers("/img/**").permitAll()
                                 .anyRequest().permitAll());
+                
                 http.sessionManagement(seesion -> seesion.sessionCreationPolicy(SessionCreationPolicy.ALWAYS));
+                http.exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint));
+                http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                http.userDetailsService(userDetailsService);
+
+                http.rememberMe(remember -> remember.rememberMeServices(rememberMeServices()).key("myKey"));
 
                 // http.csrf(csrf -> csrf.disable());
 
@@ -48,18 +76,6 @@ public class SecurityConfig {
                 // .requestMatchers("/board/modify").hasAnyRole("ADMIN", "MANAGER", "USER")
                 // .anyRequest().permitAll())
 
-                http
-                                .formLogin(login -> login.loginPage("/member/login")
-                                                // .successHandler(successHandler())
-                                                .defaultSuccessUrl("/")
-                                                .permitAll());
-
-                http.logout(logout -> logout
-                                .logoutRequestMatcher(new AntPathRequestMatcher("/member/logout"))
-                                .logoutSuccessUrl("/"));
-
-                http.rememberMe(remember -> remember.rememberMeServices(rememberMeServices));
-
                 return http.build();
         }
 
@@ -74,12 +90,17 @@ public class SecurityConfig {
         // }
 
         @Bean
-        RememberMeServices rememberMeServices(UserDetailsService userDetailsService) {
-                RememberMeTokenAlgorithm encodingAlgorithm = RememberMeTokenAlgorithm.SHA256;
-                TokenBasedRememberMeServices rememberMeServices = new TokenBasedRememberMeServices("myKey",
-                                userDetailsService, encodingAlgorithm);
-                rememberMeServices.setMatchingAlgorithm(RememberMeTokenAlgorithm.MD5);
-                rememberMeServices.setTokenValiditySeconds(60 * 60 * 24 * 7);
+        public RememberMeServices rememberMeServices() {
+                TokenBasedRememberMeServices rememberMeServices = new TokenBasedRememberMeServices(
+                                "myKey", userDetailsService, RememberMeTokenAlgorithm.SHA256);
+                rememberMeServices.setMatchingAlgorithm(RememberMeTokenAlgorithm.SHA256);
+                rememberMeServices.setTokenValiditySeconds(60 * 60 * 24 * 7); // 7일 유효
                 return rememberMeServices;
+        }
+
+        // AuthenticationManager 수동 등록 (로그인 처리에 필요)
+        @Bean
+        public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+                return config.getAuthenticationManager();
         }
 }

@@ -30,7 +30,7 @@ public class ReplyService {
 
         // 댓글 등록
         public Long create(ReplyDTO dto) {
-                Member member = memberRepository.findByNickname(dto.getNickname())
+                Member member = memberRepository.findByEmail(dto.getNickname())
                                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
                 Board board = boardRepository.findById(dto.getBno())
@@ -109,7 +109,7 @@ public class ReplyService {
                 Reply reply = replyRepository.findById(rno)
                                 .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
 
-                Member member = memberRepository.findByNickname(nickname)
+                Member member = memberRepository.findByEmail(nickname)
                                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
                 boolean alreadyLiked = replyLikeRepository.existsByReplyAndMember(reply, member);

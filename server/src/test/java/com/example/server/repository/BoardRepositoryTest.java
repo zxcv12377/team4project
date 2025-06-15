@@ -10,6 +10,7 @@ import java.util.stream.IntStream;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 import com.example.server.entity.Board;
 import com.example.server.entity.Member;
@@ -34,19 +35,21 @@ public class BoardRepositoryTest {
     @Autowired
     private ReplyLikeRepository replyLikeRepository;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Test
     public void insertMemberTest() {
         IntStream.rangeClosed(1, 10).forEach(i -> {
             Member member = Member.builder()
                     .email("user" + i + "@gmail.com")
-                    .password("1111")
+                    .password(passwordEncoder.encode("1111"))
                     .nickname("user" + i)
                     .agree(true)
                     .emailVerified(true)
-                    .profileimg("/img/default.png")
+                    .profileimg(null)
+                    .roles(Set.of(MemberRole.USER))
                     .build();
-
-            member.addMemberRole(MemberRole.USER);
 
             memberRepository.save(member);
 
