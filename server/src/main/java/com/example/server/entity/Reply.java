@@ -49,6 +49,9 @@ public class Reply extends Base {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Reply> children = new ArrayList<>();
 
+    @OneToMany(mappedBy = "reply", cascade = CascadeType.ALL)
+    private List<ReplyLike> likes = new ArrayList<>();
+
     public void softDelete() {
         this.deleted = true;
         this.text = "삭제된 댓글입니다";

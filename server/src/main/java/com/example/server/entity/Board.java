@@ -18,23 +18,27 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.ToString;
 
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
-@Entity
+@AllArgsConstructor 
+@ToString(exclude = {"member", "replies"})
+@Entity 
 public class Board extends Base {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long bno;
+    @Id 
+    @GeneratedValue(strategy = GenerationType.IDENTITY) 
+    
+    private Long bno; //게시판 번호
 
-    private String title;
+    private String title; //게시글 제목
 
+    //게시글 내용(최대 2000자 저장 가능)
     @Column(length = 2000)
-    private String content;
+    private String content; 
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
@@ -43,20 +47,13 @@ public class Board extends Base {
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Reply> replies;
 
-    // public String getWriterName() {
-    // return member != null ? member.getName() : null;
-    // }
-
-    // public String getWriterUsername() {
-    // return member != null ? member.getUsername() : null;
-    // }
-
     public void changeTitle(String title) {
-        this.title = title;
-    }
+    this.title = title; 
 
-    public void changeContent(String content) {
-        this.content = content;
-    }
+}
+
+public void changeContent(String content) {
+    this.content = content;
+}
 
 }

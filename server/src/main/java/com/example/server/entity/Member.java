@@ -8,6 +8,11 @@ import com.example.server.base.Base;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
+<<<<<<< HEAD
+=======
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+>>>>>>> c3d1471972a685d11d972f84ff0b7742010dc50b
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -41,12 +46,20 @@ public class Member extends Base {
 
     private boolean agree; // 약관 동의 입니다
 
-    private String profileimg; // 프로필 사진입니다
+    private String profileimg = "./img/default.png"; // 프로필 사진입니다(이미지 경로넣기)
 
     private boolean emailVerified; // 이메일 인증여부
 
     @ElementCollection(fetch = FetchType.LAZY) // 1:N 관계로 테이블 생성
     @Builder.Default
+<<<<<<< HEAD
     private Set<MemberRole> roleSet = new HashSet<>(); // Role 부여
 
+=======
+    private Set<MemberRole> roleSet = new HashSet<>();
+
+    public void addMemberRole(MemberRole memberRole) {
+        roleSet.add(memberRole);
+    }
+>>>>>>> c3d1471972a685d11d972f84ff0b7742010dc50b
 }
