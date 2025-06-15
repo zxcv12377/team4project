@@ -1,6 +1,6 @@
 package com.example.server.service;
 
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+// import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
 import com.example.server.dto.MemberRequestDTO;
@@ -32,21 +32,25 @@ public class MemberService {
     }
 
     // 로그인
-    // public MemberRequestDTO loginUser(String nickname) {
-    // log.info("nickname {}", nickname);
+//     public MemberRequestDTO loginUser(String nickname) {
+//     log.info("nickname {}", nickname);
 
-    // Member member = memberRepository.findByNickname(nickname);
+//     Member member = memberRepository.findByNickname(nickname);
 
-    // if (member == null)
-    // throw new UsernameNotFoundException("닉네임 확인");
+//     if (member == null)
+//     throw new UsernameNotFoundException("닉네임 확인");
 
-    // MemberRequestDTO memberDTO = MemberRequestDTO
-    // .builder()
-    // .nickname(member.getNickname())
-    // .password(member.getPassword())
-    // .build();
+//     MemberRequestDTO memberDTO = MemberRequestDTO
+//     .builder()
+//     .nickname(member.getNickname())
+//     .password(member.getPassword())
+//     .build();
 
-    // return memberDTO;
-    // }
+//     return memberDTO;
+//     }
+
+    public Member findByNickname(String nickname) {
+    return memberRepository.findByNickname(nickname);
+}
 
 }

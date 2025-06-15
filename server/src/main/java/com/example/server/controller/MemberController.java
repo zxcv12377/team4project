@@ -1,5 +1,6 @@
 package com.example.server.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -7,19 +8,25 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.example.server.dto.MemberRequestDTO;
+import com.example.server.entity.Member;
+import com.example.server.repository.MemberRepository;
 import com.example.server.service.MemberService;
 
+import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.web.bind.annotation.RequestBody;
+
 
 @Log4j2
 @RequiredArgsConstructor
-@RequestMapping
+@RequestMapping("/member")
 @Controller
 public class MemberController {
 
     private final MemberService service;
+    
 
     @GetMapping("/login")
     public void getLogin() {
@@ -42,5 +49,16 @@ public class MemberController {
 
         return "redirect:/member/login";
     }
+
+    @PostMapping("/login")
+public String login(String nickname, String password, HttpSession session) {
+    Member member = service.findByNickname(nickname);
+    if (member != null && member.getPassword().equals(password)) {
+        session.setAttribute("member", member);
+        return "redirect:/"; // 로그인 성공 후 홈으로 이동
+    }
+    return "member/login"; // 로그인 실패시 로그인 폼으로 다시
+}
+    
 
 }
