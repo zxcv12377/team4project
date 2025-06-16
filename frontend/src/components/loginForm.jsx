@@ -2,67 +2,60 @@ import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-function LoginForm() {
-  const [nickname, setNickname] = useState("");
+const LoginForm = () => {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [errorMsg, setErrorMsg] = useState("");
-
+  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     try {
-      const res = await axios.post(
-        "http://localhost:8080/member/login",
-        {
-          nickname,
-          password,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
-          },
-          withCredentials: true, // 쿠키포함요청
-        }
-      );
-      if (res.data && res.data.success) {
-        alert("로그인 성공");
-        localStorage.setItem("user", JSON.stringify(res.data.user));
-        window.location.href = "/board";
-      } else {
-        setErrorMsg(res.data.message || "로그인 실패");
-      }
-    } catch (error) {
-      setErrorMsg(error.response?.data?.message || "로그인 요청 실패");
+      const response = await axios.post("http://localhost:8080/member/login", {
+        email,
+        password,
+      });
+
+      const token = response.data.token;
+      localStorage.setItem("token", token);
+      setError("");
+      navigate("/board");
+    } catch (err) {
+      console.error(err);
+      setError("로그인 실패: 이메일 또는 비밀번호를 확인하세요.");
     }
   };
 
   return (
-    <div style={{ maxWidth: 400, margin: "0 auto" }}>
-      <h2>Login</h2>
+    <div>
+      <h2>로그인</h2>
       <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          placeholder="Nickname"
-          value={nickname}
-          onChange={(e) => setNickname(e.target.value)}
-          required
-        />
-        <br />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
-        <br />
-        <button type="submit">Login</button>
+        <div>
+          <label>이메일:</label>
+          <input
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+        <div>
+          <label>비밀번호:</label>
+          <input
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+        {error && <div style={{ color: "red" }}>{error}</div>}
+        <button type="submit">로그인</button>
       </form>
-      {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
+      <div style={{ marginTop: "1rem" }}>
+        <button onClick={() => navigate("/register")}>회원가입창으로</button>
+      </div>
     </div>
   );
-}
+};
 
 export default LoginForm;

@@ -2,186 +2,179 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 
-function MyProfile() {
+const MyProfile = () => {
+  const [profile, setProfile] = useState(null);
+  const [editMode, setEditMode] = useState(false);
   const [nickname, setNickname] = useState("");
-  const [email, setEmail] = useState("");
-  const [profileimg, setProfileimg] = useState("");
-
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
-
-  const [imageFile, setImageFile] = useState(null); // 프로필 이미지 업로드용
+  const [file, setFile] = useState(null);
   const [message, setMessage] = useState("");
-
   const navigate = useNavigate();
 
-  // 사용자 정보 불러오기
+  const token = localStorage.getItem("token");
+  const headers = { Authorization: `Bearer ${token}` };
+
   useEffect(() => {
-    axios
-      .get("http://localhost:8080/member/me", { withCredentials: true })
-      .then((res) => {
-        const user = res.data;
-        setNickname(user.nickname);
-        setEmail(user.email);
-        setProfileimg(user.profileimg);
-      })
-      .catch(() => {
-        setMessage("사용자 정보를 불러오지 못했습니다.");
-      });
+    fetchProfile();
   }, []);
 
-  // 기본 정보 수정
+  const fetchProfile = async () => {
+    try {
+      const res = await axios.get("http://localhost:8080/member/me", {
+        headers,
+      });
+      setProfile(res.data);
+      setNickname(res.data.nickname);
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   const handleProfileUpdate = async (e) => {
     e.preventDefault();
+    setMessage("");
+
     try {
+      // ✅ 닉네임이 공백이면 기존 닉네임 사용
+      const newNickname = nickname.trim() !== "" ? nickname : profile.nickname;
+
+      // 닉네임 수정
       await axios.put(
         "http://localhost:8080/member/update",
-        {
-          email,
-          profileimg,
-        },
-        {
-          withCredentials: true,
-        }
+        { nickname: newNickname },
+        { headers }
       );
-      setMessage("정보가 성공적으로 수정되었습니다.");
-    } catch {
-      setMessage("정보 수정 실패");
-    }
-  };
 
-  // 비밀번호 변경
-  const handleChangePassword = async (e) => {
-    e.preventDefault();
-    try {
-      await axios.put(
-        "http://localhost:8080/member/password",
-        {
-          currentPassword,
-          newPassword,
-        },
-        {
-          withCredentials: true,
-        }
-      );
-      setMessage("비밀번호 변경 완료!");
-      setCurrentPassword("");
-      setNewPassword("");
+      // 비밀번호 수정
+      if (currentPassword && newPassword) {
+        await axios.put(
+          "http://localhost:8080/member/password",
+          { currentPassword, newPassword },
+          { headers }
+        );
+      }
+
+      // 프로필 이미지 업로드
+      if (file) {
+        const formData = new FormData();
+        formData.append("file", file);
+
+        await axios.post(
+          "http://localhost:8080/member/profile-image",
+          formData,
+          {
+            headers: {
+              ...headers,
+              "Content-Type": "multipart/form-data",
+            },
+          }
+        );
+      }
+
+      setMessage("수정이 완료되었습니다.");
+      setEditMode(false);
+      fetchProfile();
     } catch (err) {
-      setMessage(err.response?.data || "비밀번호 변경 실패");
-    }
-  };
-
-  // 프로필 이미지 업로드
-  const handleImageUpload = async (e) => {
-    e.preventDefault();
-    if (!imageFile) return;
-
-    const formData = new FormData();
-    formData.append("file", imageFile);
-
-    try {
-      const res = await axios.post("http://localhost:8080/member/profile-image", formData, {
-        withCredentials: true,
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-
-      const uploadedUrl = res.data; // /images/xxx.png
-      setProfileimg(uploadedUrl);
-
-      // 업로드한 이미지 URL을 사용자 정보에 저장
-      await axios.put(
-        "http://localhost:8080/member/update",
-        {
-          email,
-          profileimg: uploadedUrl,
-        },
-        {
-          withCredentials: true,
-        }
-      );
-
-      setMessage("프로필 이미지가 성공적으로 변경 및 저장되었습니다.");
-    } catch {
-      setMessage("이미지 업로드 또는 저장 실패");
+      console.error(err);
+      setMessage("수정 중 오류가 발생했습니다.");
     }
   };
 
   const handleDeleteAccount = async () => {
-    if (!window.confirm("정말로 회원 탈퇴하시겠습니까?")) return;
+    if (!window.confirm("정말로 탈퇴하시겠습니까? 되돌릴 수 없습니다.")) return;
 
     try {
       await axios.delete("http://localhost:8080/member/delete", {
-        withCredentials: true,
+        headers: { Authorization: `Bearer ${token}` },
       });
-      alert("회원 탈퇴 완료");
-      localStorage.removeItem("user");
-      window.location.href = "/member/login";
+      localStorage.removeItem("token"); // 토큰 제거
+      window.location.href = "/login"; // 로그인 페이지로 이동
     } catch (err) {
-      setMessage("회원 탈퇴 실패: " + (err.response?.data || ""));
+      console.error(err);
+      setMessage("회원탈퇴 중 오류가 발생했습니다.");
     }
   };
 
+  if (!profile) return <div>로딩 중...</div>;
+
   return (
-    <div style={{ maxWidth: 400, margin: "0 auto" }}>
-      <h2>내 정보</h2>
+    <div>
+      <h2>내 프로필</h2>
+      <img
+        src={`http://localhost:8080/uploads/${profile.profileimg}`}
+        alt="프로필 이미지"
+        width="100"
+        height="100"
+        style={{ borderRadius: "50%" }}
+      />
+      <p>이메일: {profile.email}</p>
+      <p>닉네임: {profile.nickname}</p>
 
-      {profileimg && (
-        <div style={{ marginBottom: "1rem" }}>
-          <img
-            src={profileimg.startsWith("http") ? profileimg : `http://localhost:8080${profileimg}`}
-            alt="프로필 이미지"
-            style={{ width: 100, height: 100, borderRadius: "50%", objectFit: "cover" }}
-          />
+      {!editMode ? (
+        <div>
+          <button
+            onClick={() => setEditMode(true)}
+            style={{ marginRight: "10px" }}
+          >
+            수정
+          </button>
+          <button onClick={() => navigate("/board")}>게시판으로 이동</button>
         </div>
+      ) : (
+        <form onSubmit={handleProfileUpdate}>
+          <div>
+            <label>닉네임:</label>
+            <input
+              type="text"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label>현재 비밀번호:</label>
+            <input
+              type="password"
+              value={currentPassword}
+              onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+          </div>
+          <div>
+            <label>새 비밀번호:</label>
+            <input
+              type="password"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+          </div>
+
+          <div>
+            <label>프로필 이미지:</label>
+            <input type="file" onChange={(e) => setFile(e.target.files[0])} />
+          </div>
+
+          <button type="submit">저장</button>
+          <button type="button" onClick={() => setEditMode(false)}>
+            취소
+          </button>
+          {message && <p>{message}</p>}
+          <button
+            style={{
+              marginTop: "2rem",
+              backgroundColor: "red",
+              color: "white",
+            }}
+            onClick={handleDeleteAccount}
+          >
+            회원 탈퇴
+          </button>
+        </form>
       )}
-
-      <form onSubmit={handleImageUpload}>
-        <label>프로필 이미지 업로드:</label>
-        <br />
-        <input type="file" onChange={(e) => setImageFile(e.target.files[0])} />
-        <br />
-        <button type="submit">이미지 변경</button>
-      </form>
-
-      <br />
-
-      <form onSubmit={handleProfileUpdate}>
-        <p>닉네임: {nickname}</p>
-        <label>이메일:</label>
-        <br />
-        <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-        <br />
-
-        <button type="submit">정보 수정</button>
-      </form>
-
-      <hr />
-
-      <h3>비밀번호 변경</h3>
-      <form onSubmit={handleChangePassword}>
-        <label>현재 비밀번호:</label>
-        <br />
-        <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} required />
-        <br />
-
-        <label>새 비밀번호:</label>
-        <br />
-        <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} required />
-        <br />
-
-        <button type="submit">비밀번호 변경</button>
-      </form>
-
-      <hr />
-      <button onClick={handleDeleteAccount} style={{ color: "red" }}>
-        회원 탈퇴
-      </button>
-      <button onClick={() => navigate("/board")}>게시판으로 돌아가기</button>
 
       {message && <p>{message}</p>}
     </div>
   );
-}
+};
 
 export default MyProfile;

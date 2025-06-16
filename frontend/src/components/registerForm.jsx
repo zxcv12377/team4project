@@ -1,74 +1,91 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
-function RegisterForm() {
-  const [nickname, setNickname] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState(""); // 비밀번호 확인
-  const [errorMsg, setErrorMsg] = useState(""); // 에러 메세지
-  const [successMsg, setSuccessMsg] = useState(""); // 성공 메세지
+const RegisterForm = () => {
+  const [form, setForm] = useState({
+    email: "",
+    password: "",
+    nickname: "",
+  });
+
+  const [error, setError] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const navigate = useNavigate();
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setForm((prev) => ({ ...prev, [name]: value }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (password !== confirmPassword) {
-      setErrorMsg("비밀번호가 일치하지 않습니다.");
-      return;
-    }
+    setError("");
+    setSuccessMsg("");
 
     try {
-      const res = await axios.post(
-        "http://localhost:8080/member/register",
-        {
-          nickname,
-          email,
-          password,
-        },
-        {
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      await axios.post("http://localhost:8080/member/register", form);
+      setSuccessMsg("회원가입이 완료되었습니다!");
+      setForm({ email: "", password: "", nickname: "" });
 
-      setSuccessMsg("회원가입 성공! 로그인해주세요.");
-      setErrorMsg("");
-      setNickname("");
-      setEmail("");
-      setPassword("");
-      setConfirmPassword("");
-    } catch (error) {
-      setSuccessMsg("");
-      setErrorMsg(error.response?.data?.message || "회원가입 실패");
+      // 로그인 페이지로 이동
+      setTimeout(() => {
+        navigate("/login");
+      }, 1000);
+    } catch (err) {
+      console.error(err);
+      setError("회원가입 실패: 입력값을 확인하세요.");
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <input type="text" placeholder="닉네임" value={nickname} onChange={(e) => setNickname(e.target.value)} required />
-      <br />
-      <input type="email" placeholder="이메일" value={email} onChange={(e) => setEmail(e.target.value)} required />
-      <br />
-      <input
-        type="password"
-        placeholder="비밀번호"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
-      <br />
-      <input
-        type="password"
-        placeholder="비밀번호 확인"
-        value={confirmPassword}
-        onChange={(e) => setConfirmPassword(e.target.value)}
-        required
-      />
-      <br />
-      <button type="submit">회원가입</button>
-      {errorMsg && <p style={{ color: "red" }}>{errorMsg}</p>}
-      {successMsg && <p style={{ color: "green" }}>{successMsg}</p>}
-    </form>
+    <div>
+      <h2>회원가입</h2>
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>이메일:</label>
+          <input
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div>
+          <label>비밀번호:</label>
+          <input
+            type="password"
+            name="password"
+            value={form.password}
+            onChange={handleChange}
+            required
+          />
+        </div>
+        <div>
+          <label>닉네임:</label>
+          <input
+            type="text"
+            name="nickname"
+            value={form.nickname}
+            onChange={handleChange}
+            required
+          />
+        </div>
+
+        {error && <div style={{ color: "red" }}>{error}</div>}
+        {successMsg && <div style={{ color: "green" }}>{successMsg}</div>}
+
+        <button type="submit">회원가입</button>
+      </form>
+
+      <div style={{ marginTop: "1rem" }}>
+        <button type="button" onClick={() => navigate("/login")}>
+          로그인창으로
+        </button>
+      </div>
+    </div>
   );
-}
+};
 
 export default RegisterForm;
