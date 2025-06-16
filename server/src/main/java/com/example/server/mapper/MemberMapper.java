@@ -12,7 +12,9 @@ public class MemberMapper {
                 .email(dto.getEmail())
                 .password(dto.getPassword()) // 실무에서는 반드시 암호화 필요
                 .nickname(dto.getNickname())
-                .emailVerified(false) // 기본값
+                .emailVerified(false)
+                .profileimg(dto.getProfileimg() != null ? dto.getProfileimg() : "/img/default.png")
+                .agree(false)
                 .build();
     }
 
@@ -22,6 +24,7 @@ public class MemberMapper {
                 .mno(member.getId())
                 .email(member.getEmail())
                 .nickname(member.getNickname())
+                .profileimg(member.getProfileimg())
                 .build();
     }
 }

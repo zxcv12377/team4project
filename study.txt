@@ -1,0 +1,28 @@
+dto 사용이유 :
+    1. 캡슐화 : entity 직접 노출은 보안위험
+    2. 구조 분리 : 요청 / 응답 분리
+    3. 변환 유연성 : 원하는 정보만 분리해서 전달
+requestDTO : 클라이언트 -> 서버
+responseDTO : 서버 -> 클라이언트
+
+modelmapper : DTO ↔ Entity 변환을 쉽게 해주는 라이브러리
+
+
+security jwt 사용
+사용이유 : 서버에 부담이 덜함(기존 session방식은 서버에 유저정보를 전부 저장해서 부담이 심해지지만 token 생성방식은 유효기간을 설정&자동삭제해줌)
+
+회원가입 : post register -> dto -> controller -> dto -> service -> entity -> repository -> db
+
+로그인 : post login -> 
+
+
+| 구성 요소                      상태                     
+| ---------------------------- | ---------------------- 
+| `MemberController`           | ✅ JWT 기반 인증 적용 완료      
+| `MemberService`              | ✅ 사용자 CRUD 및 프로필 기능 포함 
+| `CustomMemberDetails`        | ✅ Spring Security 연동   
+| `CustomMemberDetailsService` | ✅ DB 기반 인증 지원          
+| `JwtAuthenticationFilter`    | ✅ 요청 헤더에서 JWT 추출 및 인증  
+| `JwtUtil`                    | ✅ 설정 파일 기반 비밀키 사용      
+| `SecurityConfig`             | ✅ 인증/인가 설정 및 CORS 대응   
+

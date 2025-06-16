@@ -14,9 +14,4 @@ public class MemberResponseDTO {
     private String nickname;
     private String profileimg;
 
-    public MemberResponseDTO(Member member) {
-        this.nickname = member.getNickname();
-        this.email = member.getEmail();
-        this.profileimg = member.getProfileimg();
-    }
 }

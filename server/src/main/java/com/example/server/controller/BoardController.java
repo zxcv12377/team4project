@@ -28,8 +28,8 @@ import lombok.extern.log4j.Log4j2;
 
 @RequestMapping("/board")
 @RestController
-@RequiredArgsConstructor
 @Log4j2
+@RequiredArgsConstructor
 public class BoardController {
 
     private final BoardService boardService;
@@ -38,25 +38,22 @@ public class BoardController {
     // public void getList(Model model, PageRequestDTO pageRequestDTO) {
     // log.info("List 요청 {}", pageRequestDTO);
 
-
     @GetMapping("/create")
     public void getCreate(BoardDTO dto) {
         log.info("글 작성 폼");
     }
 
- 
     @GetMapping("/list")
     public List<BoardDTO> getList() {
         return boardService.getList();
     }
-    
 
     @PostMapping("/create")
     public BoardDTO postCreate(@RequestBody @Valid BoardDTO dto) {
 
-    log.info("JSON 글 작성 요청: {}", dto);
-    boardService.create(dto);
-    return dto;
+        log.info("JSON 글 작성 요청: {}", dto);
+        boardService.create(dto);
+        return dto;
     }
 
     @PutMapping("/modify/{bno}")
@@ -66,23 +63,20 @@ public class BoardController {
         return boardService.getRow(bno); // 업데이트 후 결과 반환
     }
 
+    // @PostMapping("/modify/")
+    // public BoardDTO postModify(@RequestBody @Valid BoardDTO dto) {
+    // log.info("수정 {}", dto);
+    // boardService.update(dto);
 
-
-//     @PostMapping("/modify/")
-//     public BoardDTO postModify(@RequestBody @Valid BoardDTO dto) {
-//         log.info("수정 {}", dto);
-//         boardService.update(dto);
-
-//         return boardService.getRow(dto.getBno()); // 수정된 결과 반환
-// } 
-    
+    // return boardService.getRow(dto.getBno()); // 수정된 결과 반환
+    // }
 
     @DeleteMapping({ "/remove/{bno}" })
     public ResponseEntity<String> getRemove(@PathVariable Long bno) {
         log.info("삭제 {}", bno);
         boardService.delete(bno);
 
-   return ResponseEntity.ok("삭제 완료"); 
+        return ResponseEntity.ok("삭제 완료");
     }
 
 }
