@@ -1,10 +1,22 @@
 package com.example.server.repository;
 
+import com.example.server.entity.Member;
 import com.example.server.security.entity.EmailVerificationToken;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
 public interface EmailVerificationTokenRepository extends JpaRepository<EmailVerificationToken, Long> {
-    Optional<EmailVerificationToken> findByToken(String token);
+    Optional<EmailVerificationToken> findByMemberEmail(String email);
+
+    @Modifying
+    @Transactional
+    @Query("DELETE FROM EmailVerificationToken t WHERE t.member = :member")
+    void deleteByMember(@Param("member") Member member);
 }

@@ -8,21 +8,6 @@ import com.example.server.security.CustomMemberDetailsService;
 import com.example.server.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-<<<<<<< HEAD
-
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.util.Map;
-
-=======
 import lombok.extern.log4j.Log4j2;
 
 import org.springframework.http.HttpStatus;
@@ -38,7 +23,6 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.Map;
 
 @Log4j2
->>>>>>> 506068dc6a91cc0510b3fd11b34ca7d294aa2924
 @RestController
 @RequestMapping("/member")
 @RequiredArgsConstructor
@@ -85,31 +69,19 @@ public class MemberController {
     // PUT: 내 정보 수정(닉네임, 프로필 사진)
     @PutMapping("/update")
     public ResponseEntity<?> update(@AuthenticationPrincipal CustomMemberDetails userDetails,
-<<<<<<< HEAD
-            @RequestBody MemberRequestDTO dto, @RequestParam("file") MultipartFile file) {
-        memberService.updateUserInfo(userDetails.getEmail(), dto, file);
-        return ResponseEntity.ok(Map.of("message", "정보 수정 성공"));
-=======
             @RequestBody MemberRequestDTO dto) {
         memberService.updateUserInfo(userDetails.getEmail(), dto);
         return ResponseEntity.ok(Map.of("message", "닉네임 변경 성공"));
->>>>>>> 506068dc6a91cc0510b3fd11b34ca7d294aa2924
     }
 
     // PUT: 비밀번호 변경
     @PutMapping("/password")
     public ResponseEntity<?> changePassword(@AuthenticationPrincipal CustomMemberDetails userDetails,
             @RequestBody Map<String, String> passwordMap) {
-<<<<<<< HEAD
-        String currentPassword = passwordMap.get("currentPassword");
-        String newPassword = passwordMap.get("newPassword");
-        memberService.changePassword(userDetails.getUsername(), currentPassword, newPassword);
-=======
         log.info("[Controller] userDetails.getEmail(): {}", userDetails.getEmail());
         String currentPassword = passwordMap.get("currentPassword");
         String newPassword = passwordMap.get("newPassword");
         memberService.changePassword(userDetails.getEmail(), currentPassword, newPassword);
->>>>>>> 506068dc6a91cc0510b3fd11b34ca7d294aa2924
         return ResponseEntity.ok(Map.of("message", "비밀번호 변경 성공"));
     }
 

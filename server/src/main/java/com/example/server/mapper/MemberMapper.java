@@ -4,7 +4,6 @@ import com.example.server.dto.MemberRequestDTO;
 import com.example.server.dto.MemberResponseDTO;
 import com.example.server.entity.Member;
 
-
 public class MemberMapper {
 
     // DTO → Entity
@@ -14,17 +13,13 @@ public class MemberMapper {
                 .password(dto.getPassword()) // 실무에서는 반드시 암호화 필요
                 .nickname(dto.getNickname())
                 .emailVerified(false)
-<<<<<<< HEAD
-                .profileimg(dto.getProfileimg() != null ? dto.getProfileimg() : "/img/default.png")
-=======
                 .profileimg(dto.getProfileimg() != null ? dto.getProfileimg() : "default.png")
->>>>>>> 506068dc6a91cc0510b3fd11b34ca7d294aa2924
                 .agree(false)
                 .build();
     }
 
     // Entity → DTO
-    
+
     public static MemberResponseDTO toDTO(Member member) {
         return MemberResponseDTO.builder()
                 .mno(member.getId())

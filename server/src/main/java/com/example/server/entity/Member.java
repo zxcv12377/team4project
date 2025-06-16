@@ -70,11 +70,7 @@ public class Member extends Base {
             roles.add(MemberRole.USER);
         }
         if (profileimg == null) {
-<<<<<<< HEAD
-            profileimg = "/img/default.png";
-=======
             profileimg = "default.png";
->>>>>>> 506068dc6a91cc0510b3fd11b34ca7d294aa2924
         }
     }
 }

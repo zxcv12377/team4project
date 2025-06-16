@@ -28,9 +28,9 @@ const RegisterForm = () => {
       setSuccessMsg("회원가입이 완료되었습니다!");
       setForm({ email: "", password: "", nickname: "" });
 
-      // 로그인 페이지로 이동
+      // 1초 후 인증코드 입력페이지로 이동
       setTimeout(() => {
-        navigate("/login");
+        navigate("/verify-code");
       }, 1000);
     } catch (err) {
       console.error(err);
@@ -44,33 +44,15 @@ const RegisterForm = () => {
       <form onSubmit={handleSubmit}>
         <div>
           <label>이메일:</label>
-          <input
-            type="email"
-            name="email"
-            value={form.email}
-            onChange={handleChange}
-            required
-          />
+          <input type="email" name="email" value={form.email} onChange={handleChange} required />
         </div>
         <div>
           <label>비밀번호:</label>
-          <input
-            type="password"
-            name="password"
-            value={form.password}
-            onChange={handleChange}
-            required
-          />
+          <input type="password" name="password" value={form.password} onChange={handleChange} required />
         </div>
         <div>
           <label>닉네임:</label>
-          <input
-            type="text"
-            name="nickname"
-            value={form.nickname}
-            onChange={handleChange}
-            required
-          />
+          <input type="text" name="nickname" value={form.nickname} onChange={handleChange} required />
         </div>
 
         {error && <div style={{ color: "red" }}>{error}</div>}
@@ -78,7 +60,6 @@ const RegisterForm = () => {
 
         <button type="submit">회원가입</button>
       </form>
-
       <div style={{ marginTop: "1rem" }}>
         <button type="button" onClick={() => navigate("/login")}>
           로그인창으로

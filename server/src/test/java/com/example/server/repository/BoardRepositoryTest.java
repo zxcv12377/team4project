@@ -3,10 +3,7 @@ package com.example.server.repository;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
-<<<<<<< HEAD
-=======
 import java.util.Random;
->>>>>>> 506068dc6a91cc0510b3fd11b34ca7d294aa2924
 import java.util.Set;
 import java.util.stream.IntStream;
 
@@ -36,12 +33,9 @@ public class BoardRepositoryTest {
     private ReplyRepository replyRepository;
 
     @Autowired
-<<<<<<< HEAD
-=======
     private ReplyLikeRepository replyLikeRepository;
 
     @Autowired
->>>>>>> 506068dc6a91cc0510b3fd11b34ca7d294aa2924
     private PasswordEncoder passwordEncoder;
 
     @Test
@@ -51,13 +45,9 @@ public class BoardRepositoryTest {
                     .email("user" + i + "@gmail.com")
                     .password(passwordEncoder.encode("1111"))
                     .nickname("user" + i)
-                    .agree(true)
-                    .emailVerified(true)
-<<<<<<< HEAD
-                    .profileimg("/img/default.png")
-=======
+                    .agree(false)
+                    .emailVerified(false)
                     .profileimg(null)
->>>>>>> 506068dc6a91cc0510b3fd11b34ca7d294aa2924
                     .roles(Set.of(MemberRole.USER))
                     .build();
 
@@ -70,16 +60,16 @@ public class BoardRepositoryTest {
     public void insertBoardTest() {
         IntStream.rangeClosed(1, 20).forEach(i -> {
 
-   Member member = Member.builder()
-                .email("user" + i + "@gmail.com")
-                .password("1111")
-                .nickname("user" + i)
-                .agree(true)
-                .emailVerified(true)
-                .build();
+            Member member = Member.builder()
+                    .email("user" + i + "@gmail.com")
+                    .password("1111")
+                    .nickname("user" + i)
+                    .agree(true)
+                    .emailVerified(true)
+                    .build();
 
-    Member savedMember = memberRepository.save(member);
- 
+            Member savedMember = memberRepository.save(member);
+
             Board board = Board.builder()
                     .title("테스트 게시글 제목 " + i)
                     .content("이것은 테스트 게시글 내용입니다. 번호: " + i)
@@ -191,19 +181,18 @@ public class BoardRepositoryTest {
         System.out.println("삭제 후 존재 여부: " + existsAfter);
     }
 
+    // QUERY DSL
+    @Test
+    public void listTest() {
+        List<Object[]> result = boardRepository.list();
+        for (Object[] objects : result) {
+            Board board = (Board) objects[0];
+            Member member = (Member) objects[1];
+            Long replyCnt = (Long) objects[2];
 
-//QUERY DSL
-@Test
-public void listTest(){
-List<Object[]> result = boardRepository.list();
-for ( Object[] objects : result ){
-  Board board =   (Board)objects[0];   
-  Member member =   (Member)objects[1];   
-  Long replyCnt =   (Long)objects[2];   
-
-System.out.println(board);
-System.out.println(member);
-System.out.println(replyCnt);
+            System.out.println(board);
+            System.out.println(member);
+            System.out.println(replyCnt);
 
         }
     }

@@ -4,53 +4,28 @@ import com.example.server.dto.MemberRequestDTO;
 import com.example.server.dto.MemberResponseDTO;
 import com.example.server.entity.Member;
 import com.example.server.mapper.MemberMapper;
+import com.example.server.repository.EmailVerificationTokenRepository;
 import com.example.server.repository.MemberRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-<<<<<<< HEAD
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Optional;
-import java.util.UUID;
-
-=======
 import lombok.extern.log4j.Log4j2;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-
 @Log4j2
->>>>>>> 506068dc6a91cc0510b3fd11b34ca7d294aa2924
 @Service
 @RequiredArgsConstructor
 public class MemberServiceImpl implements MemberService {
 
     private final MemberRepository memberRepository;
     private final PasswordEncoder passwordEncoder;
-<<<<<<< HEAD
-
-    private final String uploadDir = "src/main/resources/static/img/"; // 프로필 이미지 저장경로
-
-    @Override
-    @Transactional
-    public void register(MemberRequestDTO dto) {
-        Member member = Member.builder()
-                .nickname(dto.getNickname())
-                .email(dto.getEmail())
-                .password(passwordEncoder.encode(dto.getPassword()))
-                .build();
-        memberRepository.save(member);
-=======
     private final EmailVerificationService emailVerificationService;
+    private final EmailVerificationTokenRepository tokenRepository;
 
+    // 회원 가입
     @Override
     @Transactional
-     
     public MemberResponseDTO register(MemberRequestDTO requestDTO) {
         if (memberRepository.findByEmail(requestDTO.getEmail()).isPresent()) {
             throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
@@ -61,18 +36,17 @@ public class MemberServiceImpl implements MemberService {
                 .password(passwordEncoder.encode(requestDTO.getPassword()))
                 .nickname(requestDTO.getNickname())
                 .agree(true)
-                .emailVerified(false)              
+                .emailVerified(false)
                 .build();
 
         Member savedMember = memberRepository.save(member);
 
-        
         emailVerificationService.sendVerificationEmail(savedMember.getEmail());
 
         return MemberMapper.toDTO(savedMember);
->>>>>>> 506068dc6a91cc0510b3fd11b34ca7d294aa2924
     }
 
+    // 회원 정보 조회
     @Override
     public MemberResponseDTO getUserInfo(String email) {
         Member member = memberRepository.findByEmail(email)
@@ -80,43 +54,18 @@ public class MemberServiceImpl implements MemberService {
         return MemberMapper.toDTO(member);
     }
 
+    // 회원 정보 수정
     @Override
     @Transactional
-<<<<<<< HEAD
-    public MemberResponseDTO updateUserInfo(String email, MemberRequestDTO dto, MultipartFile profile) {
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
-
-        // 닉네임 수정
-        member.setNickname(dto.getNickname());
-
-        // 프로필 이미지가 들어온 경우 처리
-        if (profile != null && !profile.isEmpty()) {
-            try {
-                String originalFilename = profile.getOriginalFilename();
-                String newFilename = System.currentTimeMillis() + "_" + originalFilename;
-                String uploadPath = System.getProperty("user.dir") + "/src/main/resources/static/img/" + newFilename;
-
-                File dest = new File(uploadPath);
-                profile.transferTo(dest);
-
-                member.setProfileimg(newFilename);
-            } catch (IOException e) {
-                throw new RuntimeException("프로필 이미지 업로드 중 오류가 발생했습니다.", e);
-            }
-        }
-
-        memberRepository.save(member);
-=======
     public MemberResponseDTO updateUserInfo(String email, MemberRequestDTO dto) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new IllegalArgumentException("해당 유저를 찾을 수 없습니다."));
 
         member.setNickname(dto.getNickname());
->>>>>>> 506068dc6a91cc0510b3fd11b34ca7d294aa2924
         return MemberMapper.toDTO(member);
     }
 
+    // 회원 비밀번호 변경
     @Override
     @Transactional
     public void changePassword(String email, String currentPassword, String newPassword) {
@@ -126,25 +75,22 @@ public class MemberServiceImpl implements MemberService {
         if (!passwordEncoder.matches(currentPassword, member.getPassword())) {
             throw new RuntimeException("현재 비밀번호가 일치하지 않습니다.");
         }
-<<<<<<< HEAD
-
-=======
         log.info("[Service] 비밀번호 변경 시도 이메일: {}", email);
->>>>>>> 506068dc6a91cc0510b3fd11b34ca7d294aa2924
         member.setPassword(passwordEncoder.encode(newPassword));
         memberRepository.save(member);
     }
 
+    // 회원 탈퇴
     @Override
     @Transactional
     public void delete(String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
+        tokenRepository.deleteByMember(member); // 이메일 인증 토큰 삭제(자식레코드 삭제)
         memberRepository.delete(member);
     }
-<<<<<<< HEAD
-=======
 
+    // 프로필 이미지 가져오기
     @Override
     public String getProfileImageFilename(String email) {
         Member member = memberRepository.findByEmail(email)
@@ -152,6 +98,7 @@ public class MemberServiceImpl implements MemberService {
         return member.getProfileimg(); // 기존 필드 사용
     }
 
+    // 프로필 이미지 업데이트
     @Override
     @Transactional
     public void updateProfileImage(String email, String profileimg) {
@@ -160,5 +107,4 @@ public class MemberServiceImpl implements MemberService {
         member.setProfileimg(profileimg);
         memberRepository.save(member);
     }
->>>>>>> 506068dc6a91cc0510b3fd11b34ca7d294aa2924
 }

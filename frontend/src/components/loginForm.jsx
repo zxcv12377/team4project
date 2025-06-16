@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 
 const LoginForm = () => {
   const [email, setEmail] = useState("");
@@ -32,21 +33,11 @@ const LoginForm = () => {
       <form onSubmit={handleSubmit}>
         <div>
           <label>이메일:</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <div>
           <label>비밀번호:</label>
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
         </div>
         {error && <div style={{ color: "red" }}>{error}</div>}
         <button type="submit">로그인</button>
