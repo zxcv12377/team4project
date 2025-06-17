@@ -1,5 +1,6 @@
 package com.example.server.controller;
 
+import com.example.server.dto.EmailRequestDTO;
 import com.example.server.dto.MemberRequestDTO;
 import com.example.server.dto.MemberResponseDTO;
 import com.example.server.jwt.JwtUtil;
@@ -34,10 +35,11 @@ public class MemberController {
 
     // POST: 회원가입
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody @Valid MemberRequestDTO dto) {
-        memberService.register(dto);
-        return ResponseEntity.ok(Map.of("message", "회원가입 성공"));
-    }
+public ResponseEntity<?> register(@RequestBody @Valid EmailRequestDTO dto) {
+    memberService.register(dto.getEmail());
+    return ResponseEntity.ok(Map.of("message", "이메일 인증 코드가 발송되었습니다."));
+}
+
 
     // POST: 로그인
     @PostMapping("/login")

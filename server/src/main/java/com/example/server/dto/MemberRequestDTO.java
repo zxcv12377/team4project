@@ -1,6 +1,5 @@
 package com.example.server.dto;
 
-import jakarta.persistence.PrePersist;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -22,5 +21,9 @@ public class MemberRequestDTO {
     private String nickname;
 
     private String profileimg;
+
+    private boolean agree;
+    
+    private String code;
 
 }
