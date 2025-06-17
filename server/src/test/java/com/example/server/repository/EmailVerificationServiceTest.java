@@ -9,7 +9,8 @@
 
 // import org.junit.jupiter.api.Test;
 // import org.springframework.beans.factory.annotation.Autowired;
-// import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
+// import
+// org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 // import org.springframework.boot.test.context.SpringBootTest;
 // import org.springframework.boot.test.mock.mockito.MockBean;
 // import org.springframework.mail.javamail.JavaMailSender;
@@ -25,99 +26,95 @@
 // @Transactional
 // class EmailVerificationServiceTest {
 
-//     @Autowired
-//     private EmailVerificationService emailVerificationService;
+// @Autowired
+// private EmailVerificationService emailVerificationService;
 
-//     @Autowired
-//     private EmailVerificationTokenRepository tokenRepository;
+// @Autowired
+// private EmailVerificationTokenRepository tokenRepository;
 
-//     @Autowired
-//     private MemberRepository memberRepository;
+// @Autowired
+// private MemberRepository memberRepository;
 
+// @Test
+// public void EmailCreate() {
+// String email = "nhw2130050@gmail.com";
 
-//     @Test
-//     public void EmailCreate() {
-//         // given
-//         String email = "testuser@example.com";
+// Member member = Member.builder()
+// .email(email)
+// .password("encoded1234")
+// .nickname("테스트유저")
+// .agree(true)
+// .emailVerified(false)
+// .profileimg("default.png")
+// .build();
 
-//         Member member = Member.builder()
-//                 .email(email)
-//                 .password("encoded1234")
-//                 .nickname("테스트유저")
-//                 .agree(true)
-//                 .emailVerified(false)
-//                 .profileimg("default.png")
-//                 .build();
+// memberRepository.save(member);
 
-//         memberRepository.save(member);
+// EmailVerificationToken token =
+// emailVerificationService.sendVerificationEmail(email);
 
-//         // when
-//         emailVerificationService.sendVerificationEmail(email);
+// assertNotNull(token);
+// assertEquals(email, token.getEmail());
+// }
 
-//         // then
-//         EmailVerificationToken token = tokenRepository.findByToken(email).orElse(null);
-//         assertNotNull(token);
-//         assertEquals(email, token.getEmail());
-//     }
+// @Test
+// public void EmailTest() {
+// String email = "nhw2130050@gmail.com";
 
-//     @Test
-//     public void EmailTest() {
-//         // given
-//         String email = "verify@example.com";
+// Member member = Member.builder()
+// .email(email)
+// .password("pw")
+// .nickname("인증테스트")
+// .agree(true)
+// .emailVerified(false)
+// .profileimg("default.png")
+// .build();
 
-//         Member member = Member.builder()
-//                 .email(email)
-//                 .password("pw")
-//                 .nickname("인증테스트")
-//                 .agree(true)
-//                 .emailVerified(false)
-//                 .profileimg("default.png")
-                
-//                 .build();
+// memberRepository.save(member);
 
-//         memberRepository.save(member);
+// EmailVerificationToken token =
+// emailVerificationService.sendVerificationEmail(email);
 
-//         emailVerificationService.sendVerificationEmail(email);
-//         EmailVerificationToken token = tokenRepository.findByToken(email).orElseThrow();
+// boolean result = emailVerificationService.verifyToken(token.getToken());
 
-//         // when
-//         boolean result = emailVerificationService.verifyToken(token.getToken());
+// assertTrue(result);
 
-//         // then
-//         assertTrue(result);
-//         Member updated = memberRepository.findByEmail(email).orElseThrow();
-//         assertTrue(updated.isEmailVerified());
-//     }
+// Member updated = memberRepository.findByEmail(email).orElseThrow();
+// assertTrue(updated.isEmailVerified());
+// }
 
-//     @Test
-//     public void EmailVerifiedFail() {
-//         // given
-//         String email = "expired@example.com";
+// @Test
+// public void EmailVerifiedFail() {
+// // given
+// String email = "nhw2130050@gmail.com";
 
-//         Member member = Member.builder()
-//                 .email(email)
-//                 .password("pw")
-//                 .nickname("만료유저")
-//                 .agree(true)
-//                 .emailVerified(false)
-//                 .profileimg("default.png")
-//                 .build();
+// Member member = Member.builder()
+// .email(email)
+// .password("pw")
+// .nickname("만료유저")
+// .agree(true)
+// .emailVerified(false)
+// .profileimg("default.png")
+// .build();
 
-//         memberRepository.save(member);
+// memberRepository.save(member);
 
-//         EmailVerificationToken expiredToken = EmailVerificationToken.builder()
-//                 .email(email)
-//                 .token("expired-token")
-//                 .expiryDate(LocalDateTime.now().minusMinutes(1))
-//                 .verified(false)
-//                 .build();
+// // 만료된 토큰 생성
+// EmailVerificationToken expiredToken = EmailVerificationToken.builder()
+// .email(email)
+// .token("expired-token")
+// .expiryDate(LocalDateTime.now().minusMinutes(1))
+// .verified(false)
+// .build();
 
-//         tokenRepository.save(expiredToken);
+// tokenRepository.save(expiredToken);
 
-//         // when
-//         boolean result = emailVerificationService.verifyToken("expired-token");
+// boolean result = emailVerificationService.verifyToken("expired-token");
 
-//         // then
-//         assertFalse(result);
-//     }
+// assertFalse(result);
+
+// Member updated = memberRepository.findByEmail(email).orElseThrow();
+// assertFalse(updated.isEmailVerified());
+// }
+
 // }

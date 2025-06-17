@@ -52,7 +52,7 @@ public class SecurityConfig {
 
                                 .requestMatchers("/img/**").permitAll()
                                 .anyRequest().permitAll());
-                
+
                 http.sessionManagement(seesion -> seesion.sessionCreationPolicy(SessionCreationPolicy.ALWAYS));
                 http.exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint));
                 http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);

@@ -48,9 +48,9 @@ public class BoardController {
     @PreAuthorize("isAuthenticated()")
     @PostMapping("/create")
     public String postCreate(@ModelAttribute("dto") @Valid BoardDTO dto,
-                             BindingResult result,
-                             PageRequestDTO pageRequestDTO,
-                             RedirectAttributes rttr) {
+            BindingResult result,
+            PageRequestDTO pageRequestDTO,
+            RedirectAttributes rttr) {
         log.info("글 작성 요청: {}", dto);
 
         if (result.hasErrors()) {
@@ -67,18 +67,15 @@ public class BoardController {
         return "redirect:/board/list";
     }
 
-
-
     @GetMapping("/list")
     public String getList(Model model, PageRequestDTO pageRequestDTO) {
-    log.info("list 요청", pageRequestDTO);
+        log.info("list 요청", pageRequestDTO);
 
         PageResultDTO<BoardDTO> result = boardService.getList(pageRequestDTO);
         model.addAttribute("result", result);
 
         return "board/list";
     }
-
 
     @GetMapping("/read")
     public String getRead(@RequestParam("bno") Long bno, PageRequestDTO pageRequestDTO, Model model) {
@@ -91,10 +88,10 @@ public class BoardController {
         return "board/read";
     }
 
-//수정page 부름
+    // 수정page 부름
     @PreAuthorize("authentication.name == #dto.email")
     @GetMapping("/modify")
-    public String getModify(@RequestParam("bno") Long bno,  PageRequestDTO pageRequestDTO, Model model) {
+    public String getModify(@RequestParam("bno") Long bno, PageRequestDTO pageRequestDTO, Model model) {
         log.info("modify 폼 요청 bno: {}", bno);
 
         BoardDTO dto = boardService.getRow(bno);
@@ -104,12 +101,12 @@ public class BoardController {
         return "board/modify";
     }
 
-    //수정 완료 후 서버 전송
-   @PreAuthorize("authentication.name == #dto.email")
+    // 수정 완료 후 서버 전송
+    @PreAuthorize("authentication.name == #dto.email")
     @PostMapping("/modify")
     public String postModify(@ModelAttribute BoardDTO dto,
-                             PageRequestDTO pageRequestDTO,
-                             RedirectAttributes rttr) {
+            PageRequestDTO pageRequestDTO,
+            RedirectAttributes rttr) {
         log.info("수정 요청: {}", dto);
 
         boardService.update(dto);
@@ -123,13 +120,13 @@ public class BoardController {
         return "redirect:/board/read";
     }
 
-    //글쓴이만 삭제함.    
+    // 글쓴이만 삭제함.
     @PreAuthorize("authentication.name == #email")
     @PostMapping("/remove")
     public String postRemove(@RequestParam("bno") Long bno,
-                            @RequestParam("email") String email,
-                            PageRequestDTO pageRequestDTO,
-                            RedirectAttributes rttr) {
+            @RequestParam("email") String email,
+            PageRequestDTO pageRequestDTO,
+            RedirectAttributes rttr) {
         log.info("삭제 요청 bno: {}", bno);
         boardService.delete(bno);
 
@@ -140,6 +137,5 @@ public class BoardController {
 
         return "redirect:/board/list";
     }
-
 
 }

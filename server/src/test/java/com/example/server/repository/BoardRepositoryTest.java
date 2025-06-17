@@ -45,8 +45,8 @@ public class BoardRepositoryTest {
                     .email("user" + i + "@gmail.com")
                     .password(passwordEncoder.encode("1111"))
                     .nickname("user" + i)
-                    .agree(true)
-                    .emailVerified(true)
+                    .agree(false)
+                    .emailVerified(false)
                     .profileimg(null)
                     .roles(Set.of(MemberRole.USER))
                     .build();
@@ -60,16 +60,16 @@ public class BoardRepositoryTest {
     public void insertBoardTest() {
         IntStream.rangeClosed(1, 20).forEach(i -> {
 
-   Member member = Member.builder()
-                .email("user" + i + "@gmail.com")
-                .password("1111")
-                .nickname("user" + i)
-                .agree(true)
-                .emailVerified(true)
-                .build();
+            Member member = Member.builder()
+                    .email("user" + i + "@gmail.com")
+                    .password("1111")
+                    .nickname("user" + i)
+                    .agree(true)
+                    .emailVerified(true)
+                    .build();
 
-    Member savedMember = memberRepository.save(member);
- 
+            Member savedMember = memberRepository.save(member);
+
             Board board = Board.builder()
                     .title("테스트 게시글 제목 " + i)
                     .content("이것은 테스트 게시글 내용입니다. 번호: " + i)
@@ -181,19 +181,18 @@ public class BoardRepositoryTest {
         System.out.println("삭제 후 존재 여부: " + existsAfter);
     }
 
+    // QUERY DSL
+    @Test
+    public void listTest() {
+        List<Object[]> result = boardRepository.list();
+        for (Object[] objects : result) {
+            Board board = (Board) objects[0];
+            Member member = (Member) objects[1];
+            Long replyCnt = (Long) objects[2];
 
-//QUERY DSL
-@Test
-public void listTest(){
-List<Object[]> result = boardRepository.list();
-for ( Object[] objects : result ){
-  Board board =   (Board)objects[0];   
-  Member member =   (Member)objects[1];   
-  Long replyCnt =   (Long)objects[2];   
-
-System.out.println(board);
-System.out.println(member);
-System.out.println(replyCnt);
+            System.out.println(board);
+            System.out.println(member);
+            System.out.println(replyCnt);
 
         }
     }
