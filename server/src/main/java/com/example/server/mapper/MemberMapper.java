@@ -4,7 +4,6 @@ import com.example.server.dto.MemberRequestDTO;
 import com.example.server.dto.MemberResponseDTO;
 import com.example.server.entity.Member;
 
-
 public class MemberMapper {
 
     // DTO → Entity
@@ -20,7 +19,7 @@ public class MemberMapper {
     }
 
     // Entity → DTO
-    
+
     public static MemberResponseDTO toDTO(Member member) {
         return MemberResponseDTO.builder()
                 .mno(member.getId())

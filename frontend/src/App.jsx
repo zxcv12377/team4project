@@ -8,6 +8,8 @@ import Layoutex from "./components/layoutex";
 import RegisterForm from "./components/registerForm";
 import ProtectedRoute from "./components/protectedRoute";
 import MainLayout from "./layouts/MainLayout";
+import EmailVerificationResult from "./components/EmailVerificationResult";
+import EmailCodeVerify from "./components/EmailCodeVerify";
 
 function App() {
   return (

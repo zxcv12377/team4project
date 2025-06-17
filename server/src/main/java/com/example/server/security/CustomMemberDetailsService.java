@@ -21,11 +21,11 @@ public class CustomMemberDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 사용자입니다: " + email));
-                log.info("[CustomMemberDetailsService] DB에서 가져온 사용자 email: {}", member.getEmail());
-        
-                if (!member.isEmailVerified()) {
+        log.info("[CustomMemberDetailsService] DB에서 가져온 사용자 email: {}", member.getEmail());
+
+        if (!member.isEmailVerified()) {
             throw new RuntimeException("이메일 인증이 완료되지 않았습니다.");
         }
-                return new CustomMemberDetails(member);
+        return new CustomMemberDetails(member);
     }
 }
