@@ -104,8 +104,4 @@ public class SecurityConfig {
                 return config.getAuthenticationManager();
         }
 
-        @Bean // = new 한 후 스프링 컨테이너가 관리
-        JwtUtil jwtUtil() {
-                return new JwtUtil();
-        }
 }
