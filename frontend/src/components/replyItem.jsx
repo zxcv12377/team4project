@@ -83,8 +83,19 @@ const ReplyItem = ({ reply, bno, refresh, depth = 0 }) => {
       ) : (
         <>
           <div className="flex justify-between items-center text-sm text-zinc-500 mb-1">
-            <span>{reply.replyer}</span>
-            <span>{new Date(reply.createdDate).toLocaleString()}</span>
+            <div className="flex items-center gap-1">
+              <span className="font-semibold">{reply.nickname}</span>
+              {reply.badge && (
+                <span
+                  className={`ml-1 text-[11px] px-1.5 py-0.5 rounded-full font-medium ${
+                    reply.badge === "관리자" ? "bg-red-500 text-white" : "bg-blue-500 text-white"
+                  }`}
+                >
+                  {reply.badge}
+                </span>
+              )}
+            </div>
+            <span className="text-xs">{new Date(reply.createdDate).toLocaleString()}</span>
           </div>
           <p className="text-zinc-800">{reply.text}</p>
         </>
@@ -95,7 +106,7 @@ const ReplyItem = ({ reply, bno, refresh, depth = 0 }) => {
           답글 달기
         </button>
         <div className="flex items-center gap-2">
-          {reply.username === currentUser && !editing && (
+          {reply.nickname === currentUser && !editing && (
             <>
               <button onClick={() => setEditing(true)} className="text-xs text-green-600 hover:underline">
                 수정
