@@ -7,6 +7,7 @@ import LoginForm from "./components/loginForm";
 import Layoutex from "./components/layoutex";
 import RegisterForm from "./components/registerForm";
 import ProtectedRoute from "./components/protectedRoute";
+import MainLayout from "./layouts/MainLayout";
 
 function App() {
   return (
@@ -17,7 +18,7 @@ function App() {
           <Route path="/board" element={<BoardPage />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
-          
+          <Route path="/MainLayout" />
           {/* 보호된 라우트(로그인 인증 후 접근 가능한 경로 지정) */}
           <Route
             path="/profile"

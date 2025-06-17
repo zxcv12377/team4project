@@ -52,7 +52,7 @@ public class SecurityConfig {
 
                                 .requestMatchers("/img/**").permitAll()
                                 .anyRequest().permitAll());
-                
+
                 http.sessionManagement(seesion -> seesion.sessionCreationPolicy(SessionCreationPolicy.ALWAYS));
                 http.exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint));
                 http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
@@ -102,5 +102,10 @@ public class SecurityConfig {
         @Bean
         public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
                 return config.getAuthenticationManager();
+        }
+
+        @Bean // = new 한 후 스프링 컨테이너가 관리
+        JwtUtil jwtUtil() {
+                return new JwtUtil();
         }
 }
