@@ -1,0 +1,15 @@
+.ProseMirror {
+  position: relative;
+}
+
+.ProseMirror.is-editor-empty::before {
+  content: attr(data-placeholder);
+  color: #9ca3af;
+  font-style: italic;
+  float: left;
+  position: absolute;
+  pointer-events: none;
+  font-style: italic;
+  opacity: 0.6;
+}
+
