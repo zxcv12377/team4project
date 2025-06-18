@@ -46,40 +46,43 @@ function RegisterForm() {
   return (
     <div style={{ maxWidth: "400px", margin: "auto" }}>
       <h2>회원가입</h2>
-
-      <input
-        type="email"
-        name="email"
-        placeholder="이메일"
-        value={formData.email}
-        onChange={handleChange}
-        disabled={step === "code"}
-      />
-      <input
-        type="text"
-        name="nickname"
-        placeholder="닉네임"
-        value={formData.nickname}
-        onChange={handleChange}
-        disabled={step === "code"}
-      />
-      <input
-        type="password"
-        name="password"
-        placeholder="비밀번호"
-        value={formData.password}
-        onChange={handleChange}
-        disabled={step === "code"}
-      />
-
-      {step === "code" && (
+      <div>
+        <label>이메일</label>
+        <input
+          type="email"
+          name="email"
+          placeholder="이메일"
+          value={formData.email}
+          onChange={handleChange}
+          disabled={step === "code"}
+        />
+        <div className="bg-green-500 text-red-500 p-4 rounded">Tailwind 적용 테스트입니다.</div>
+      </div>
+      <div>
+        <label>닉네임</label>
         <input
           type="text"
-          name="token"
-          placeholder="인증 코드 입력"
-          value={formData.token}
+          name="nickname"
+          placeholder="닉네임"
+          value={formData.nickname}
           onChange={handleChange}
+          disabled={step === "code"}
         />
+      </div>
+      <div>
+        <label>비밀번호</label>
+        <input
+          type="password"
+          name="password"
+          placeholder="비밀번호"
+          value={formData.password}
+          onChange={handleChange}
+          disabled={step === "code"}
+        />
+      </div>
+
+      {step === "code" && (
+        <input type="text" name="token" placeholder="인증 코드 입력" value={formData.token} onChange={handleChange} />
       )}
 
       {step === "input" ? (
