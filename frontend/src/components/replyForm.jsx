@@ -1,4 +1,6 @@
+// ReplyForm.jsx
 import React, { useState, useRef } from "react";
+import ReactMarkdown from "react-markdown";
 
 const emojis = ["😀", "😂", "😍", "🔥", "😢", "👍", "👎", "💯"];
 
@@ -28,17 +30,11 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          bno,
-          text: content,
-          parentRno,
-        }),
+        body: JSON.stringify({ bno, text: content, parentRno }),
       });
 
       if (!response.ok) {
-        const error = await response.json().catch(() => ({}));
         alert(`댓글 등록 실패: ${response.status}`);
-        console.log(error);
         return;
       }
 
@@ -50,20 +46,35 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
     }
   };
 
-  const insertEmoji = (emoji) => {
-    setContent((prev) => prev + emoji);
+  const insertAtCursor = (text) => {
+    const textarea = document.querySelector("textarea");
+    if (!textarea) return;
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const newText = content.substring(0, start) + text + content.substring(end);
+    setContent(newText);
   };
 
-  const handleImageUpload = (e) => {
+  const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
-    reader.onload = () => {
-      const imageMarkdown = `![image](${reader.result})`;
-      setContent((prev) => prev + "\n" + imageMarkdown + "\n");
-    };
-    reader.readAsDataURL(file);
+    const formData = new FormData();
+    formData.append("file", file);
+
+    try {
+      const res = await fetch("/api/uploads/images", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+      const imageUrl = data.url;
+      insertAtCursor(`![image](${imageUrl})`);
+    } catch (err) {
+      console.error(err);
+      alert("이미지 업로드 실패");
+    }
   };
 
   const showButton = isFocused || content.length > 0;
@@ -74,11 +85,8 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
-          required
           placeholder="댓글을 입력하세요"
-          className="w-full resize-none min-h-[80px]
-          rounded-2xl border border-zinc-300 p-4 bg-white 
-          shadow focus:outline-none pr-28 transition"
+          className="w-full resize-none min-h-[80px] rounded-2xl border border-zinc-300 p-4 bg-white shadow focus:outline-none pr-28 transition"
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
           rows={4}
@@ -86,9 +94,7 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
         {showButton && (
           <button
             type="submit"
-            className="absolute right-3 top-2
-              rounded-xl border border-zinc-300 bg-zinc-50 text-zinc-500
-              hover:bg-zinc-100 hover:text-zinc-900 h-9 px-5 py-2 text-sm transition"
+            className="absolute right-3 top-2 rounded-xl border border-zinc-300 bg-zinc-50 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 h-9 px-5 py-2 text-sm transition"
           >
             등록
           </button>
@@ -97,7 +103,12 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
 
       <div className="flex items-center gap-2 text-xl mt-1">
         {emojis.map((emoji) => (
-          <button key={emoji} type="button" className="hover:scale-110 transition" onClick={() => insertEmoji(emoji)}>
+          <button
+            key={emoji}
+            type="button"
+            className="hover:scale-110 transition"
+            onClick={() => insertAtCursor(emoji)}
+          >
             {emoji}
           </button>
         ))}
@@ -110,10 +121,6 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
         </button>
         <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleImageUpload} />
       </div>
-
-      <div className="border-b-2 border-zinc-200 mt-2" />
-      <div className="flex justify-start font-semibold text-sm text-blue-400">댓글 목록</div>
-      <div className="border-b-2 border-zinc-200 mt-1" />
     </form>
   );
 };
