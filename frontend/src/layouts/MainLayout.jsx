@@ -1,4 +1,4 @@
-// src/components/layout/MainLayout.jsx
+// src/layouts/MainLayout.jsx
 import { useState, useEffect } from "react";
 import Sidebar1 from "./Sidebar1";
 import Sidebar2 from "./Sidebar2";
