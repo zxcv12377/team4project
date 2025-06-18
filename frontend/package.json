@@ -22,14 +22,6 @@
     "@toast-ui/editor": "^3.2.2",
     "@toast-ui/react-editor": "^3.2.3",
     "axios": "^1.9.0",
-<<<<<<< HEAD
-    "react": "^17.0.2",
-    "react-dom": "^17.0.2",
-    "react-icon": "^1.0.0",
-    "react-markdown": "^10.1.0",
-    "react-router-dom": "^6.14.2",
-    "tailwindcss": "^4.1.10"
-=======
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "esbuild": "^0.25.5",
@@ -39,6 +31,7 @@
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-hook-form": "^7.56.4",
+    "react-markdown": "^10.1.0",
     "react-router-dom": "^7.6.1",
     "react-toastify": "^11.0.5",
     "socket.io-client": "^4.8.1",
@@ -46,7 +39,6 @@
     "stompjs": "^2.3.3",
     "tailwind-merge": "^3.3.0",
     "tailwindcss-animate": "^1.0.7"
->>>>>>> 7cee8612770803c7820f84e10176a01915cf0408
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
