@@ -51,19 +51,15 @@ export default function MainLayout() {
     localStorage.setItem("selectedRoomId", id);
   }
 
-
   return (
     <div className="flex h-screen w-screen">
-       <Navbar />
-       <div className="flex h-full w-full pt-16">
-      <Sidebar1
-        onSelectDM={handleSelectDM}
-        onSelectServer={handleSelectServer}
-      />
-      <Sidebar2 dmMode={selectedDM} serverId={selectedServerId} onSelectChannel={handleSelectChannel}/>
-      <Sidebar3 dmMode={selectedDM} serverId={selectedServerId} roomId={selectedRoomId}/>
-      <Sidebar4 serverId={selectedServerId} roomId={selectedRoomId}/>
+      <Navbar />
+      <div className="flex h-full w-full pt-16">
+        <Sidebar1 onSelectDM={handleSelectDM} onSelectServer={handleSelectServer} />
+        <Sidebar2 dmMode={selectedDM} serverId={selectedServerId} onSelectChannel={handleSelectChannel} />
+        <Sidebar3 dmMode={selectedDM} serverId={selectedServerId} roomId={selectedRoomId} />
+        <Sidebar4 serverId={selectedServerId} roomId={selectedRoomId} />
       </div>
-      </div>
+    </div>
   );
 }
