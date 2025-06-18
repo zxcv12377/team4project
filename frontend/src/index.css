@@ -1,27 +1,22 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/*
+  :root 및 body 스타일은 Tailwind CSS와 충돌할 수 있습니다.
+  실제 프로젝트에서는 Tailwind 설정을 통해 기본 스타일을 정의하거나,
+  `body` 태그에 직접 Tailwind 클래스를 적용하는 것을 권장합니다.
+  이 CSS는 빌드 프로세스를 통해 적용되어야 합니다.
+*/
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  /* 유수빈 */
-  max-width: none;
-  margin: 0;
-  padding: 0;
-  text-align: left;
-  width: 100%;
-  height: 100vh;
+body {
+  /* overflow 제거 */
   display: flex;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background-color: #36393f;
+  color: #dcddde;
 }
 
 a {
@@ -34,17 +29,28 @@ a:hover {
 }
 
 body {
+  /* overflow 제거 */
+  display: flex;
+  min-width: 320px;
+  min-height: 100vh;
+  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
+  background-color: #36393f;
+  color: #dcddde;
+}
+
+/* body {
   margin: 0;
   display: flex;
   place-items: center;
   min-width: 320px;
   min-height: 100vh;
 
-  /* 유수빈 */
-  font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  background-color: #36393f;
-  color: #dcddde;
-}
+  유수빈 요청 스타일 (Tailwind `bg-gray-800` 등과 충돌 가능) */
+/* font-family: "Inter", "Helvetica Neue", Helvetica, Arial, sans-serif; */
+/* background-color: #36393f; 디스코드 테마에 맞는 어두운 배경색 */
+/* color: #dcddde; 디스코드 테마에 맞는 밝은 글자색 */
+/* overflow: hidden; 전체 페이지 스크롤 방지 */
+/* } */
 
 h1 {
   font-size: 3.2em;
@@ -83,7 +89,8 @@ button:focus-visible {
   }
 }
 
-/* 유수빈 */
+/* 유수빈 요청 `.discord-container` 스타일 (현재 React JSX 구조에는 해당 클래스 없음) */
+/* 이 클래스를 적용하려면 MainLayout 또는 App 컴포넌트의 최상위 div에 `className="discord-container"`를 추가해야 합니다. */
 .discord-container {
   display: flex;
   width: 95%; /* Responsive width */
@@ -100,4 +107,16 @@ button:focus-visible {
   margin-right: 8px;
   color: #a3a6aa;
   font-weight: normal;
+}
+
+/* 메시지 스크롤바 커스터마이징 (기존 React 코드에 포함된 스타일 유지) */
+.chat-messages::-webkit-scrollbar {
+  width: 8px;
+}
+.chat-messages::-webkit-scrollbar-thumb {
+  background-color: #4a4a4f; /* 스크롤바 색상 */
+  border-radius: 4px;
+}
+.chat-messages::-webkit-scrollbar-track {
+  background-color: #2f3136; /* 스크롤바 트랙 색상 */
 }
