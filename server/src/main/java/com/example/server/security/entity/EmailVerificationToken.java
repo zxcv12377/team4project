@@ -1,35 +1,43 @@
 package com.example.server.security.entity;
 
-import com.example.server.entity.Member;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Data
-@NoArgsConstructor
+@Getter
 @AllArgsConstructor
-@Builder
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class EmailVerificationToken {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @OneToOne
-    @JoinColumn(name = "email", referencedColumnName = "email", nullable = false, unique = true)
-    private Member member;
+    private String email;
 
-    @Column(nullable = false)
-    private String code; // 이메일 인증 코드 4자리
+    private String token;
 
-    private LocalDateTime expiryDate;
+    private LocalDateTime expirationDate;
 
-    public boolean isExpired() {
-        return LocalDateTime.now().isAfter(expiryDate);
+    @Builder
+    public EmailVerificationToken(String email, String token, LocalDateTime expirationDate) {
+        this.email = email;
+        this.token = token;
+        this.expirationDate = expirationDate;
+    }
+
+    // 10분 유지 코드
+    public static EmailVerificationToken create(String email, String token) {
+        return EmailVerificationToken.builder()
+            .email(email)
+            .token(token)
+            .expirationDate(LocalDateTime.now().plusMinutes(10))
+            .build();
     }
 }

@@ -121,6 +121,10 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
         </button>
         <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleImageUpload} />
       </div>
+
+      <div className="border-b-2 border-zinc-200 mt-2" />
+      <div className="flex justify-start font-semibold text-sm text-blue-400">댓글 목록</div>
+      <div className="border-b-2 border-zinc-200 mt-1" />
     </form>
   );
 };

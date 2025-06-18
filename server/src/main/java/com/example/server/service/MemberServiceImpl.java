@@ -23,28 +23,15 @@ public class MemberServiceImpl implements MemberService {
     private final EmailVerificationService emailVerificationService;
     private final EmailVerificationTokenRepository tokenRepository;
 
-    // 회원 가입
-    @Override
-    @Transactional
-    public MemberResponseDTO register(MemberRequestDTO requestDTO) {
-        if (memberRepository.findByEmail(requestDTO.getEmail()).isPresent()) {
-            throw new IllegalArgumentException("이미 존재하는 이메일입니다.");
-        }
-
-        Member member = Member.builder()
-                .email(requestDTO.getEmail())
-                .password(passwordEncoder.encode(requestDTO.getPassword()))
-                .nickname(requestDTO.getNickname())
-                .agree(true)
-                .emailVerified(false)
-                .build();
-
-        Member savedMember = memberRepository.save(member);
-
-        emailVerificationService.sendVerificationEmail(savedMember.getEmail());
-
-        return MemberMapper.toDTO(savedMember);
+    // 회원 가입시 이메일 중복여부 확인
+@Override
+public void register(String email) {
+    if (memberRepository.findByEmail(email).isPresent()) {
+        throw new RuntimeException("이미 존재하는 이메일입니다.");
     }
+
+    emailVerificationService.sendVerificationEmail(email);
+}
 
     // 회원 정보 조회
     @Override
@@ -86,7 +73,7 @@ public class MemberServiceImpl implements MemberService {
     public void delete(String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
-        tokenRepository.deleteByMember(member); // 이메일 인증 토큰 삭제(자식레코드 삭제)
+       tokenRepository.deleteByEmail(member.getEmail());
         memberRepository.delete(member);
     }
 
