@@ -1,3 +1,4 @@
+// src/components/chatroom.jsx
 import React, { useState, useEffect, useRef, useContext } from "react";
 import { UserContext } from "@/layouts/Layout"; // layouts/Layout에서 UserContext 임포트
 
