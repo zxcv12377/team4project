@@ -35,11 +35,10 @@ public class MemberController {
 
     // POST: 회원가입
     @PostMapping("/register")
-public ResponseEntity<?> register(@RequestBody @Valid EmailRequestDTO dto) {
-    memberService.register(dto.getEmail());
-    return ResponseEntity.ok(Map.of("message", "이메일 인증 코드가 발송되었습니다."));
-}
-
+    public ResponseEntity<?> register(@RequestBody @Valid EmailRequestDTO dto) {
+        memberService.register(dto.getEmail());
+        return ResponseEntity.ok(Map.of("message", "이메일 인증 코드가 발송되었습니다."));
+    }
 
     // POST: 로그인
     @PostMapping("/login")
