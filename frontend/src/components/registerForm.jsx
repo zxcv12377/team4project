@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 function RegisterForm() {
   const [formData, setFormData] = useState({
@@ -11,6 +12,7 @@ function RegisterForm() {
 
   const [step, setStep] = useState("input"); // "input" | "code"
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,7 +25,7 @@ function RegisterForm() {
         email: formData.email,
       });
       alert("인증 코드가 이메일로 전송되었습니다.");
-      setStep("code"); // 인증 코드 입력 단계로 전환
+      setStep("code");
     } catch (error) {
       alert(error.response?.data?.message || "인증 요청 실패");
     }
@@ -34,8 +36,7 @@ function RegisterForm() {
       setLoading(true);
       await axios.post("http://localhost:8080/email/verify", formData);
       alert("회원가입 성공!");
-      // 로그인 페이지로 이동하거나 상태 초기화
-      window.location.href = "/login";
+      navigate("/login");
     } catch (error) {
       alert(error.response?.data?.message || "회원가입 실패");
     } finally {
@@ -44,53 +45,86 @@ function RegisterForm() {
   };
 
   return (
-    <div style={{ maxWidth: "400px", margin: "auto" }}>
-      <h2>회원가입</h2>
+    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center px-4">
+      <div className="absolute top-6 left-6">
+        <a
+          href="/board"
+          className="text-white text-2xl font-extrabold tracking-wide hover:text-indigo-400 transition-colors"
+        >
+          STRONGBERRY
+        </a>
+      </div>
+      <div className="bg-[#0f172a] p-10 rounded-xl w-full max-w-sm text-white">
+        <h2 className="text-2xl font-semibold text-center mb-8">회원가입</h2>
+        <div className="space-y-5">
+          <div>
+            <label className="block text-sm mb-1">이메일</label>
+            <input
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              className="w-full px-3 py-2 bg-[#1e293b] border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="example@email.com"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">닉네임</label>
+            <input
+              name="nickname"
+              value={formData.nickname}
+              onChange={handleChange}
+              className="w-full px-3 py-2 bg-[#1e293b] border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="닉네임"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-sm mb-1">비밀번호</label>
+            <input
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              className="w-full px-3 py-2 bg-[#1e293b] border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              placeholder="비밀번호"
+              required
+            />
+          </div>
 
-      <input
-        type="email"
-        name="email"
-        placeholder="이메일"
-        value={formData.email}
-        onChange={handleChange}
-        disabled={step === "code"}
-      />
-      <input
-        type="text"
-        name="nickname"
-        placeholder="닉네임"
-        value={formData.nickname}
-        onChange={handleChange}
-        disabled={step === "code"}
-      />
-      <input
-        type="password"
-        name="password"
-        placeholder="비밀번호"
-        value={formData.password}
-        onChange={handleChange}
-        disabled={step === "code"}
-      />
+          {step === "code" && (
+            <div>
+              <label className="block text-sm mb-1">인증 코드</label>
+              <input
+                name="token"
+                value={formData.token}
+                onChange={handleChange}
+                className="w-full px-3 py-2 bg-[#1e293b] border border-gray-600 rounded-md text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500"
+                placeholder="인증 코드"
+              />
+            </div>
+          )}
 
-      {step === "code" && (
-        <input
-          type="text"
-          name="token"
-          placeholder="인증 코드 입력"
-          value={formData.token}
-          onChange={handleChange}
-        />
-      )}
-
-      {step === "input" ? (
-        <button type="button" onClick={requestEmailVerification}>
-          이메일 인증
-        </button>
-      ) : (
-        <button type="button" onClick={handleRegister} disabled={loading}>
-          {loading ? "회원가입 중..." : "회원가입"}
-        </button>
-      )}
+          <button
+            onClick={step === "input" ? requestEmailVerification : handleRegister}
+            disabled={loading}
+            className="w-full py-2 bg-indigo-500 hover:bg-indigo-600 disabled:opacity-50 transition rounded-md font-semibold"
+          >
+            {loading ? "처리 중..." : step === "input" ? "이메일 인증 요청" : "회원가입"}
+          </button>
+        </div>
+        <div className="mt-6 text-center text-sm text-gray-400">
+          {/* 아직 미구현 */}
+          <a href="#" className="text-indigo-400 hover:underline">
+            비밀번호 찾기
+          </a>
+          <span className="mx-2 text-gray-500">|</span>
+          <a href="/login" className="text-indigo-400 hover:underline">
+            로그인하기
+          </a>
+        </div>
+      </div>
     </div>
   );
 }
