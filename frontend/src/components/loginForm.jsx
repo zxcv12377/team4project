@@ -1,11 +1,12 @@
-import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+// src/components/LoginForm.jsx
 
-const LoginForm = () => {
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import axios from "axios";
+
+export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -15,58 +16,71 @@ const LoginForm = () => {
         email,
         password,
       });
-
-      const token = response.data.token;
-      localStorage.setItem("token", token);
-      setError("");
+      localStorage.setItem("token", response.data.token);
       navigate("/board");
     } catch (err) {
-      console.error(err);
-      setError("로그인 실패: 이메일 또는 비밀번호를 확인하세요.");
+      alert("로그인 실패: 이메일 또는 비밀번호를 확인하세요.");
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-black to-purple-900 flex items-center justify-center px-4">
-      <div className="bg-white/10 backdrop-blur-md p-8 rounded-xl shadow-xl w-full max-w-md">
-        <h2 className="text-3xl font-bold text-purple-400 text-center mb-6">로그인</h2>
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center px-4">
+      <div className="absolute top-6 left-6">
+        <a
+          href="/board"
+          className="text-white text-2xl font-extrabold tracking-wide hover:text-indigo-400 transition-colors"
+        >
+          STRONGBERRY
+        </a>
+      </div>
+      <div className="bg-[#0f172a] p-10 rounded-xl w-full max-w-sm text-white">
+        <div className="flex justify-center mb-6"></div>
+        <h2 className="text-2xl font-semibold text-center mb-8">로그인</h2>
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div>
-            <label className="block text-sm text-purple-300 mb-1">이메일</label>
+            <label htmlFor="email" className="block mb-1 text-sm">
+              Gmail 주소
+            </label>
             <input
+              id="email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required
-              className="w-full px-4 py-2 rounded bg-black/30 border border-purple-500 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 bg-[#1e293b] border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
           <div>
-            <label className="block text-sm text-purple-300 mb-1">비밀번호</label>
+            <label htmlFor="password" className="block mb-1 text-sm">
+              비밀번호
+            </label>
             <input
+              id="password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              className="w-full px-4 py-2 rounded bg-black/30 border border-purple-500 text-white focus:outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full px-3 py-2 bg-[#1e293b] border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
           </div>
-          {error && <div className="text-red-400 text-sm">{error}</div>}
           <button
             type="submit"
-            className="w-full py-2 bg-purple-600 hover:bg-purple-700 text-white rounded font-semibold transition"
+            className="w-full py-2 rounded-md bg-indigo-500 hover:bg-indigo-600 transition text-white font-semibold"
           >
             로그인
           </button>
         </form>
-        <div className="text-center mt-4">
-          <button onClick={() => navigate("/register")} className="text-purple-300 hover:underline text-sm">
-            회원가입창으로
-          </button>
+        <div className="mt-6 text-center text-sm text-gray-400">
+          {/* 아직 미구현 */}
+          <a href="#" className="text-indigo-400 hover:underline">
+            비밀번호 찾기
+          </a>
+          <span className="mx-2 text-gray-500">|</span>
+          <a href="/register" className="text-indigo-400 hover:underline">
+            회원가입하기
+          </a>
         </div>
       </div>
     </div>
   );
-};
-
-export default LoginForm;
+}
