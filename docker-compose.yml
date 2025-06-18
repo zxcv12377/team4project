@@ -1,0 +1,60 @@
+version: "3.8"
+
+services:
+  frontend:
+    build:
+      context: ./cla
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./sockettest
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    networks:
+      - app-network
+
+  mediasoup:
+    build:
+      context: ./mediasoupserver
+    ports:
+      - "4000:4000" # mediasoup server port
+      - "30001-30020:30001-30020/udp" # WebRTC용 UDP 포트 (default RTP)
+    networks:
+      - app-network
+    cap_add:
+      - NET_ADMIN # mediasoup에서 필요함
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672" # AMQP (애플리케이션용)
+      - "15672:15672" # 웹 대시보드 (http://localhost:15672)
+      - "15674:15674" # 실시간 음성채팅용 포트
+      - "61613:61613" # 실시간 채팅용 포트
+    environment:
+      RABBITMQ_DEFAULT_USER: guest
+      RABBITMQ_DEFAULT_PASS: guest
+    networks:
+      - app-network
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    command: >
+      bash -c "
+        rabbitmq-plugins enable --offline rabbitmq_web_stomp &&
+        rabbitmq-server
+      "
+
+volumes:
+  rabbitmq-data:
+
+networks:
+  app-network:
+    driver: bridge
