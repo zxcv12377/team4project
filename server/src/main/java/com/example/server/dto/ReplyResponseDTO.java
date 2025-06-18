@@ -26,4 +26,6 @@ public class ReplyResponseDTO {
 
     private Long likeCount; // 추천 수
 
+    private String badge; // 작성자, 관리자, null
+
 }

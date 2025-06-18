@@ -13,10 +13,10 @@ import org.springframework.data.repository.query.Param;
 import java.util.Optional;
 
 public interface EmailVerificationTokenRepository extends JpaRepository<EmailVerificationToken, Long> {
-    Optional<EmailVerificationToken> findByMemberEmail(String email);
+    Optional<EmailVerificationToken> findByEmailAndToken(String email, String token);
 
     @Modifying
-    @Transactional
-    @Query("DELETE FROM EmailVerificationToken t WHERE t.member = :member")
-    void deleteByMember(@Param("member") Member member);
+@Transactional
+@Query("DELETE FROM EmailVerificationToken t WHERE t.email = :email")
+void deleteByEmail(@Param("email") String email);
 }

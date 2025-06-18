@@ -1,8 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
+
+const emojis = ["😀", "😂", "😍", "🔥", "😢", "👍", "👎", "💯"];
 
 const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
   const [content, setContent] = useState("");
   const [isFocused, setIsFocused] = useState(false);
+  const fileInputRef = useRef();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -47,6 +50,22 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
     }
   };
 
+  const insertEmoji = (emoji) => {
+    setContent((prev) => prev + emoji);
+  };
+
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const imageMarkdown = `![image](${reader.result})`;
+      setContent((prev) => prev + "\n" + imageMarkdown + "\n");
+    };
+    reader.readAsDataURL(file);
+  };
+
   const showButton = isFocused || content.length > 0;
 
   return (
@@ -57,17 +76,17 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
           onChange={(e) => setContent(e.target.value)}
           required
           placeholder="댓글을 입력하세요"
-          className="w-full resize-none min-h-[48px]
+          className="w-full resize-none min-h-[80px]
           rounded-2xl border border-zinc-300 p-4 bg-white 
           shadow focus:outline-none pr-28 transition"
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          rows={1}
+          rows={4}
         />
         {showButton && (
           <button
             type="submit"
-            className="absolute right-3 top-1/2 -translate-y-1/2
+            className="absolute right-3 top-2
               rounded-xl border border-zinc-300 bg-zinc-50 text-zinc-500
               hover:bg-zinc-100 hover:text-zinc-900 h-9 px-5 py-2 text-sm transition"
           >
@@ -75,8 +94,27 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
           </button>
         )}
       </div>
+
+      <div className="flex items-center gap-2 text-xl mt-1">
+        {emojis.map((emoji) => (
+          <button key={emoji} type="button" className="hover:scale-110 transition" onClick={() => insertEmoji(emoji)}>
+            {emoji}
+          </button>
+        ))}
+        <button
+          type="button"
+          onClick={() => fileInputRef.current.click()}
+          className="text-sm px-2 py-1 border rounded hover:bg-zinc-100"
+        >
+          📷 이미지 첨부
+        </button>
+        <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleImageUpload} />
+      </div>
+
       <div className="border-b-2 border-zinc-200 mt-2" />
-      <div className="flex justify-start font-semibold text-sm text-blue-400">댓글 목록</div>
+      <div className="flex justify-start font-semibold text-sm text-blue-400">
+        댓글 목록
+      </div>
       <div className="border-b-2 border-zinc-200 mt-1" />
     </form>
   );

@@ -4,18 +4,17 @@ import com.example.server.security.entity.EmailVerificationToken;
 import com.example.server.repository.EmailVerificationTokenRepository;
 import com.example.server.repository.MemberRepository;
 import com.example.server.entity.Member;
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.Random;
-import java.util.UUID;
+
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import jakarta.mail.internet.MimeMessage;
 
 @Log4j2
 @Service
@@ -24,48 +23,56 @@ public class EmailVerificationService {
 
     private final EmailVerificationTokenRepository tokenRepository;
     private final MemberRepository memberRepository;
+    private final PasswordEncoder passwordEncoder;
     private final JavaMailSender mailSender;
 
-    public EmailVerificationToken sendVerificationEmail(String email) {
-        Member member = memberRepository.findByEmail(email)
-                .orElseThrow(() -> new RuntimeException("회원 없음"));
+    public void sendVerificationEmail(String email) {
+        if (memberRepository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("이미 가입된 이메일입니다.");
+        }
 
-        String code = String.format("%04d", new Random().nextInt(10000)); // 4자리 랜덤 코드
-        LocalDateTime expiry = LocalDateTime.now().plusMinutes(10);
+        String code = generateCode();
+        EmailVerificationToken token = EmailVerificationToken.create(email, code);
+        tokenRepository.save(token);
 
-        EmailVerificationToken emailToken = EmailVerificationToken.builder()
-                .member(member)
-                .code(code)
-                .expiryDate(expiry)
-                .build();
+         try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
-        tokenRepository.save(emailToken);
+            helper.setTo(email);
+            helper.setSubject("[Team4Project] 이메일 인증 코드입니다.");
+            helper.setText("인증 코드는 다음과 같습니다: <b>" + code + "</b>", true);
 
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo(email);
-        message.setSubject("이메일 인증 코드 안내");
-        message.setText("아래 인증 코드를 입력해주세요:\n\n인증 코드: " + code);
-
-        mailSender.send(message);
-
-        return emailToken;
+            mailSender.send(message);
+        } catch (Exception e) {
+            throw new RuntimeException("이메일 전송 실패", e);
+        }
+        
     }
 
-    @Transactional
-    public boolean verifyToken(String email) {
-        Optional<EmailVerificationToken> optional = tokenRepository.findByMemberEmail(email);
+    public void verifyTokenAndRegister(String email, String nickname, String password, String tokenValue) {
+        EmailVerificationToken token = tokenRepository.findByEmailAndToken(email, tokenValue)
+            .orElseThrow(() -> new RuntimeException("인증 코드가 올바르지 않습니다."));
 
-        if (optional.isEmpty())
-            return false;
+        if (token.getExpirationDate().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("인증 코드가 만료되었습니다.");
+        }
 
-        EmailVerificationToken emailToken = optional.get();
-        if (emailToken.isExpired())
-            return false;
+        String encodedPassword = passwordEncoder.encode(password);
 
-        Member member = emailToken.getMember();
-        member.setEmailVerified(true);
+        Member member = Member.builder()
+            .email(email)
+            .nickname(nickname)
+            .password(encodedPassword)
+            .emailVerified(true)
+            .agree(true)
+            .build();
+
         memberRepository.save(member);
+        tokenRepository.delete(token);
+    }
 
-        return true;
+    private String generateCode() {
+        return String.valueOf((int)(Math.random() * 9000) + 1000); // 4자리 랜덤
     }
 }

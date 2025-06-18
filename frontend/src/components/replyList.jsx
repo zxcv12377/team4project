@@ -37,7 +37,11 @@ const ReplyList = ({ bno }) => {
     fetchReplies();
   }, [fetchReplies]);
 
-  const countReplies = (list) => list.reduce((acc, r) => acc + 1 + (r.children ? countReplies(r.children) : 0), 0);
+  const countReplies = (list) =>
+    list.reduce(
+      (acc, r) => acc + 1 + (r.children ? countReplies(r.children) : 0),
+      0
+    );
 
   const totalCount = countReplies([...bestReplies, ...generalReplies]);
 
@@ -73,7 +77,9 @@ const ReplyList = ({ bno }) => {
     <div>
       <ReplyItem reply={reply} bno={bno} refresh={fetchReplies} />
       <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
-        <span className="text-orange-500 font-semibold">👍 추천 {reply.likeCount}</span>
+        <span className="text-orange-500 font-semibold">
+          👍 추천 {reply.likeCount}
+        </span>
         <button
           onClick={() => handleLike(reply.rno)}
           disabled={likedReplies.has(reply.rno)}
@@ -99,7 +105,10 @@ const ReplyList = ({ bno }) => {
       {/* 댓글 목록 (베스트 + 일반 통합) */}
       <div className="mt-6 space-y-4">
         {bestReplies.map((reply) => (
-          <div key={reply.rno} className="bg-yellow-50 rounded-lg p-2 border border-yellow-300">
+          <div
+            key={reply.rno}
+            className="bg-yellow-50 rounded-lg p-2 border border-yellow-300"
+          >
             <div className="flex items-center gap-2 text-yellow-600 font-semibold text-sm mb-1">
               <span>🏆</span>
               <span>BEST</span>

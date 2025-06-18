@@ -4,6 +4,7 @@ import com.example.server.dto.ReplyDTO;
 import com.example.server.dto.ReplyResponseDTO;
 import com.example.server.entity.Board;
 import com.example.server.entity.Member;
+import com.example.server.entity.MemberRole;
 import com.example.server.entity.Reply;
 import com.example.server.entity.ReplyLike;
 import com.example.server.repository.BoardRepository;
@@ -136,10 +137,19 @@ public class ReplyService {
         private ReplyResponseDTO toResponseDTOWithChildren(Reply reply) {
                 Long likeCount = replyLikeRepository.countByReply(reply);
 
+                // 뱃지
+                String badge = null;
+                if (reply.getMember().getRoles().contains(MemberRole.ADMIN)) {
+                        badge = "관리자";
+                } else if (reply.getMember().getId().equals(reply.getBoard().getMember().getId())) {
+                        badge = "작성자";
+                }
+
                 return ReplyResponseDTO.builder()
                                 .rno(reply.getRno())
                                 .text(reply.getText())
                                 .nickname(reply.getMember().getNickname())
+                                .badge(badge)
                                 .createdDate(reply.getCreatedDate())
                                 .deleted(reply.isDeleted())
                                 .likeCount(likeCount)
