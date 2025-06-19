@@ -20,7 +20,7 @@ const MyProfile = () => {
     try {
       const res = await axios.get("http://localhost:8080/member/me", { headers });
       setProfile(res.data);
-      setComment(res.data.user_comment || "");
+      setComment(res.data.comment || "");
     } catch (err) {
       if (err.response?.status === 401) {
         alert("세션이 만료되었습니다. 다시 로그인해주세요.");
