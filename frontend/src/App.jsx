@@ -4,7 +4,7 @@ import BoardPage from "./components/board";
 import MyProfile from "./components/myProfile";
 import ReplyList from "./components/replyList";
 import LoginForm from "./components/loginForm";
-import Layoutex from "./components/layoutex";
+import Layoutex from "./components/navbar";
 import RegisterForm from "./components/registerForm";
 import ProtectedRoute from "./components/protectedRoute";
 

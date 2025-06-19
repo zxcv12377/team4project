@@ -40,19 +40,11 @@ const MyProfile = () => {
       const newNickname = nickname.trim() !== "" ? nickname : profile.nickname;
 
       // 닉네임 수정
-      await axios.put(
-        "http://localhost:8080/member/update",
-        { nickname: newNickname },
-        { headers }
-      );
+      await axios.put("http://localhost:8080/member/update", { nickname: newNickname }, { headers });
 
       // 비밀번호 수정
       if (currentPassword && newPassword) {
-        await axios.put(
-          "http://localhost:8080/member/password",
-          { currentPassword, newPassword },
-          { headers }
-        );
+        await axios.put("http://localhost:8080/member/password", { currentPassword, newPassword }, { headers });
       }
 
       // 프로필 이미지 업로드
@@ -60,16 +52,12 @@ const MyProfile = () => {
         const formData = new FormData();
         formData.append("file", file);
 
-        await axios.post(
-          "http://localhost:8080/member/profile-image",
-          formData,
-          {
-            headers: {
-              ...headers,
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
+        await axios.post("http://localhost:8080/member/profile-image", formData, {
+          headers: {
+            ...headers,
+            "Content-Type": "multipart/form-data",
+          },
+        });
       }
 
       setMessage("수정이 완료되었습니다.");
@@ -100,6 +88,14 @@ const MyProfile = () => {
 
   return (
     <div>
+      <div className="absolute top-6 left-6">
+        <a
+          href="/board"
+          className="text-white text-2xl font-extrabold tracking-wide hover:text-indigo-400 transition-colors"
+        >
+          STRONGBERRY
+        </a>
+      </div>
       <h2>내 프로필</h2>
       <img
         src={`http://localhost:8080/uploads/${profile.profileimg}`}
@@ -113,40 +109,24 @@ const MyProfile = () => {
 
       {!editMode ? (
         <div>
-          <button
-            onClick={() => setEditMode(true)}
-            style={{ marginRight: "10px" }}
-          >
+          <button onClick={() => setEditMode(true)} style={{ marginRight: "10px" }}>
             수정
           </button>
-          <button onClick={() => navigate("/board")}>게시판으로 이동</button>
         </div>
       ) : (
         <form onSubmit={handleProfileUpdate}>
           <div>
             <label>닉네임:</label>
-            <input
-              type="text"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-            />
+            <input type="text" value={nickname} onChange={(e) => setNickname(e.target.value)} />
           </div>
 
           <div>
             <label>현재 비밀번호:</label>
-            <input
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-            />
+            <input type="password" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
           </div>
           <div>
             <label>새 비밀번호:</label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
+            <input type="password" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
           </div>
 
           <div>

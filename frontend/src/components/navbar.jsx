@@ -1,7 +1,7 @@
 import React from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-const Layoutex = ({ children }) => {
+const Navbar = ({ children }) => {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -15,6 +15,14 @@ const Layoutex = ({ children }) => {
   return (
     <div>
       <header className="flex justify-end px-4 py-2 bg-gray-200">
+        <div className="absolute top-1 left-6">
+          <a
+            href="/board"
+            className="text-white text-2xl font-extrabold tracking-wide hover:text-indigo-400 transition-colors"
+          >
+            STRONGBERRY
+          </a>
+        </div>
         {token ? (
           <>
             <Link to="/profile" style={{ marginRight: 10 }}>
@@ -34,9 +42,9 @@ const Layoutex = ({ children }) => {
           )
         )}
       </header>
-      <main style={{ padding: 20 }}>{children}</main>
+      <main>{children}</main>
     </div>
   );
 };
 
-export default Layoutex;
+export default Navbar;
