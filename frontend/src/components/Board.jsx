@@ -6,7 +6,7 @@ import React from "react";
  */
 function BoardPage() {
   return (
-    <div className="flex-1 flex flex-col items-center justify-center p-6 bg-[#313338] text-zinc-300">
+    <div className="min-h-[calc(100vh)] flex flex-col items-center justify-center p-6 text-zinc-300">
       <h1 className="text-4xl font-bold mb-6 text-white">게시판</h1>
       <p className="text-lg mb-8">여기는 게시판 기능이 구현될 공간입니다.</p>
       <div className="bg-zinc-700 p-8 rounded-lg shadow-xl w-full max-w-2xl text-center">

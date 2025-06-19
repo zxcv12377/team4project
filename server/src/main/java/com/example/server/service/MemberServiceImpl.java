@@ -24,14 +24,14 @@ public class MemberServiceImpl implements MemberService {
     private final EmailVerificationTokenRepository tokenRepository;
 
     // 회원 가입시 이메일 중복여부 확인
-@Override
-public void register(String email) {
-    if (memberRepository.findByEmail(email).isPresent()) {
-        throw new RuntimeException("이미 존재하는 이메일입니다.");
-    }
+    @Override
+    public void register(String email) {
+        if (memberRepository.findByEmail(email).isPresent()) {
+            throw new RuntimeException("이미 존재하는 이메일입니다.");
+        }
 
-    emailVerificationService.sendVerificationEmail(email);
-}
+        emailVerificationService.sendVerificationEmail(email);
+    }
 
     // 회원 정보 조회
     @Override
@@ -73,7 +73,7 @@ public void register(String email) {
     public void delete(String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
-       tokenRepository.deleteByEmail(member.getEmail());
+        tokenRepository.deleteByEmail(member.getEmail());
         memberRepository.delete(member);
     }
 
@@ -92,6 +92,16 @@ public void register(String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
         member.setProfileimg(profileimg);
+        memberRepository.save(member);
+    }
+
+    // 코멘트 업데이트
+    @Override
+    @Transactional
+    public void updateComment(String email, String comment) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("회원 없음"));
+        member.setComment(comment);
         memberRepository.save(member);
     }
 }

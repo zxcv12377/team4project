@@ -2,7 +2,6 @@ package com.example.server.service;
 
 import com.example.server.dto.MemberRequestDTO;
 import com.example.server.dto.MemberResponseDTO;
-import org.springframework.web.multipart.MultipartFile;
 
 public interface MemberService {
 
@@ -11,6 +10,8 @@ public interface MemberService {
     MemberResponseDTO getUserInfo(String email);
 
     MemberResponseDTO updateUserInfo(String email, MemberRequestDTO dto);
+
+    void updateComment(String email, String comment);
 
     void changePassword(String email, String currentPassword, String newPassword);
 

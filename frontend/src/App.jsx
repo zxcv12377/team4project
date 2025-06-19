@@ -4,20 +4,24 @@ import BoardPage from "./components/board";
 import MyProfile from "./components/myProfile";
 import ReplyList from "./components/replyList";
 import LoginForm from "./components/loginForm";
-import Layoutex from "./components/navbar";
+
 import RegisterForm from "./components/registerForm";
 import ProtectedRoute from "./components/protectedRoute";
+import Navbar from "./components/navbar";
+import UpdateMyProfile from "./components/UpdateMyProfile";
 
 function App() {
   return (
     <Router>
-      <Layoutex>
-        <Routes>
+      <Routes>
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="/register" element={<RegisterForm />} />
+
+        <Route element={<Navbar />}>
           <Route path="/" element={<Navigate to="/board" />} />
           <Route path="/board" element={<BoardPage />} />
-          <Route path="/login" element={<LoginForm />} />
-          <Route path="/register" element={<RegisterForm />} />
-          {/* 보호된 라우트(로그인 인증 후 접근 가능한 경로 지정) */}
+          <Route path="/reply" element={<ReplyList />} />
+          <Route path="UpdateProfile" element={<UpdateMyProfile />} />
           <Route
             path="/profile"
             element={
@@ -26,9 +30,8 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/reply" element={<ReplyList />} />
-        </Routes>
-      </Layoutex>
+        </Route>
+      </Routes>
     </Router>
   );
 }

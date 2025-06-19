@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import com.example.server.base.Base;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
@@ -54,6 +55,9 @@ public class Member extends Base {
 
     private boolean emailVerified; // 이메일 인증여부
 
+    @Column(name = "user_comment", length = 500)
+    private String comment; // 코멘트 넣기(500자까지)
+
     // 다중 권한 지원 (USER, ADMIN)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "member_roles", joinColumns = @JoinColumn(name = "member_id"))
@@ -73,4 +77,5 @@ public class Member extends Base {
             profileimg = "default.png";
         }
     }
+
 }

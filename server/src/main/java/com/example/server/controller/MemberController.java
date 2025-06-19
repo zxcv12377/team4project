@@ -98,4 +98,14 @@ public class MemberController {
         memberService.delete(userDetails.getEmail());
         return ResponseEntity.ok(Map.of("message", "회원 탈퇴 완료"));
     }
+
+    @PutMapping("/comment")
+    public ResponseEntity<?> updateComment(@AuthenticationPrincipal CustomMemberDetails userDetails,
+            @RequestBody Map<String, String> req) {
+        String comment = req.get("comment");
+        System.out.println("코멘트 로그");
+        memberService.updateComment(userDetails.getEmail(), comment);
+        return ResponseEntity.ok(Map.of("message", "코멘트 수정 완료"));
+    }
+
 }
