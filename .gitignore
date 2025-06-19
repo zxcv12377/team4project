@@ -1,3 +1,6 @@
+
+
+
 # 의존성 폴더 무시
 node_modules/
 
@@ -124,3 +127,5 @@ $RECYCLE.BIN/
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
 server/pom.xml
 frontend/yarn.lock
+frontend/package-lock.json
+fronted/yarn.lock
