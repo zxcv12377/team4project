@@ -42,45 +42,47 @@ public class BoardController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/{bno}")
-    public ResponseEntity<?> read(@PathVariable("bno") Long bno) {
-        log.info("게시글 조회 요청 bno: {}", bno);
+    // @GetMapping("/{bno}")
+    // public ResponseEntity<?> read(@PathVariable("bno") Long bno) {
+    // log.info("게시글 조회 요청 bno: {}", bno);
 
-        BoardDTO dto = boardService.getRow(bno);
-        return ResponseEntity.ok(dto);
-    }
+    // BoardDTO dto = boardService.getRow(bno);
+    // return ResponseEntity.ok(dto);
+    // }
 
-    @PutMapping("/{bno}")
-    public ResponseEntity<?> update(@PathVariable("bno") Long bno, @RequestBody BoardDTO dto) {
-        log.info("게시글 수정 요청: {}", dto);
-        dto.setBno(bno);
-        boardService.update(dto);
-        return ResponseEntity.ok().build();
-    }
+    // @PutMapping("/{bno}")
+    // public ResponseEntity<?> update(@PathVariable("bno") Long bno, @RequestBody
+    // BoardDTO dto) {
+    // log.info("게시글 수정 요청: {}", dto);
+    // dto.setBno(bno);
+    // boardService.update(dto);
+    // return ResponseEntity.ok().build();
+    // }
 
-    @DeleteMapping("/{bno}")
-    public ResponseEntity<?> delete(@PathVariable("bno") Long bno) {
-        log.info("삭제 요청 bno: {}", bno);
-        boardService.delete(bno);
+    // @DeleteMapping("/{bno}")
+    // public ResponseEntity<?> delete(@PathVariable("bno") Long bno) {
+    // log.info("삭제 요청 bno: {}", bno);
+    // boardService.delete(bno);
 
-        return ResponseEntity.ok().build();
-    }
+    // return ResponseEntity.ok().build();
+    // }
 
-    @PutMapping("/{bno}")
-    @GetMapping("/modify")
-    public ResponseEntity<?> modify(@PathVariable Long bno, @RequestBody BoardDTO dto) {
-        log.info("수정 요청: {}", dto);
-        dto.setBno(bno); // URL path로 받은 bno를 DTO에 세팅
-        boardService.update(dto);
-        return ResponseEntity.ok().build();
-    }
+    // @PutMapping("/{bno}")
+    // @GetMapping("/modify")
+    // public ResponseEntity<?> modify(@PathVariable Long bno, @RequestBody BoardDTO
+    // dto) {
+    // log.info("수정 요청: {}", dto);
+    // dto.setBno(bno); // URL path로 받은 bno를 DTO에 세팅
+    // boardService.update(dto);
+    // return ResponseEntity.ok().build();
+    // }
 
     // 게시글 삭제
-    @DeleteMapping("/{bno}")
-    public ResponseEntity<?> remove(@PathVariable Long bno) {
-        log.info("삭제 요청 bno: {}", bno);
-        boardService.delete(bno);
-        return ResponseEntity.ok().build();
-    }
+    // @DeleteMapping("/{bno}")
+    // public ResponseEntity<?> remove(@PathVariable Long bno) {
+    // log.info("삭제 요청 bno: {}", bno);
+    // boardService.delete(bno);
+    // return ResponseEntity.ok().build();
+    // }
 
 }

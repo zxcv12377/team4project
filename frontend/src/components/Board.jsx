@@ -20,16 +20,6 @@ function BoardList() {
   }, [page]);
 
   return (
-<<<<<<< HEAD
-    <div className="min-h-[calc(100vh)] flex flex-col items-center justify-center p-6 text-zinc-300">
-      <h1 className="text-4xl font-bold mb-6 text-white">게시판</h1>
-      <p className="text-lg mb-8">여기는 게시판 기능이 구현될 공간입니다.</p>
-      <div className="bg-zinc-700 p-8 rounded-lg shadow-xl w-full max-w-2xl text-center">
-        <h2 className="text-2xl font-semibold mb-4 text-blue-400">최신 게시글</h2>
-        <ul className="text-left space-y-3">
-          <li className="bg-zinc-800 p-3 rounded-md hover:bg-zinc-600 transition-colors cursor-pointer">
-            <span className="font-bold text-lg">제목 1:</span> 첫 번째 게시글입니다.
-=======
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">게시판 목록</h1>
       <button onClick={() => navigate("/board/write")} className="mb-4 px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600">
@@ -44,7 +34,6 @@ function BoardList() {
             <div className="text-sm text-gray-500">
               작성자: {board.writer} / 날짜: {board.regDate}
             </div>
->>>>>>> b4e4d5ea99d8d75b248601aa82387517712344a4
           </li>
         ))} */}
       </ul>
