@@ -1,6 +1,6 @@
 // src/components/layout/Sidebar1.jsx
 import { useEffect, useState } from "react";
-import axios from "@/lib/axiosInstance";
+import { axios } from "axios";
 
 export default function Sidebar1({ onSelectDM, onSelectServer }) {
   const [servers, setServers] = useState([]);
@@ -9,8 +9,7 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
   const [serverName, setServerName] = useState("");
   const [joinCode, setJoinCode] = useState("");
 
-  const fetchServers = () =>
-    axios.get("/servers").then(res => setServers(res.data));
+  const fetchServers = () => axios.get("/servers").then((res) => setServers(res.data));
 
   useEffect(() => {
     fetchServers();
@@ -48,11 +47,13 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
         className="w-12 h-12 rounded-[24px] bg-[#5865f2] flex items-center justify-center text-white font-bold text-2xl mb-1 transition-all duration-150 hover:rounded-2xl hover:bg-[#4752c4]"
         onClick={onSelectDM}
         title="DM"
-      >💬</button>
+      >
+        💬
+      </button>
       {/* 구분선 */}
       <div className="h-[2px] w-8 bg-[#232428] my-2 rounded-full" />
       {/* 서버 목록 */}
-      {servers.map(server => (
+      {servers.map((server) => (
         <div key={server.id} className="flex flex-col items-center group">
           <button
             className="w-12 h-12 rounded-[24px] bg-[#313338] text-white font-bold text-xl transition-all duration-150 hover:bg-[#5865f2] hover:rounded-2xl focus:bg-[#5865f2]"
@@ -65,7 +66,9 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
             onClick={() => handleLeave(server.id)}
             className="opacity-0 group-hover:opacity-100 mt-1 text-xs text-red-400 transition"
             title="탈퇴/삭제"
-          >⛔</button>
+          >
+            ⛔
+          </button>
         </div>
       ))}
       {/* 서버 추가/참여 버튼 */}
@@ -73,12 +76,16 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
         onClick={() => setShowCreate(true)}
         className="w-10 h-10 mt-3 rounded-full bg-[#313338] text-[#3ba55d] font-bold text-xl hover:bg-[#3ba55d] hover:text-white transition"
         title="서버 개설"
-      >+</button>
+      >
+        +
+      </button>
       <button
         onClick={() => setShowJoin(true)}
         className="w-10 h-10 mt-1 rounded-full bg-[#313338] text-[#f23f43] text-lg hover:bg-[#f23f43] hover:text-white transition"
         title="서버 참여"
-      >⤵️</button>
+      >
+        ⤵️
+      </button>
       {/* 서버 개설 모달 */}
       {showCreate && (
         <div className="fixed inset-0 flex items-center justify-center bg-black/40 z-50">
@@ -89,12 +96,16 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
               className="p-2 rounded w-56"
               placeholder="서버 이름"
               value={serverName}
-              onChange={e => setServerName(e.target.value)}
+              onChange={(e) => setServerName(e.target.value)}
               autoFocus
             />
             <div className="flex gap-2">
-              <button onClick={handleCreate} className="px-3 py-1 bg-blue-600 text-white rounded">확인</button>
-              <button onClick={() => setShowCreate(false)} className="px-3 py-1 bg-zinc-700 text-white rounded">취소</button>
+              <button onClick={handleCreate} className="px-3 py-1 bg-blue-600 text-white rounded">
+                확인
+              </button>
+              <button onClick={() => setShowCreate(false)} className="px-3 py-1 bg-zinc-700 text-white rounded">
+                취소
+              </button>
             </div>
           </div>
         </div>
@@ -109,12 +120,16 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
               className="p-2 rounded w-56"
               placeholder="참여코드"
               value={joinCode}
-              onChange={e => setJoinCode(e.target.value)}
+              onChange={(e) => setJoinCode(e.target.value)}
               autoFocus
             />
             <div className="flex gap-2">
-              <button onClick={handleJoin} className="px-3 py-1 bg-blue-600 text-white rounded">참여</button>
-              <button onClick={() => setShowJoin(false)} className="px-3 py-1 bg-zinc-700 text-white rounded">취소</button>
+              <button onClick={handleJoin} className="px-3 py-1 bg-blue-600 text-white rounded">
+                참여
+              </button>
+              <button onClick={() => setShowJoin(false)} className="px-3 py-1 bg-zinc-700 text-white rounded">
+                취소
+              </button>
             </div>
           </div>
         </div>
