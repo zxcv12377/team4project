@@ -1,4 +1,3 @@
-// ReplyForm.jsx
 import React, { useState, useRef } from "react";
 import ReactMarkdown from "react-markdown";
 
@@ -80,28 +79,28 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
   const showButton = isFocused || content.length > 0;
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col w-full gap-2">
-      <div className="relative w-full">
+    <form onSubmit={handleSubmit} className="bg-[#1e293b] p-6 rounded-xl w-full max-w-md mx-auto">
+      <h3 className="text-2xl font-semibold text-white mb-4">댓글 작성</h3>
+      <div className="relative w-full mb-4">
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="댓글을 입력하세요"
-          className="w-full resize-none min-h-[80px] rounded-2xl border border-zinc-300 p-4 bg-white shadow focus:outline-none pr-28 transition"
+          className="w-full resize-none min-h-[80px] rounded-md border border-gray-600 p-4 bg-[#1e293b] text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
-          rows={4}
         />
         {showButton && (
           <button
             type="submit"
-            className="absolute right-3 top-2 rounded-xl border border-zinc-300 bg-zinc-50 text-zinc-500 hover:bg-zinc-100 hover:text-zinc-900 h-9 px-5 py-2 text-sm transition"
+            className="absolute right-3 top-2 rounded-xl bg-indigo-500 text-white hover:bg-indigo-600 p-2"
           >
             등록
           </button>
         )}
       </div>
 
-      <div className="flex items-center gap-2 text-xl mt-1">
+      <div className="flex items-center gap-2 text-xl mb-2">
         {emojis.map((emoji) => (
           <button
             key={emoji}
@@ -115,16 +114,12 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
         <button
           type="button"
           onClick={() => fileInputRef.current.click()}
-          className="text-sm px-2 py-1 border rounded hover:bg-zinc-100"
+          className="text-sm px-3 py-1 border rounded-md hover:bg-indigo-100"
         >
           📷 이미지 첨부
         </button>
         <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleImageUpload} />
       </div>
-
-      <div className="border-b-2 border-zinc-200 mt-2" />
-      <div className="flex justify-start font-semibold text-sm text-blue-400">댓글 목록</div>
-      <div className="border-b-2 border-zinc-200 mt-1" />
     </form>
   );
 };
