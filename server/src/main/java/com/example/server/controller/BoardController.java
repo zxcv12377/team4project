@@ -19,7 +19,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-@RequestMapping("/api/board")
+@RequestMapping("/board")
 @RestController
 @Log4j2
 @RequiredArgsConstructor
@@ -36,21 +36,21 @@ public class BoardController {
 
     @GetMapping("/list")
     public ResponseEntity<?> List(PageRequestDTO pageRequestDTO) {
-        log.info("게시판 목록 요청", pageRequestDTO);
+        log.info("게시판 목록 요청: {}", pageRequestDTO);
 
         PageResultDTO<BoardDTO> result = boardService.getList(pageRequestDTO);
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/{bno}")
-    public ResponseEntity<?> read(@PathVariable("bno") Long bno) {
+    @GetMapping("/read")
+    public ResponseEntity<?> read(@PathVariable Long bno) {
         log.info("게시글 조회 요청 bno: {}", bno);
 
         BoardDTO dto = boardService.getRow(bno);
         return ResponseEntity.ok(dto);
     }
 
-    @PutMapping("/{bno}")
+    @PutMapping("/update")
     public ResponseEntity<?> update(@PathVariable("bno") Long bno, @RequestBody BoardDTO dto) {
         log.info("게시글 수정 요청: {}", dto);
         dto.setBno(bno);
@@ -58,28 +58,11 @@ public class BoardController {
         return ResponseEntity.ok().build();
     }
 
-    @DeleteMapping("/{bno}")
+    @DeleteMapping("/delete")
     public ResponseEntity<?> delete(@PathVariable("bno") Long bno) {
         log.info("삭제 요청 bno: {}", bno);
         boardService.delete(bno);
 
-        return ResponseEntity.ok().build();
-    }
-
-    @PutMapping("/{bno}")
-    @GetMapping("/modify")
-    public ResponseEntity<?> modify(@PathVariable Long bno, @RequestBody BoardDTO dto) {
-        log.info("수정 요청: {}", dto);
-        dto.setBno(bno); // URL path로 받은 bno를 DTO에 세팅
-        boardService.update(dto);
-        return ResponseEntity.ok().build();
-    }
-
-    // 게시글 삭제
-    @DeleteMapping("/{bno}")
-    public ResponseEntity<?> remove(@PathVariable Long bno) {
-        log.info("삭제 요청 bno: {}", bno);
-        boardService.delete(bno);
         return ResponseEntity.ok().build();
     }
 

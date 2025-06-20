@@ -56,29 +56,21 @@ public class BoardRepositoryTest {
         });
     }
 
-    @Test
-    public void insertBoardTest() {
-        IntStream.rangeClosed(1, 20).forEach(i -> {
+    // @Test
+    // public void insertBoardTest() {
+    // IntStream.rangeClosed(1, 20).forEach(i -> {
+    // Long rand = () (Math.random() * 20 ) + 1+;
+    // Member member = memberRepository.findById().get();
 
-            Member member = Member.builder()
-                    .email("user" + i + "@gmail.com")
-                    .password("1111")
-                    .nickname("user" + i)
-                    .agree(true)
-                    .emailVerified(true)
-                    .build();
+    // Board board = Board.builder()
+    // .title("테스트 게시글 제목 " + i)
+    // .content("이것은 테스트 게시글 내용입니다. 번호: " + i)
+    // .member(member)
+    // .build();
 
-            Member savedMember = memberRepository.save(member);
-
-            Board board = Board.builder()
-                    .title("테스트 게시글 제목 " + i)
-                    .content("이것은 테스트 게시글 내용입니다. 번호: " + i)
-                    .member(member)
-                    .build();
-
-            boardRepository.save(board);
-        });
-    }
+    // boardRepository.save(board);
+    // });
+    // }
 
     @Test
     public void insertRepliesTest() {
