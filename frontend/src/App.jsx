@@ -72,7 +72,7 @@ function App() {
 
         <Route element={<Navbar />}>
           <Route path="/" element={<Navigate to="/board" />} />
-          <Route path="/board" element={<BoardList />} />
+          <Route path="/boardList" element={<boardList />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/reply" element={<ReplyList />} />

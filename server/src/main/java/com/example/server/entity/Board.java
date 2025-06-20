@@ -22,14 +22,13 @@ import lombok.ToString;
 @Getter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor
 @ToString(exclude = { "member", "replies" })
 @Entity
+@AllArgsConstructor
 public class Board extends Base {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Long bno; // 게시판 번호
 
     private String title; // 게시글 제목
@@ -37,8 +36,6 @@ public class Board extends Base {
     // 게시글 내용(최대 2000자 저장 가능)
     @Column(length = 2000)
     private String content;
-
-    private String attachmentsJson; // JSON 문자열로 첨부파일 저장
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
