@@ -17,11 +17,9 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
 @ToString(exclude = { "member", "replies" })
@@ -31,7 +29,6 @@ public class Board extends Base {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Long bno; // 게시판 번호
 
     private String title; // 게시글 제목
@@ -49,11 +46,18 @@ public class Board extends Base {
 
     public void changeTitle(String title) {
         this.title = title;
-
     }
 
     public void changeContent(String content) {
         this.content = content;
+    }
+
+    public String getWriterName() {
+        return member != null ? member.getNickname() : null;
+    }
+
+    public String getWriterUsername() {
+        return member != null ? member.getEmail() : null;
     }
 
 }

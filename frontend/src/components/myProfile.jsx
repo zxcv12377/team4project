@@ -1,17 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useNavigate } from "react-router-dom";
 
 const MyProfile = () => {
   const [profile, setProfile] = useState(null);
-  const [editMode, setEditMode] = useState(false);
-  const [nickname, setNickname] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [file, setFile] = useState(null);
+  const [comment, setComment] = useState("");
   const [message, setMessage] = useState("");
-  const navigate = useNavigate();
+  const [error, setError] = useState("");
 
+  const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
 
@@ -21,158 +18,68 @@ const MyProfile = () => {
 
   const fetchProfile = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/member/me", {
-        headers,
-      });
+      const res = await axios.get("http://localhost:8080/member/me", { headers });
       setProfile(res.data);
-      setNickname(res.data.nickname);
+      setComment(res.data.comment || "");
     } catch (err) {
-      console.error(err);
+      if (err.response?.status === 401) {
+        alert("세션이 만료되었습니다. 다시 로그인해주세요.");
+        localStorage.removeItem("token");
+        navigate("/login");
+      } else {
+        setError("프로필 정보를 불러오지 못했습니다.");
+      }
     }
   };
 
-  const handleProfileUpdate = async (e) => {
-    e.preventDefault();
-    setMessage("");
-
+  const updateComment = async () => {
     try {
-      // ✅ 닉네임이 공백이면 기존 닉네임 사용
-      const newNickname = nickname.trim() !== "" ? nickname : profile.nickname;
-
-      // 닉네임 수정
-      await axios.put(
-        "http://localhost:8080/member/update",
-        { nickname: newNickname },
-        { headers }
-      );
-
-      // 비밀번호 수정
-      if (currentPassword && newPassword) {
-        await axios.put(
-          "http://localhost:8080/member/password",
-          { currentPassword, newPassword },
-          { headers }
-        );
-      }
-
-      // 프로필 이미지 업로드
-      if (file) {
-        const formData = new FormData();
-        formData.append("file", file);
-
-        await axios.post(
-          "http://localhost:8080/member/profile-image",
-          formData,
-          {
-            headers: {
-              ...headers,
-              "Content-Type": "multipart/form-data",
-            },
-          }
-        );
-      }
-
-      setMessage("수정이 완료되었습니다.");
-      setEditMode(false);
+      await axios.put("http://localhost:8080/member/comment", { comment }, { headers });
+      setMessage(" 코멘트가 저장되었습니다.");
+      setError("");
       fetchProfile();
     } catch (err) {
-      console.error(err);
-      setMessage("수정 중 오류가 발생했습니다.");
+      setMessage("err");
+      setError(" 코멘트 저장 실패");
     }
   };
 
-  const handleDeleteAccount = async () => {
-    if (!window.confirm("정말로 탈퇴하시겠습니까? 되돌릴 수 없습니다.")) return;
-
-    try {
-      await axios.delete("http://localhost:8080/member/delete", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      localStorage.removeItem("token"); // 토큰 제거
-      window.location.href = "/login"; // 로그인 페이지로 이동
-    } catch (err) {
-      console.error(err);
-      setMessage("회원탈퇴 중 오류가 발생했습니다.");
-    }
-  };
-
-  if (!profile) return <div>로딩 중...</div>;
+  if (!profile) return <div className="text-center mt-10">로딩 중...</div>;
 
   return (
-    <div>
-      <h2>내 프로필</h2>
+    <div className="max-w-md mx-auto p-6 bg-white shadow-md rounded-xl mt-10 space-y-6">
+      <h2 className="text-4xl font-extrabold text-center text-red-500">내 프로필</h2>
+
       <img
         src={`http://localhost:8080/uploads/${profile.profileimg}`}
         alt="프로필 이미지"
-        width="100"
-        height="100"
-        style={{ borderRadius: "50%" }}
+        className="w-36 h-36 object-cover rounded-full mx-auto"
       />
-      <p>이메일: {profile.email}</p>
-      <p>닉네임: {profile.nickname}</p>
 
-      {!editMode ? (
-        <div>
-          <button
-            onClick={() => setEditMode(true)}
-            style={{ marginRight: "10px" }}
-          >
-            수정
-          </button>
-          <button onClick={() => navigate("/board")}>게시판으로 이동</button>
-        </div>
-      ) : (
-        <form onSubmit={handleProfileUpdate}>
-          <div>
-            <label>닉네임:</label>
-            <input
-              type="text"
-              value={nickname}
-              onChange={(e) => setNickname(e.target.value)}
-            />
-          </div>
+      <p className="text-center text-2xl font-semibold mt-4">{profile.nickname}</p>
 
-          <div>
-            <label>현재 비밀번호:</label>
-            <input
-              type="password"
-              value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
-            />
-          </div>
-          <div>
-            <label>새 비밀번호:</label>
-            <input
-              type="password"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-            />
-          </div>
+      <div className="mt-6">
+        <label className="block mb-2 text-m font-medium text-gray-700">내 소개</label>
+        <textarea
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
+          className="w-full h-24 p-2 border rounded resize-none"
+          maxLength={500}
+          placeholder="자기소개나 한 마디를 남겨보세요"
+        />
+        <button onClick={updateComment} className="mt-2 w-full py-2 bg-yellow-500 text-white rounded hover:bg-blue-600">
+          코멘트 저장
+        </button>
+        <button
+          className="mt-2 w-full py-2 bg-red-400 text-white rounded hover:bg-blue-600"
+          onClick={() => navigate("/UpdateProfile")}
+        >
+          수정하기
+        </button>
+      </div>
 
-          <div>
-            <label>프로필 이미지:</label>
-            <input type="file" onChange={(e) => setFile(e.target.files[0])} />
-          </div>
-
-          <button type="submit">저장</button>
-          <button type="button" onClick={() => setEditMode(false)}>
-            취소
-          </button>
-          {message && <p>{message}</p>}
-          <button
-            style={{
-              marginTop: "2rem",
-              backgroundColor: "red",
-              color: "white",
-            }}
-            onClick={handleDeleteAccount}
-          >
-            회원 탈퇴
-          </button>
-        </form>
-      )}
-
-      {message && <p>{message}</p>}
+      {message && <div className="text-green-600 text-center">{message}</div>}
+      {error && <div className="text-red-600 text-center">{error}</div>}
     </div>
   );
 };

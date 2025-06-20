@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -30,29 +31,35 @@ public class EmailVerificationService {
         if (memberRepository.findByEmail(email).isPresent()) {
             throw new RuntimeException("이미 가입된 이메일입니다.");
         }
+        tokenRepository.deleteByEmail(email);
 
-        String code = generateCode();
-        EmailVerificationToken token = EmailVerificationToken.create(email, code);
+        String code = UUID.randomUUID().toString().substring(0, 6).toUpperCase(); // 6자리 코드 생성
+        EmailVerificationToken token = EmailVerificationToken.builder()
+                .email(email)
+                .token(code)
+                .expirationDate(LocalDateTime.now().plusMinutes(3))
+                .verified(false)
+                .build();
         tokenRepository.save(token);
 
-         try {
+        try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
             helper.setTo(email);
-            helper.setSubject("[Team4Project] 이메일 인증 코드입니다.");
-            helper.setText("인증 코드는 다음과 같습니다: <b>" + code + "</b>", true);
+            helper.setSubject("[인증] 이메일 확인 코드");
+            helper.setText("이메일 인증 코드: " + code);
 
             mailSender.send(message);
         } catch (Exception e) {
             throw new RuntimeException("이메일 전송 실패", e);
         }
-        
+
     }
 
     public void verifyTokenAndRegister(String email, String nickname, String password, String tokenValue) {
         EmailVerificationToken token = tokenRepository.findByEmailAndToken(email, tokenValue)
-            .orElseThrow(() -> new RuntimeException("인증 코드가 올바르지 않습니다."));
+                .orElseThrow(() -> new RuntimeException("인증 코드가 올바르지 않습니다."));
 
         if (token.getExpirationDate().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("인증 코드가 만료되었습니다.");
@@ -61,18 +68,18 @@ public class EmailVerificationService {
         String encodedPassword = passwordEncoder.encode(password);
 
         Member member = Member.builder()
-            .email(email)
-            .nickname(nickname)
-            .password(encodedPassword)
-            .emailVerified(true)
-            .agree(true)
-            .build();
+                .email(email)
+                .nickname(nickname)
+                .password(encodedPassword)
+                .emailVerified(true)
+                .agree(true)
+                .build();
 
         memberRepository.save(member);
         tokenRepository.delete(token);
     }
 
     private String generateCode() {
-        return String.valueOf((int)(Math.random() * 9000) + 1000); // 4자리 랜덤
+        return String.valueOf((int) (Math.random() * 9000) + 1000); // 4자리 랜덤
     }
 }

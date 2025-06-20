@@ -51,7 +51,7 @@ public class MemberController {
                     .body(Map.of("success", false, "message", "아이디 또는 비밀번호가 올바르지 않습니다."));
         }
 
-        String token = jwtUtil.generateToken(dto.getEmail());
+        String token = jwtUtil.generateToken(dto.getEmail(), dto.getNickname());
         MemberResponseDTO user = memberService.getUserInfo(dto.getEmail());
 
         return ResponseEntity.ok(Map.of(
@@ -98,4 +98,14 @@ public class MemberController {
         memberService.delete(userDetails.getEmail());
         return ResponseEntity.ok(Map.of("message", "회원 탈퇴 완료"));
     }
+
+    @PutMapping("/comment")
+    public ResponseEntity<?> updateComment(@AuthenticationPrincipal CustomMemberDetails userDetails,
+            @RequestBody Map<String, String> req) {
+        String comment = req.get("comment");
+        System.out.println("코멘트 로그");
+        memberService.updateComment(userDetails.getEmail(), comment);
+        return ResponseEntity.ok(Map.of("message", "코멘트 수정 완료"));
+    }
+
 }

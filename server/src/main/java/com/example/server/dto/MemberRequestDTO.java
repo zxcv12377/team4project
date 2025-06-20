@@ -1,5 +1,7 @@
 package com.example.server.dto;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
@@ -23,7 +25,9 @@ public class MemberRequestDTO {
     private String profileimg;
 
     private boolean agree;
-    
+
     private String code;
+
+    private String comment;
 
 }

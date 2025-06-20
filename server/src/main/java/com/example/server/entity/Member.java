@@ -1,10 +1,10 @@
 package com.example.server.entity;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import com.example.server.base.Base;
-
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -16,6 +16,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
@@ -54,6 +55,9 @@ public class Member extends Base {
 
     private boolean emailVerified; // 이메일 인증여부
 
+    @Column(name = "user_comment", length = 500)
+    private String comment; // 코멘트 넣기(500자까지)
+
     // 다중 권한 지원 (USER, ADMIN)
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "member_roles", joinColumns = @JoinColumn(name = "member_id"))
@@ -61,6 +65,16 @@ public class Member extends Base {
     @Builder.Default
     @Enumerated(EnumType.STRING)
     private Set<MemberRole> roles = new HashSet<>();
+
+    // 선택: 양방향 관계
+    @OneToMany(mappedBy = "member")
+    private List<Board> boards;
+
+    @OneToMany(mappedBy = "member")
+    private List<Reply> replies;
+
+    @OneToMany(mappedBy = "member")
+    private List<VoiceChatLog> voiceLogs;
 
     // 기본 권한 부여 메서드(db 저장 전 호출)
     // 회원가입 시 기본적으로 USER 권한을 부여
@@ -73,4 +87,5 @@ public class Member extends Base {
             profileimg = "default.png";
         }
     }
+
 }

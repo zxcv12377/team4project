@@ -56,21 +56,23 @@ public class BoardRepositoryTest {
         });
     }
 
-    // @Test
-    // public void insertBoardTest() {
-    // IntStream.rangeClosed(1, 20).forEach(i -> {
-    // Long rand = () (Math.random() * 20 ) + 1+;
-    // Member member = memberRepository.findById().get();
+    @Test
+    public void insertBoardTest() {
 
-    // Board board = Board.builder()
-    // .title("테스트 게시글 제목 " + i)
-    // .content("이것은 테스트 게시글 내용입니다. 번호: " + i)
-    // .member(member)
-    // .build();
+        IntStream.rangeClosed(1, 20).forEach(i -> {
+            int rand = (int) (Math.random() * 10) + 1;
+            Long lRand = Long.valueOf(rand);
+            Member member = memberRepository.findById(lRand).orElseThrow();
 
-    // boardRepository.save(board);
-    // });
-    // }
+            Board board = Board.builder()
+                    .title("테스트 게시글 제목 " + i)
+                    .content("이것은 테스트 게시글 내용입니다. 번호: " + i)
+                    .member(member)
+                    .build();
+
+            boardRepository.save(board);
+        });
+    }
 
     @Test
     public void insertRepliesTest() {
@@ -174,18 +176,18 @@ public class BoardRepositoryTest {
     }
 
     // QUERY DSL
-    @Test
-    public void listTest() {
-        List<Object[]> result = boardRepository.list();
-        for (Object[] objects : result) {
-            Board board = (Board) objects[0];
-            Member member = (Member) objects[1];
-            Long replyCnt = (Long) objects[2];
+    // @Test
+    // public void listTest() {
+    // List<Object[]> result = boardRepository.list();
+    // for (Object[] objects : result) {
+    // Board board = (Board) objects[0];
+    // Member member = (Member) objects[1];
+    // Long replyCnt = (Long) objects[2];
 
-            System.out.println(board);
-            System.out.println(member);
-            System.out.println(replyCnt);
+    // System.out.println(board);
+    // System.out.println(member);
+    // System.out.println(replyCnt);
 
-        }
-    }
+    // }
+    // }
 }

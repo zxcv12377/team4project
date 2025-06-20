@@ -49,6 +49,7 @@ public class Reply extends Base {
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Reply> children = new ArrayList<>();
 
+    @Builder.Default
     @OneToMany(mappedBy = "reply", cascade = CascadeType.ALL)
     private List<ReplyLike> likes = new ArrayList<>();
 

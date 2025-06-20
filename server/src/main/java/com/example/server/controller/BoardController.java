@@ -1,6 +1,7 @@
 package com.example.server.controller;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -35,10 +36,12 @@ public class BoardController {
     }
 
     @GetMapping("/list")
-    public ResponseEntity<?> List(PageRequestDTO pageRequestDTO) {
-        log.info("게시판 목록 요청: {}", pageRequestDTO);
+    public ResponseEntity<?> getList(Model model, PageRequestDTO pageRequestDTO) {
+        log.info("list 요청", pageRequestDTO);
 
         PageResultDTO<BoardDTO> result = boardService.getList(pageRequestDTO);
+        model.addAttribute("result", result);
+
         return ResponseEntity.ok(result);
     }
 

@@ -9,13 +9,14 @@ import com.example.server.entity.MemberRole;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
+import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 @Getter
-public class CustomMemberDetails implements UserDetails {
+public class CustomMemberDetails implements UserDetails, Principal {
 
     private final Member member;
 
@@ -78,5 +79,10 @@ public class CustomMemberDetails implements UserDetails {
     @Override
     public boolean isEnabled() {
         return true;
+    }
+
+    @Override
+    public String getName() {
+        throw new UnsupportedOperationException("Unimplemented method 'getName'");
     }
 }
