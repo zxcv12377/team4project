@@ -81,7 +81,7 @@ public class BoardController {
     // }
 
     // 게시글 삭제
-    // @DeleteMapping("/{bno}")
+    // @DeleteMapping("/{bn o}")
     // public ResponseEntity<?> remove(@PathVariable Long bno) {
     // log.info("삭제 요청 bno: {}", bno);
     // boardService.delete(bno);
