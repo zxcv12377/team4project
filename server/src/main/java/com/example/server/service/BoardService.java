@@ -66,7 +66,7 @@ public class BoardService {
                 pageRequestDTO.getSize(),
                 Sort.by("bno").descending());
 
-        Page<Object[]> result = boardRepository.getTotalList(pageRequestDTO.getType(),
+        Page<Object[]> result = boardRepository.list(pageRequestDTO.getType(),
                 pageRequestDTO.getKeyword(), pageable);
         System.out.println(result);
         Function<Object[], BoardDTO> function = (en -> entityToDto((Board) en[0], (Member) en[1], (Long) en[2]));
