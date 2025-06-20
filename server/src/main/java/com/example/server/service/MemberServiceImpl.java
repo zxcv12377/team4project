@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -103,5 +104,12 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new RuntimeException("회원 없음"));
         member.setComment(comment);
         memberRepository.save(member);
+    }
+
+    @Override
+    public Member getByEmail(String email) {
+        log.debug("getByEmail 호출됨, email={}", email);
+        return memberRepository.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 사용자"));
     }
 }

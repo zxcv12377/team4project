@@ -10,7 +10,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 @AllArgsConstructor
 @Builder
 public class MemberResponseDTO {
-    private Long mno;
+    private Long id;
     private String email;
     private String nickname;
     private String profileimg;

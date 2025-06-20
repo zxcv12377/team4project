@@ -2,6 +2,7 @@ package com.example.server.service;
 
 import com.example.server.dto.MemberRequestDTO;
 import com.example.server.dto.MemberResponseDTO;
+import com.example.server.entity.Member;
 
 public interface MemberService {
 
@@ -20,4 +21,6 @@ public interface MemberService {
     String getProfileImageFilename(String email); // 이전 이미지 확인용
 
     void updateProfileImage(String email, String profileimg); // 새 이미지 파일명 저장용
+
+    Member getByEmail(String email);
 }

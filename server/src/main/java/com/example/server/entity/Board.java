@@ -17,28 +17,28 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 
 @Getter
-@Setter
 @Builder
 @NoArgsConstructor
-@AllArgsConstructor 
-@ToString(exclude = {"member", "replies"})
-@Entity 
+@AllArgsConstructor
+@ToString(exclude = { "member", "replies" })
+@Entity
 public class Board extends Base {
 
-    @Id 
-    @GeneratedValue(strategy = GenerationType.IDENTITY) 
-    
-    private Long bno; //게시판 번호
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
 
-    private String title; //게시글 제목
+    private Long bno; // 게시판 번호
 
-    //게시글 내용(최대 2000자 저장 가능)
+    private String title; // 게시글 제목
+
+    // 게시글 내용(최대 2000자 저장 가능)
     @Column(length = 2000)
-    private String content; 
+    private String content;
+
+    private String attachmentsJson; // JSON 문자열로 첨부파일 저장
 
     @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
@@ -48,12 +48,19 @@ public class Board extends Base {
     private List<Reply> replies;
 
     public void changeTitle(String title) {
-    this.title = title; 
+        this.title = title;
+    }
 
-}
+    public void changeContent(String content) {
+        this.content = content;
+    }
 
-public void changeContent(String content) {
-    this.content = content;
-}
+    public String getWriterName() {
+        return member != null ? member.getNickname() : null;
+    }
+
+    public String getWriterUsername() {
+        return member != null ? member.getEmail() : null;
+    }
 
 }

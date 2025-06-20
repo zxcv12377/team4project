@@ -51,7 +51,7 @@ public class MemberController {
                     .body(Map.of("success", false, "message", "아이디 또는 비밀번호가 올바르지 않습니다."));
         }
 
-        String token = jwtUtil.generateToken(dto.getEmail());
+        String token = jwtUtil.generateToken(dto.getEmail(), dto.getNickname());
         MemberResponseDTO user = memberService.getUserInfo(dto.getEmail());
 
         return ResponseEntity.ok(Map.of(

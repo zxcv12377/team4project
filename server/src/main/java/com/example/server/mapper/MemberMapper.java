@@ -23,7 +23,7 @@ public class MemberMapper {
 
     public static MemberResponseDTO toDTO(Member member) {
         return MemberResponseDTO.builder()
-                .mno(member.getId())
+                .id(member.getId())
                 .email(member.getEmail())
                 .nickname(member.getNickname())
                 .profileimg(member.getProfileimg())

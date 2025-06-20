@@ -10,6 +10,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
@@ -17,6 +18,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.List;
 
 @Log4j2
 @RequiredArgsConstructor
@@ -25,36 +27,51 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     private final JwtUtil jwtUtil;
     private final CustomMemberDetailsService userDetailsService;
 
+    private final List<String> excludeUris = List.of(
+            "/api/members/register",
+            "/api/members/login",
+            "/api/members/check-nickname",
+            "/api/members/find-id",
+            "/api/auth/email/send");
+
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain)
+    protected void doFilterInternal(@NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain)
             throws ServletException, IOException {
+
+        String uri = request.getRequestURI();
+
+        if (excludeUris.contains(uri)) {
+            log.debug("✅ URI 제외 대상: {}", uri);
+            filterChain.doFilter(request, response);
+            return;
+        }
 
         String token = getTokenFromRequest(request);
         log.info("요청에서 추출된 토큰: {}", token);
-        if (token != null) {
+        try {
             if (!jwtUtil.isTokenValid(token)) {
-                log.warn("유효하지 않은 토큰: {}", token);
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "유효하지 않은 토큰입니다.");
-                return;
+                String email = jwtUtil.validateAndGetSubject(token);
+                log.info("추출된 email: '{}'", email);
+
+                if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
+                    CustomMemberDetails userDetails = (CustomMemberDetails) userDetailsService
+                            .loadUserByUsername(email);
+                    log.info("인증된 사용자 정보: {}", userDetails);
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            userDetails, null, userDetails.getAuthorities());
+
+                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                    log.debug("✅ 인증 성공: {}", email);
+                }
+            } else {
+                log.warn("❌ 유효하지 않은 토큰: {}", token);
             }
-
-            String email = jwtUtil.validateAndGetSubject(token);
-            log.info("추출된 email: '{}'", email);
-
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                CustomMemberDetails userDetails = (CustomMemberDetails) userDetailsService.loadUserByUsername(email);
-                log.info("인증된 사용자 정보: {}", userDetails);
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        userDetails, null, userDetails.getAuthorities());
-
-                authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
-                log.info("SecurityContext에 인증 정보 설정 완료");
-            }
+        } catch (Exception e) {
+            log.warn("❌ JWT 필터 예외: {}", e.getMessage());
         }
-
         filterChain.doFilter(request, response);
     }
 
