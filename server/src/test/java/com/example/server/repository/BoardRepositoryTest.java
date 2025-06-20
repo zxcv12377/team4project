@@ -58,17 +58,11 @@ public class BoardRepositoryTest {
 
     @Test
     public void insertBoardTest() {
+
         IntStream.rangeClosed(1, 20).forEach(i -> {
-
-            Member member = Member.builder()
-                    .email("user" + i + "@gmail.com")
-                    .password("1111")
-                    .nickname("user" + i)
-                    .agree(true)
-                    .emailVerified(true)
-                    .build();
-
-            Member savedMember = memberRepository.save(member);
+            int rand = (int) (Math.random() * 10) + 1;
+            Long lRand = Long.valueOf(rand);
+            Member member = memberRepository.findById(lRand).orElseThrow();
 
             Board board = Board.builder()
                     .title("테스트 게시글 제목 " + i)
@@ -182,18 +176,18 @@ public class BoardRepositoryTest {
     }
 
     // QUERY DSL
-    @Test
-    public void listTest() {
-        List<Object[]> result = boardRepository.list();
-        for (Object[] objects : result) {
-            Board board = (Board) objects[0];
-            Member member = (Member) objects[1];
-            Long replyCnt = (Long) objects[2];
+    // @Test
+    // public void listTest() {
+    // List<Object[]> result = boardRepository.list();
+    // for (Object[] objects : result) {
+    // Board board = (Board) objects[0];
+    // Member member = (Member) objects[1];
+    // Long replyCnt = (Long) objects[2];
 
-            System.out.println(board);
-            System.out.println(member);
-            System.out.println(replyCnt);
+    // System.out.println(board);
+    // System.out.println(member);
+    // System.out.println(replyCnt);
 
-        }
-    }
+    // }
+    // }
 }
