@@ -129,6 +129,9 @@ export default function Navbar() {
               <Link to="/contact" className="text-gray-700 hover:text-blue-500">
                 Contact
               </Link>
+              <Link to="/chatting" className="text-gray-700 hover:text-blue-500">
+                Chatting
+              </Link>
               {isLoggedIn ? (
                 <>
                   <Link

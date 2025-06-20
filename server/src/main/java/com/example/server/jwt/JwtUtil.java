@@ -18,6 +18,7 @@ import com.example.server.security.CustomMemberDetailsService;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.util.Base64;
 import java.util.Date;
 
 @Log4j2
@@ -27,13 +28,12 @@ public class JwtUtil {
     // JWT 비밀 키(application.properties에서 설정)
     @Value("${jwt.secret}")
     private String secretKey;
-
     @Value("${jwt.expiration}")
     private long validityInMilliseconds;
 
     private Key key;
 
-    private final CustomMemberDetailsService customMemberDetailsService;
+    private CustomMemberDetailsService customMemberDetailsService;
 
     // 토큰 유효시간: 1시간
     // private static final long EXPIRATION_TIME_MS = 1000 * 60 * 60 * 1;
@@ -44,6 +44,9 @@ public class JwtUtil {
 
     @PostConstruct
     public void init() {
+        log.info("✅ JwtUtil 초기화 시작: secretKey length = {}", secretKey.length());
+        // byte[] keyBytes = Base64.getDecoder().decode(secretKey);
+        // this.key = Keys.hmacShaKeyFor(keyBytes);
         byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         this.key = Keys.hmacShaKeyFor(keyBytes);
     }

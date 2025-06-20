@@ -9,6 +9,7 @@ import com.example.server.security.CustomMemberDetailsService;
 import com.example.server.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.java.Log;
 import lombok.extern.log4j.Log4j2;
 
 import org.springframework.http.HttpStatus;
@@ -52,11 +53,12 @@ public class MemberController {
         }
 
         String token = jwtUtil.generateToken(dto.getEmail(), dto.getNickname());
+        log.info(" 토큰값 : {}", token);
         MemberResponseDTO user = memberService.getUserInfo(dto.getEmail());
 
         return ResponseEntity.ok(Map.of(
-                "success", true,
                 "token", token,
+                "email", dto.getEmail(),
                 "user", user));
     }
 

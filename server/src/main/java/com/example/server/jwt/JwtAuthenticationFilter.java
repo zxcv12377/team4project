@@ -51,7 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         String token = getTokenFromRequest(request);
         log.info("요청에서 추출된 토큰: {}", token);
         try {
-            if (!jwtUtil.isTokenValid(token)) {
+            if (jwtUtil.isTokenValid(token)) {
                 String email = jwtUtil.validateAndGetSubject(token);
                 log.info("추출된 email: '{}'", email);
 
