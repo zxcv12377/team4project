@@ -18,7 +18,8 @@ public class Base {
 
     @CreatedDate
     @Column(updatable = false)
-    private LocalDateTime createdDate;
+    private LocalDateTime regDate;
+
     @LastModifiedDate
-    private LocalDateTime updatedDate;
+    private LocalDateTime modDate;
 }

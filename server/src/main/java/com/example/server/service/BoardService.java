@@ -60,48 +60,42 @@ public class BoardService {
     }
 
     // 4. 페이징 목록 조회
+    // Object[]를 DTO로 바꾸고 리스트로 감쌉니다.
+    // .map(function)으로 게시글마다 BoardDTO로 변환합니다.
     public PageResultDTO<BoardDTO> getList(PageRequestDTO pageRequestDTO) {
         Pageable pageable = PageRequest.of(
                 pageRequestDTO.getPage() - 1,
                 pageRequestDTO.getSize(),
                 Sort.by("bno").descending());
 
-        Page<Object[]> result = boardRepository.getTotalList(pageRequestDTO.getType(),
+        Page<Object[]> result = boardRepository.getBoardList(pageRequestDTO.getType(),
                 pageRequestDTO.getKeyword(), pageable);
         System.out.println(result);
+
         Function<Object[], BoardDTO> function = (en -> entityToDto((Board) en[0], (Member) en[1], (Long) en[2]));
 
-        List<BoardDTO> dtoList = result.stream().map(function).collect(Collectors.toList());
-        Long totalCount = result.getTotalElements();
-        // List<BoardDTO> dtoList = result.stream()
-        // .map(board -> entityToDto(board, board.getMember(), (long)
-        // board.getReplies().size()))
-        // .collect(Collectors.toList());
-
-        PageResultDTO<BoardDTO> pageResultDTO = PageResultDTO.<BoardDTO>withAll()
-                .dtoList(dtoList)
-                .totalCount(totalCount)
+        return PageResultDTO.<BoardDTO>withAll()
+                .dtoList(result.map(function).getContent())
+                .totalCount(result.getTotalElements())
                 .pageRequestDTO(pageRequestDTO)
                 .build();
-        return pageResultDTO;
     }
 
     public BoardDTO getRow(Long bno) {
-        Board board = boardRepository.findById(bno).orElseThrow();
-        return entityToDto(board, board.getMember(), (long) board.getReplies().size());
+        Object[] result = boardRepository.getBoardRow(bno);
+        return entityToDto((Board) result[0], (Member) result[1], (Long) result[2]);
     }
 
     // ====== 변환 메서드 ======
     private BoardDTO entityToDto(Board board, Member member, Long replyCount) {
-        BoardDTO dto = BoardDTO.builder()
+        return BoardDTO.builder()
                 .bno(board.getBno())
                 .title(board.getTitle())
-                .content(board.getContent())
-                .id(member.getId())
-                .nickname(member.getNickname())
-                .replyCount(replyCount)
+                .content(board.getContent()) // 상세보기에만 사용
+                .id(member != null ? member.getId() : null)// 작성자id
+                .regDate(board.getRegDate())
+                .replyCount(replyCount != null ? replyCount : 0L)
                 .build();
-        return dto;
     }
 
     private Board dtoToEntity(BoardDTO dto) {

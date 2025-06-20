@@ -8,22 +8,40 @@ import com.example.server.entity.Member;
 
 public class BoradMapper {
 
-    // DTO → Entity(게시글)
+    // DTO → Entity(게시글) | 작성,수정
     public static Board toEntity(BoardDTO dto, Member member) {
         return Board.builder()
-                .title(dto.getTitle()) // 사용자 입력
-                .content(dto.getContent()) // 사용자 입력
-                .member(member) // 서버 내부에서 매핑 (세션 or 인증 토큰에서 추출)
+                .bno(dto.getBno()) // 수정 시 사용
+                .title(dto.getTitle())
+                .content(dto.getContent())
+                .member(member)
                 .build();
     }
 
-    // Entity → DTO
-    public static BoardDTO toDTO(Board board) {
+    // Entity → DTO(리스트 전용)
+    public static BoardDTO toDTO(Board board, Long replyCount) {
+        return BoardDTO.builder()
+                .bno(board.getBno())
+                .title(board.getTitle())
+                .nickname(board.getMember().getNickname())
+                .id(board.getMember().getId())
+                .replyCount(replyCount)
+                .regDate(board.getRegDate())
+                .build();
+    }
+
+    // Entity→DTO 변환 (상세보기용)
+    // content 포함됨
+    public static BoardDTO toDetailDTO(Board board, Long replyCount) {
         return BoardDTO.builder()
                 .bno(board.getBno())
                 .title(board.getTitle())
                 .content(board.getContent())
                 .nickname(board.getMember().getNickname())
+                .id(board.getMember().getId())
+                .replyCount(replyCount)
+                .regDate(board.getRegDate())
+                .modDate(board.getModDate())
                 .build();
     }
 
