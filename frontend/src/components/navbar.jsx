@@ -1,19 +1,18 @@
 import axios from "axios";
 import React, { useEffect, useState } from "react";
-import { Link, Outlet } from "react-router-dom";
-import { useNavigate } from "react-router-dom";
+import { Link, Outlet, useNavigate } from "react-router-dom";
+import LoginForm from "./loginForm";
+import RegisterForm from "./registerForm";
+import SlidePopup from "./slidePopup";
 
 export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const navigate = useNavigate();
   const [profileImage, setProfileImage] = useState(null);
   const [nickname, setNickname] = useState("");
-
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-  }, []);
+  const [showLogin, setShowLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -38,7 +37,7 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
-    navigate("/login");
+    navigate("/board");
   };
 
   return (
@@ -103,15 +102,18 @@ export default function Navbar() {
                 </>
               ) : (
                 <div className="flex gap-2">
-                  <Link
-                    to="/login"
-                    className="px-3 py-1 text-sm  border-gray-400 rounded text-gray-700 hover:bg-gray-100"
+                  <button
+                    onClick={() => setShowLogin(true)}
+                    className="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
                   >
                     로그인
-                  </Link>
-                  <Link to="/register" className="px-3 py-1 text-sm rounded bg-red-400 text-white">
+                  </button>
+                  <button
+                    onClick={() => setShowRegister(true)}
+                    className="text-sm bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600"
+                  >
                     회원가입
-                  </Link>
+                  </button>
                 </div>
               )}
             </div>
@@ -148,32 +150,49 @@ export default function Navbar() {
                     className="px-3 py-1 text-sm rounded text-red-600 hover:text-white border border-red-500 hover:bg-red-500 mb-4"
                     onClick={handleLogout}
                   >
-                    Logout
+                    로그아웃
                   </button>
                 </>
               ) : (
                 <div className="flex flex-col gap-2">
-                  <Link
-                    to="/login"
-                    className="px-3 py-1 text-sm border border-gray-400 rounded text-gray-700 hover:bg-gray-100"
+                  <button
+                    onClick={() => setShowLogin(true)}
+                    className="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
                   >
                     로그인
-                  </Link>
-                  <Link
-                    to="/register"
-                    className="px-3 py-1 text-sm rounded bg-blue-500 text-white hover:bg-red-500 mb-4"
+                  </button>
+                  <button
+                    onClick={() => setShowRegister(true)}
+                    className="text-sm bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600"
                   >
                     회원가입
-                  </Link>
+                  </button>
                 </div>
               )}
             </div>
           )}
         </div>
       </nav>
-      <main className="pt-16">
-        <Outlet />
-      </main>
+
+      <SlidePopup show={showLogin} onClose={() => setShowLogin(false)}>
+        <LoginForm
+          onSwitchToRegister={() => {
+            setShowLogin(false);
+            setShowRegister(true);
+          }}
+        />
+      </SlidePopup>
+
+      <SlidePopup show={showRegister} onClose={() => setShowRegister(false)}>
+        <RegisterForm
+          onSwitchToLogin={() => {
+            setShowRegister(false);
+            setShowLogin(true);
+          }}
+        />
+      </SlidePopup>
+
+      <Outlet />
     </>
   );
 }

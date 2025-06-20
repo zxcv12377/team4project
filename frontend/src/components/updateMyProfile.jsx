@@ -20,6 +20,8 @@ const UpdateMyProfile = () => {
   }, []);
 
   const fetchProfile = async () => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
     try {
       const res = await axios.get("http://localhost:8080/member/me", { headers });
       if (!res.data || !res.data.nickname) {
@@ -31,7 +33,7 @@ const UpdateMyProfile = () => {
       if (err.response?.status === 401) {
         alert("세션이 만료되었습니다. 다시 로그인해주세요.");
         localStorage.removeItem("token");
-        navigate("/login");
+        navigate("/board");
       } else {
         setError("프로필 정보를 불러오지 못했습니다.");
       }
@@ -71,7 +73,7 @@ const UpdateMyProfile = () => {
       if (err.response?.status === 401) {
         alert("세션이 만료되었습니다. 다시 로그인해주세요.");
         localStorage.removeItem("token");
-        navigate("/login");
+        navigate("/board");
       }
       setError("❌ 이미지 업로드 실패");
       setMessage("");
@@ -97,7 +99,7 @@ const UpdateMyProfile = () => {
       if (err.response?.status === 401) {
         alert("세션이 만료되었습니다. 다시 로그인해주세요.");
         localStorage.removeItem("token");
-        navigate("/login");
+        navigate("/board");
       }
       setError("❌ 닉네임 변경 실패");
       setMessage("");
@@ -125,7 +127,7 @@ const UpdateMyProfile = () => {
       if (err.response?.status === 401) {
         alert("세션이 만료되었습니다. 다시 로그인해주세요.");
         localStorage.removeItem("token");
-        navigate("/login");
+        navigate("/board");
       }
       setError("❌ 비밀번호 변경 실패");
       setMessage("");
@@ -138,12 +140,12 @@ const UpdateMyProfile = () => {
       await axios.delete("http://localhost:8080/member/delete", { headers });
       localStorage.removeItem("token");
       alert("회원 탈퇴가 완료되었습니다.");
-      navigate("/login");
+      navigate("/board");
     } catch (err) {
       if (err.response?.status === 401) {
         alert("세션이 만료되었습니다. 다시 로그인해주세요.");
         localStorage.removeItem("token");
-        navigate("/login");
+        navigate("/board");
       }
       setError("❌ 회원 탈퇴 실패");
     }
