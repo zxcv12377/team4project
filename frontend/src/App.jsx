@@ -26,7 +26,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-          <Route path="/reply" element={<ReplyList />} />
+          {/* <Route path="/reply" element={<ReplyList />} /> */}
         </Routes>
       </Layoutex>
     </Router>
