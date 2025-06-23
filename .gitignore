@@ -125,5 +125,3 @@ $RECYCLE.BIN/
 server/pom.xml
 frontend/yarn.lock
 frontend/package-lock.json
-server/src/main/java/com/example/server/controller/BoardController.java
-frontend/vite.config.js

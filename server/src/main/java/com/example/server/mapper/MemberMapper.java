@@ -15,6 +15,7 @@ public class MemberMapper {
                 .emailVerified(false)
                 .profileimg(dto.getProfileimg() != null ? dto.getProfileimg() : "default.png")
                 .agree(false)
+                .comment(dto.getComment())
                 .build();
     }
 
@@ -22,10 +23,11 @@ public class MemberMapper {
 
     public static MemberResponseDTO toDTO(Member member) {
         return MemberResponseDTO.builder()
-                .mno(member.getId())
+                .id(member.getId())
                 .email(member.getEmail())
                 .nickname(member.getNickname())
                 .profileimg(member.getProfileimg())
+                .comment(member.getComment())
                 .build();
     }
 }

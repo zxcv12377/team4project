@@ -23,17 +23,16 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-@Log4j2 
-@RequiredArgsConstructor 
-@Service 
+@Log4j2
+@RequiredArgsConstructor
+@Service
 public class BoardService {
 
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
     private final ReplyRepository replyRepository;
 
-
-    //create
+    // create
     public Long create(BoardDTO dto) {
         // dto => entity(board) 변경
         Board board = dtoToEntity(dto);
@@ -41,49 +40,56 @@ public class BoardService {
         return newBoard.getBno();
     }
 
-    //Delete
+    // Delete
     @Transactional
     public void delete(Long bno) {
-        replyRepository.deleteByBoardBno(bno); 
+        replyRepository.deleteByBoardBno(bno);
         boardRepository.deleteById(bno);
     }
 
     // Update
+    @Transactional
     public Long update(BoardDTO dto) {
         Board board = boardRepository.findById(dto.getBno()).orElseThrow();
 
         board.changeTitle(dto.getTitle());
         board.changeContent(dto.getContent());
-        boardRepository.save(board);
+        // boardRepository.save(board);
 
         return board.getBno();
     }
 
-// 4. 페이징 목록 조회
+    // 4. 페이징 목록 조회
     public PageResultDTO<BoardDTO> getList(PageRequestDTO pageRequestDTO) {
         Pageable pageable = PageRequest.of(
                 pageRequestDTO.getPage() - 1,
                 pageRequestDTO.getSize(),
-                Sort.by("bno").descending()
-        );
+                Sort.by("bno").descending());
 
-        Page<Board> result = boardRepository.findAll(pageable);
+        Page<Object[]> result = boardRepository.list(pageRequestDTO.getType(),
+                pageRequestDTO.getKeyword(), pageable);
+        System.out.println(result);
+        Function<Object[], BoardDTO> function = (en -> entityToDto((Board) en[0], (Member) en[1], (Long) en[2]));
 
-        List<BoardDTO> dtoList = result.stream()
-                .map(board -> entityToDto(board, board.getMember(), (long) board.getReplies().size()))
-                .collect(Collectors.toList());
+        List<BoardDTO> dtoList = result.stream().map(function).collect(Collectors.toList());
+        Long totalCount = result.getTotalElements();
+        // List<BoardDTO> dtoList = result.stream()
+        // .map(board -> entityToDto(board, board.getMember(), (long)
+        // board.getReplies().size()))
+        // .collect(Collectors.toList());
 
-        return PageResultDTO.<BoardDTO>withAll()
+        PageResultDTO<BoardDTO> pageResultDTO = PageResultDTO.<BoardDTO>withAll()
                 .dtoList(dtoList)
+                .totalCount(totalCount)
                 .pageRequestDTO(pageRequestDTO)
-                .totalCount(result.getTotalElements())
                 .build();
+        return pageResultDTO;
     }
 
-public BoardDTO getRow(Long bno) {
-    Board board = boardRepository.findById(bno).orElseThrow();
-    return entityToDto(board, board.getMember(), (long) board.getReplies().size());
-}
+    public BoardDTO getRow(Long bno) {
+        Board board = boardRepository.findById(bno).orElseThrow();
+        return entityToDto(board, board.getMember(), (long) board.getReplies().size());
+    }
 
     // ====== 변환 메서드 ======
     private BoardDTO entityToDto(Board board, Member member, Long replyCount) {
@@ -98,19 +104,16 @@ public BoardDTO getRow(Long bno) {
         return dto;
     }
 
-    
-private Board dtoToEntity(BoardDTO dto) {
-    Member member = memberRepository.findById(dto.getId())
-            .orElseThrow(() -> new IllegalArgumentException("No member found with id: " + dto.getId()));
+    private Board dtoToEntity(BoardDTO dto) {
+        Member member = memberRepository.findById(dto.getId())
+                .orElseThrow(() -> new IllegalArgumentException("No member found with id: " + dto.getId()));
 
-    Board board = Board.builder()
-            .bno(dto.getBno())
-            .title(dto.getTitle())
-            .content(dto.getContent())
-            .member(member) 
-            .build();
-    return board;
-}
-
+        Board board = Board.builder()
+                .title(dto.getTitle())
+                .content(dto.getContent())
+                .member(member)
+                .build();
+        return board;
+    }
 
 }

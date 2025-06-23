@@ -48,7 +48,7 @@ public class ProfileImageController {
 
             // 이전 이미지 삭제
             String oldFilename = memberService.getProfileImageFilename(email);
-            if (oldFilename != null) {
+            if (!"default.png".equals(oldFilename)) {
                 File oldFile = new File(uploadDir + oldFilename);
                 if (oldFile.exists())
                     oldFile.delete();
