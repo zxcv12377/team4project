@@ -10,12 +10,15 @@ export default function LoginForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:8080/member/login", {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "http://localhost:8080/api/members/login",
+        {
+          email,
+          password,
+        }
+      );
       localStorage.setItem("token", response.data.token);
-      navigate("/board");
+      navigate("/boardList");
     } catch (err) {
       alert("로그인 실패: 이메일 또는 비밀번호를 확인하세요.");
       console.log("로그인 에러 : {}", err);
@@ -26,7 +29,7 @@ export default function LoginForm() {
     <div className="min-h-screen bg-[#0f172a] flex items-center justify-center px-4">
       <div className="absolute top-6 left-6">
         <a
-          href="/board"
+          href="/boardList"
           className="text-white text-2xl font-extrabold tracking-wide hover:text-indigo-400 transition-colors"
         >
           STRONGBERRY

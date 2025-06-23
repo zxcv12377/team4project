@@ -7,13 +7,17 @@ import LoginForm from "./components/loginForm";
 
 import RegisterForm from "./components/registerForm";
 import ProtectedRoute from "./components/protectedRoute";
-import { BoardList } from "./components/Board";
+
 import Navbar from "./components/navbar";
 import UpdateMyProfile from "./components/UpdateMyProfile";
 import ReplyList from "./components/replyList";
 import axiosInstance from "./lib/axiosInstance";
 import { useWebSocket } from "./hooks/useWebSocket";
 import ChattingModule from "./components/ChattingModule";
+import { BoardList } from "./components/boardList";
+import BoardEdit from "./components/boardEdit";
+import BoardRead from "./components/boardRead";
+import BoardWrite from "./components/boardWrite";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -71,8 +75,11 @@ function App() {
         <Route path="/register" element={<RegisterForm />} />
 
         <Route element={<Navbar />}>
-          <Route path="/" element={<Navigate to="/board" />} />
-          <Route path="/boardList" element={<boardList />} />
+          <Route path="/" element={<Navigate to="/boardList" />} />
+          <Route path="/boardList" element={<BoardList />} />
+          <Route path="/board/:bno" element={<BoardRead />} />
+          <Route path="/board/edit/:bno" element={<BoardEdit />} />
+          <Route path="/board/write" element={<BoardWrite />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/reply" element={<ReplyList />} />

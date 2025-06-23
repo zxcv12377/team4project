@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 
 import com.example.server.dto.BoardDTO;
@@ -42,22 +43,31 @@ public class BoardService {
 
     // Delete
     @Transactional
-    public void delete(Long bno) {
-        replyRepository.deleteByBoardBno(bno);
-        boardRepository.deleteById(bno);
+public void delete(Long bno, Long requesterId) {
+    Board board = boardRepository.findById(bno)
+            .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
+
+    if (!board.getMember().getId().equals(requesterId)) {
+        throw new AccessDeniedException("작성자만 삭제할 수 있습니다.");
     }
+
+    boardRepository.delete(board);
+}
 
     // Update
     @Transactional
-    public Long update(BoardDTO dto) {
-        Board board = boardRepository.findById(dto.getBno()).orElseThrow();
+    public void update(Long bno, BoardDTO dto, Long requesterId) {
+    Board board = boardRepository.findById(bno)
+            .orElseThrow(() -> new IllegalArgumentException("해당 게시글이 존재하지 않습니다."));
 
-        board.changeTitle(dto.getTitle());
-        board.changeContent(dto.getContent());
-        // boardRepository.save(board);
-
-        return board.getBno();
+    // 작성자 확인
+    if (!board.getMember().getId().equals(requesterId)) {
+        throw new AccessDeniedException("작성자만 수정할 수 있습니다.");
     }
+
+    board.changeTitle(dto.getTitle());
+    board.changeContent(dto.getContent());
+}
 
     // 4. 페이징 목록 조회
     public PageResultDTO<BoardDTO> getList(PageRequestDTO pageRequestDTO) {
@@ -97,7 +107,7 @@ public class BoardService {
                 .bno(board.getBno())
                 .title(board.getTitle())
                 .content(board.getContent())
-                .id(member.getId())
+                .memberId(board.getMember().getId())
                 .nickname(member.getNickname())
                 .replyCount(replyCount)
                 .build();

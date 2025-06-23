@@ -21,7 +21,9 @@ const UpdateMyProfile = () => {
 
   const fetchProfile = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/member/me", { headers });
+      const res = await axios.get("http://localhost:8080/api/members/me", {
+        headers,
+      });
       if (!res.data || !res.data.nickname) {
         throw new Error("프로필 응답 데이터가 올바르지 않습니다.");
       }
@@ -57,9 +59,13 @@ const UpdateMyProfile = () => {
     formData.append("file", file);
 
     try {
-      await axios.post("http://localhost:8080/member/profile-image", formData, {
-        headers: { ...headers, "Content-Type": "multipart/form-data" },
-      });
+      await axios.post(
+        "http://localhost:8080/api/members/profile-image",
+        formData,
+        {
+          headers: { ...headers, "Content-Type": "multipart/form-data" },
+        }
+      );
       setMessage(" 이미지 업로드 성공");
       setTimeout(() => {
         navigate("/UpdateProfile");
@@ -85,7 +91,11 @@ const UpdateMyProfile = () => {
     }
 
     try {
-      await axios.put("http://localhost:8080/member/update", { nickname }, { headers });
+      await axios.put(
+        "http://localhost:8080/api/members/update",
+        { nickname },
+        { headers }
+      );
       setMessage(" 닉네임 변경 성공");
       setTimeout(() => {
         navigate("/UpdateProfile");
@@ -116,7 +126,11 @@ const UpdateMyProfile = () => {
     }
 
     try {
-      await axios.put("http://localhost:8080/member/password", { currentPassword, newPassword }, { headers });
+      await axios.put(
+        "http://localhost:8080/api/members/password",
+        { currentPassword, newPassword },
+        { headers }
+      );
       setMessage(" 비밀번호 변경 성공");
       setError("");
       setCurrentPassword("");
@@ -135,7 +149,9 @@ const UpdateMyProfile = () => {
   const deleteMember = async () => {
     if (!window.confirm("정말 탈퇴하시겠습니까?")) return;
     try {
-      await axios.delete("http://localhost:8080/member/delete", { headers });
+      await axios.delete("http://localhost:8080/api/members/delete", {
+        headers,
+      });
       localStorage.removeItem("token");
       alert("회원 탈퇴가 완료되었습니다.");
       navigate("/login");
@@ -154,7 +170,9 @@ const UpdateMyProfile = () => {
   return (
     <div className="max-w-md mx-auto p-6 bg-white shadow-md rounded-xl mt-10 space-y-6">
       <Link to="/profile">
-        <h2 className="text-4xl font-bold text-center text-red-500 ">내 프로필</h2>
+        <h2 className="text-4xl font-bold text-center text-red-500 ">
+          내 프로필
+        </h2>
       </Link>
 
       <img
@@ -217,7 +235,10 @@ const UpdateMyProfile = () => {
         </button>
       </div>
 
-      <button onClick={deleteMember} className="w-full py-2 bg-red-500 text-white rounded hover:bg-red-600">
+      <button
+        onClick={deleteMember}
+        className="w-full py-2 bg-red-500 text-white rounded hover:bg-red-600"
+      >
         회원 탈퇴
       </button>
 

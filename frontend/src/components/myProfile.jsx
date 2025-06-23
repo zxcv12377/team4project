@@ -18,7 +18,9 @@ const MyProfile = () => {
 
   const fetchProfile = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/member/me", { headers });
+      const res = await axios.get("http://localhost:8080/api/members/me", {
+        headers,
+      });
       setProfile(res.data);
       setComment(res.data.comment || "");
     } catch (err) {
@@ -34,7 +36,11 @@ const MyProfile = () => {
 
   const updateComment = async () => {
     try {
-      await axios.put("http://localhost:8080/member/comment", { comment }, { headers });
+      await axios.put(
+        "http://localhost:8080/api/members/comment",
+        { comment },
+        { headers }
+      );
       setMessage(" 코멘트가 저장되었습니다.");
       setError("");
       fetchProfile();
@@ -48,7 +54,9 @@ const MyProfile = () => {
 
   return (
     <div className="max-w-md mx-auto p-6 bg-white shadow-md rounded-xl mt-10 space-y-6">
-      <h2 className="text-4xl font-extrabold text-center text-red-500">내 프로필</h2>
+      <h2 className="text-4xl font-extrabold text-center text-red-500">
+        내 프로필
+      </h2>
 
       <img
         src={`http://localhost:8080/uploads/${profile.profileimg}`}
@@ -56,10 +64,14 @@ const MyProfile = () => {
         className="w-36 h-36 object-cover rounded-full mx-auto"
       />
 
-      <p className="text-center text-2xl font-semibold mt-4">{profile.nickname}</p>
+      <p className="text-center text-2xl font-semibold mt-4">
+        {profile.nickname}
+      </p>
 
       <div className="mt-6">
-        <label className="block mb-2 text-m font-medium text-gray-700">내 소개</label>
+        <label className="block mb-2 text-m font-medium text-gray-700">
+          내 소개
+        </label>
         <textarea
           value={comment}
           onChange={(e) => setComment(e.target.value)}
@@ -67,7 +79,10 @@ const MyProfile = () => {
           maxLength={500}
           placeholder="자기소개나 한 마디를 남겨보세요"
         />
-        <button onClick={updateComment} className="mt-2 w-full py-2 bg-yellow-500 text-white rounded hover:bg-blue-600">
+        <button
+          onClick={updateComment}
+          className="mt-2 w-full py-2 bg-yellow-500 text-white rounded hover:bg-blue-600"
+        >
           코멘트 저장
         </button>
         <button

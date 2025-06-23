@@ -4,8 +4,16 @@ import com.example.server.dto.MemberRequestDTO;
 import com.example.server.dto.MemberResponseDTO;
 import com.example.server.entity.Member;
 import com.example.server.mapper.MemberMapper;
+import com.example.server.repository.BoardRepository;
+import com.example.server.repository.ChatRoomMemberRepository;
 import com.example.server.repository.EmailVerificationTokenRepository;
+import com.example.server.repository.FriendRepository;
+import com.example.server.repository.InviteRepository;
 import com.example.server.repository.MemberRepository;
+import com.example.server.repository.NotificationRepository;
+import com.example.server.repository.ReplyRepository;
+import com.example.server.repository.ServerMemberRepository;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -23,6 +31,15 @@ public class MemberServiceImpl implements MemberService {
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
     private final EmailVerificationTokenRepository tokenRepository;
+    private final BoardRepository boardRepository;
+    private final ReplyRepository replyRepository;
+    private final FriendRepository friendRepository;
+    private final NotificationRepository notificationRepository;
+    private final InviteRepository inviteRepository;
+    private final ChatRoomMemberRepository chatRoomMemberRepository;
+    private final ServerMemberRepository serverMemberRepository;
+
+
 
     // 회원 가입시 이메일 중복여부 확인
     @Override
@@ -74,7 +91,25 @@ public class MemberServiceImpl implements MemberService {
     public void delete(String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
-        tokenRepository.deleteByEmail(member.getEmail());
+
+                // 댓글삭제
+        replyRepository.deleteAllByMember(member);
+        // 게시글 삭제
+        boardRepository.deleteAllByMember(member);
+        // 채팅방 멤버 삭제
+        chatRoomMemberRepository.deleteAllByMember(member);
+        // 서버 멤버 삭제
+        serverMemberRepository.deleteAllByMember(member);
+
+        // 삭제하는게 나아보이는 entity 3개 
+        friendRepository.deleteAllByMemberA(member);
+        friendRepository.deleteAllByMemberB(member);
+        notificationRepository.deleteAllBySender(member);
+        notificationRepository.deleteAllByReceiver(member);
+        inviteRepository.deleteAllByCreator(member);
+
+        tokenRepository.deleteByMember(member);
+        // 회원삭제
         memberRepository.delete(member);
     }
 

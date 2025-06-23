@@ -16,7 +16,7 @@ import java.util.Map;
 @RequiredArgsConstructor
 @Log4j2
 @RestController
-@RequestMapping("/replies")
+@RequestMapping("/api/replies")
 public class ReplyController {
 
     private final ReplyService replyService;

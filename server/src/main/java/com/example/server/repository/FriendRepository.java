@@ -48,4 +48,8 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
   List<String> findFriendEmailsByStatusAndMyId(@Param("status") FriendStatus status, @Param("myId") Long myId);
 
   // 상태 기준(신청, 수락 등) 전체 조회 등 자유롭게 추가 가능함
+
+  // member정보 삭제
+  void deleteAllByMemberA(Member member);
+  void deleteAllByMemberB(Member member);
 }

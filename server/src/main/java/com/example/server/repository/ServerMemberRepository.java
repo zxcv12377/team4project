@@ -1,5 +1,6 @@
 package com.example.server.repository;
 
+import com.example.server.entity.Member;
 import com.example.server.entity.Server;
 import com.example.server.entity.ServerMember;
 import com.example.server.entity.ServerRole;
@@ -19,4 +20,6 @@ public interface ServerMemberRepository extends JpaRepository<ServerMember, Long
     List<ServerMember> findByServer(Server server);
 
     Optional<ServerMember> findByMemberIdAndServerId(Long id, Long serverId);
+
+    void deleteAllByMember(Member member);
 }

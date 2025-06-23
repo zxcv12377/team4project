@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.example.server.entity.Member;
 import com.example.server.entity.Notification;
 import com.example.server.entity.enums.NotificationType;
 
@@ -28,4 +29,7 @@ public interface NotificationRepository extends JpaRepository<Notification, Long
         // 사용자의 모든 알림을 읽음 처리
         @Query("UPDATE Notification n SET n.isRead = true WHERE n.receiver.email = :email")
         void markAllAsRead(@Param("email") String email);
+
+        void deleteAllBySender(Member member);
+        void deleteAllByReceiver(Member member);
 }

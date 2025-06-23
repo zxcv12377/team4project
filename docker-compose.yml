@@ -3,7 +3,7 @@ version: "3.8"
 services:
   frontend:
     build:
-      context: ./cla
+      context: ./frontend
     ports:
       - "3000:3000"
     depends_on:
@@ -13,7 +13,7 @@ services:
 
   backend:
     build:
-      context: ./sockettest
+      context: ./server
     ports:
       - "8080:8080"
     environment:

@@ -14,19 +14,25 @@ import java.time.LocalDateTime;
 import java.util.Optional;
 
 public interface EmailVerificationTokenRepository extends JpaRepository<EmailVerificationToken, Long> {
-    Optional<EmailVerificationToken> findByEmailAndToken(String email, String token);
+    
+    Optional<EmailVerificationToken> findByMemberAndToken(Member member, String token);
+
 
     @Modifying
     @Transactional
-    @Query("DELETE FROM EmailVerificationToken t WHERE t.email = :email")
-    void deleteByEmail(@Param("email") String email);
+    @Query("DELETE FROM EmailVerificationToken t WHERE t.member = :member")
+    void deleteByMember(@Param("member") Member member);
+
+    @Modifying
+    @Transactional
+    void deleteAllByMember_Email(String email);
 
     @Modifying
     @Transactional
     void deleteByExpirationDateBefore(LocalDateTime time);
 
-    Optional<EmailVerificationToken> findByEmailAndTokenAndVerifiedFalseAndExpirationDateAfter(
-            String email, String token, LocalDateTime now);
+    Optional<EmailVerificationToken> findByMemberAndTokenAndVerifiedFalseAndExpirationDateAfter(
+    Member member, String token, LocalDateTime now);
 
-    Optional<EmailVerificationToken> findByEmailAndVerifiedTrue(String email);
+    Optional<EmailVerificationToken> findByMemberAndVerifiedTrue(Member member);
 }
