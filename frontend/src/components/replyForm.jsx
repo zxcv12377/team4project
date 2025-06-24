@@ -1,26 +1,35 @@
 import React, { useState, useRef } from "react";
-import ReactMarkdown from "react-markdown";
 
 const emojis = ["😀", "😂", "😍", "🔥", "😢", "👍", "👎", "💯"];
 
-const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
+export default function ReplyForm({ bno, parentRno = null, onSubmit }) {
   const [content, setContent] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const fileInputRef = useRef();
 
+  const token = localStorage.getItem("token");
+  const showButton = isFocused || content.length > 0;
+
+  // 🔒 로그인하지 않은 사용자 → 입력창 대신 안내 메시지
+  if (!token) {
+    return (
+      <div className="bg-white border border-gray-200 rounded-2xl shadow-md w-full max-w-3xl mx-auto p-6 text-center">
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">댓글 작성</h3>
+        <p className="text-gray-600">
+          <span className="text-red-500 font-semibold">로그인</span> 후 댓글을 작성할 수 있습니다.
+        </p>
+        <a href="/login" className="inline-block mt-4 px-4 py-2 text-sm bg-red-400 text-white rounded hover:bg-red-500">
+          로그인하러 가기
+        </a>
+      </div>
+    );
+  }
+
+  // ✅ 로그인한 사용자만 아래 댓글 폼 렌더링
   const handleSubmit = async (e) => {
     e.preventDefault();
     const trimmedContent = content.trim();
-    if (!trimmedContent) {
-      alert("댓글 내용을 입력하세요.");
-      return;
-    }
-
-    const token = localStorage.getItem("token");
-    if (!token) {
-      alert("로그인 후 댓글을 작성할 수 있습니다.");
-      return;
-    }
+    if (!trimmedContent) return alert("댓글 내용을 입력하세요.");
 
     try {
       const response = await fetch("/api/replies", {
@@ -32,15 +41,11 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
         body: JSON.stringify({ bno, text: content, parentRno }),
       });
 
-      if (!response.ok) {
-        alert(`댓글 등록 실패: ${response.status}`);
-        return;
-      }
-
+      if (!response.ok) return alert(`댓글 등록 실패: ${response.status}`);
       setContent("");
       onSubmit();
     } catch (err) {
-      console.log(err);
+      console.error(err);
       alert("서버 오류로 댓글을 등록할 수 없습니다.");
     }
   };
@@ -50,14 +55,13 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
     if (!textarea) return;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
-    const newText = content.substring(0, start) + text + content.substring(end);
+    const newText = content.slice(0, start) + text + content.slice(end);
     setContent(newText);
   };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-
     const formData = new FormData();
     formData.append("file", file);
 
@@ -66,7 +70,6 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
         method: "POST",
         body: formData,
       });
-
       const data = await res.json();
       const imageUrl = data.url;
       insertAtCursor(`![image](${imageUrl})`);
@@ -76,37 +79,39 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
     }
   };
 
-  const showButton = isFocused || content.length > 0;
-
   return (
-    <form onSubmit={handleSubmit} className="bg-[#1e293b] p-6 rounded-xl w-full max-w-md mx-auto">
-      <h3 className="text-2xl font-semibold text-white mb-4">댓글 작성</h3>
-      <div className="relative w-full mb-4">
+    <form
+      onSubmit={handleSubmit}
+      className="bg-white border border-gray-200 rounded-2xl shadow-md w-full max-w-3xl mx-auto p-6"
+    >
+      <h3 className="text-xl font-semibold text-gray-800 mb-4">댓글 작성</h3>
+
+      <div className="relative mb-4">
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="댓글을 입력하세요"
-          className="w-full resize-none min-h-[80px] rounded-md border border-gray-600 p-4 bg-[#1e293b] text-white focus:outline-none focus:ring-2 focus:ring-indigo-500"
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
+          className="w-full min-h-[90px] resize-none rounded-lg border border-gray-300 p-4 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-400"
         />
         {showButton && (
           <button
             type="submit"
-            className="absolute right-3 top-2 rounded-xl bg-indigo-500 text-white hover:bg-indigo-600 p-2"
+            className="absolute right-4 top-3 px-4 py-1.5 rounded-lg bg-indigo-500 text-sm text-white hover:bg-indigo-600 transition"
           >
             등록
           </button>
         )}
       </div>
 
-      <div className="flex items-center gap-2 text-xl mb-2">
+      <div className="flex flex-wrap items-center gap-2 text-xl">
         {emojis.map((emoji) => (
           <button
             key={emoji}
             type="button"
-            className="hover:scale-110 transition"
             onClick={() => insertAtCursor(emoji)}
+            className="hover:scale-110 transition"
           >
             {emoji}
           </button>
@@ -114,14 +119,12 @@ const ReplyForm = ({ bno, parentRno = null, onSubmit }) => {
         <button
           type="button"
           onClick={() => fileInputRef.current.click()}
-          className="text-sm px-3 py-1 border rounded-md hover:bg-indigo-100"
+          className="ml-1 px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-100"
         >
           📷 이미지 첨부
         </button>
-        <input type="file" accept="image/*" hidden ref={fileInputRef} onChange={handleImageUpload} />
+        <input type="file" accept="image/*" ref={fileInputRef} hidden onChange={handleImageUpload} />
       </div>
     </form>
   );
-};
-
-export default ReplyForm;
+}

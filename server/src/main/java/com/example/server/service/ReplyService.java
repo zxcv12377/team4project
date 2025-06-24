@@ -30,10 +30,7 @@ public class ReplyService {
         private final ReplyLikeRepository replyLikeRepository;
 
         // 댓글 등록
-        public Long create(ReplyDTO dto) {
-                Member member = memberRepository.findByEmail(dto.getNickname())
-                                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-
+        public Long create(ReplyDTO dto, Member member) {
                 Board board = boardRepository.findById(dto.getBno())
                                 .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
 
@@ -46,7 +43,7 @@ public class ReplyService {
                 Reply reply = Reply.builder()
                                 .text(dto.getText())
                                 .board(board)
-                                .member(member)
+                                .member(member) // 🔐 로그인된 사용자
                                 .parent(parent)
                                 .build();
 
@@ -93,16 +90,34 @@ public class ReplyService {
         }
 
         // 댓글 수정
-        public Long update(ReplyDTO dto) {
-                Reply reply = replyRepository.findById(dto.getRno())
+        public Long update(Long rno, String newText, Member currentUser) {
+                Reply reply = replyRepository.findById(rno)
                                 .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
-                reply.updateText(dto.getText());
+
+                boolean isWriter = reply.getMember().getId().equals(currentUser.getId());
+                boolean isAdmin = currentUser.getRoles().contains(MemberRole.ADMIN);
+
+                if (!isWriter && !isAdmin) {
+                        throw new SecurityException("수정 권한이 없습니다.");
+                }
+
+                reply.updateText(newText);
                 return replyRepository.save(reply).getRno();
         }
 
         // 댓글 삭제
-        public void delete(Long rno) {
-                replyRepository.deleteById(rno);
+        public void delete(Long rno, Member currentUser) {
+                Reply reply = replyRepository.findById(rno)
+                                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+
+                boolean isWriter = reply.getMember().getId().equals(currentUser.getId());
+                boolean isAdmin = currentUser.getRoles().contains(MemberRole.ADMIN);
+
+                if (!isWriter && !isAdmin) {
+                        throw new SecurityException("삭제 권한이 없습니다.");
+                }
+
+                replyRepository.delete(reply);
         }
 
         // 댓글 추천
