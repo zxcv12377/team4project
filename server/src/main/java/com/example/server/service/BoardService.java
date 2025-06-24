@@ -18,6 +18,7 @@ import com.example.server.entity.Member;
 import com.example.server.repository.BoardRepository;
 import com.example.server.repository.MemberRepository;
 import com.example.server.repository.ReplyRepository;
+import com.example.server.repository.SearchBoardRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;

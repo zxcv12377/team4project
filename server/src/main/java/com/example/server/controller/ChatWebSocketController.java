@@ -36,12 +36,13 @@ public class ChatWebSocketController {
             SimpMessageHeaderAccessor headerAccessor) {
 
         // WebSocket 세션에서 사용자 정보 가져오기
-        String username = (String) headerAccessor.getSessionAttributes().get("username");
+        String email = (String) headerAccessor.getSessionAttributes().get("email");
         String nickname = (String) headerAccessor.getSessionAttributes().get("nickname");
-        log.warn("💬 세션에서 꺼낸 사용자정보 username={}, nickname={}", username, nickname);
+        log.warn("헤더 전체 출력: {}", headerAccessor.getSessionAttributes());
+        log.warn("💬 세션에서 꺼낸 사용자정보 email={}, nickname={}", email, nickname);
 
         // 메시지 DB에 저장
-        chatMessageService.handleMessage(roomId, dto.getMessage(), username);
+        chatMessageService.handleMessage(roomId, dto.getMessage(), email);
 
         // WebSocket 응답용 DTO 생성
         ChatMessageDTO responseMessage = new ChatMessageDTO();
@@ -58,11 +59,15 @@ public class ChatWebSocketController {
 
     @MessageMapping("/auth")
     public void authenticate(@Payload Map<String, String> payload, StompHeaderAccessor accessor) {
+        log.warn("🟢 authenticate 메서드 호출됨");
         String token = payload.get("token");
         if (token != null && jwtTokenProvider.isTokenValid(token)) {
             Authentication auth = jwtTokenProvider.getAuthentication(token);
             accessor.setUser(auth);
-            accessor.getSessionAttributes().put("username", auth.getName());
+            accessor.getSessionAttributes().put("email", auth.getName());
+            log.warn("🟢 인증 성공, email: {}", auth.getName());
+        } else {
+            log.warn("❌ 인증 실패");
         }
     }
 
