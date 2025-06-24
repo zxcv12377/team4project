@@ -12,7 +12,7 @@ export default function LoginForm({ onSwitchToRegister }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axiosInstance.post("member/login", {
+      const response = await axiosInstance.post("members/login", {
         email,
         password,
       });
@@ -20,7 +20,7 @@ export default function LoginForm({ onSwitchToRegister }) {
       localStorage.setItem("token", token);
       console.log("LoginForm Token : ", token);
 
-      const userRes = await axiosInstance.get("api/members/me");
+      const userRes = await axiosInstance.get("members/me");
       setUser({ ...userRes.data, token });
       navigate("/boardList");
     } catch (err) {

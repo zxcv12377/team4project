@@ -1,6 +1,7 @@
 // src/lib/axiosInstance.js
 
 import axios from "axios";
+import { Navigate } from "react-router-dom";
 
 // 🔧 기본 인스턴스
 const axiosInstance = axios.create({
@@ -92,7 +93,7 @@ axiosInstance.interceptors.response.use(
         localStorage.removeItem("email");
         localStorage.removeItem("nickname");
 
-        window.location.href = "/login";
+        Navigate("/login");
         return Promise.reject(refreshError);
       }
     }
