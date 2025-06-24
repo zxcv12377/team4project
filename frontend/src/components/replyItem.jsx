@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import ReplyForm from "./replyForm";
 
-const ReplyItem = ({ reply, bno, refresh, depth = 0 }) => {
+export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editedText, setEditedText] = useState(reply.text);
@@ -9,23 +9,15 @@ const ReplyItem = ({ reply, bno, refresh, depth = 0 }) => {
 
   const handleDelete = async () => {
     if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
-
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`/api/replies/${reply.rno}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
-
-      if (res.ok) {
-        refresh();
-      } else {
-        alert("삭제 실패");
-      }
-    } catch (err) {
-      console.error(err);
+      if (res.ok) refresh();
+      else alert("삭제 실패");
+    } catch {
       alert("서버 오류");
     }
   };
@@ -48,70 +40,74 @@ const ReplyItem = ({ reply, bno, refresh, depth = 0 }) => {
       } else {
         alert("수정 실패");
       }
-    } catch (err) {
-      console.error(err);
+    } catch {
       alert("서버 오류");
     }
   };
 
   return (
-    <div className={`mb-4 ${depth > 0 ? "border-l-2 pl-4" : ""}`} style={{ marginLeft: depth * 8 }}>
+    <div className={`mb-6 ${depth ? "border-l-2 border-gray-200 pl-4" : ""}`} style={{ marginLeft: depth * 8 }}>
       {editing ? (
-        <div className="space-y-1">
+        <>
           <textarea
-            className="w-full p-2 border border-gray-600 rounded-md text-sm bg-[#1e293b] text-white"
+            className="w-full p-3 border border-gray-300 rounded-lg text-sm"
             value={editedText}
             onChange={(e) => setEditedText(e.target.value)}
           />
-          <div className="flex justify-between mt-2">
-            <button onClick={handleEditSubmit} className="text-xs text-indigo-500 hover:underline">
+          <div className="flex gap-2 mt-2 text-xs">
+            <button
+              onClick={handleEditSubmit}
+              className="px-3 py-1 rounded bg-indigo-500 text-white hover:bg-indigo-600"
+            >
               저장
             </button>
-            <button onClick={() => setEditing(false)} className="text-xs text-gray-500 hover:underline">
+            <button
+              onClick={() => setEditing(false)}
+              className="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-100"
+            >
               취소
             </button>
           </div>
-        </div>
+        </>
       ) : (
-        <div>
-          <div className="flex justify-between items-center text-sm text-gray-400">
+        <>
+          <div className="flex justify-between items-center text-sm text-gray-500">
             <div className="flex items-center gap-1">
-              <span className="font-semibold text-white">{reply.nickname}</span>
+              <span className="font-semibold text-gray-800">{reply.nickname}</span>
               {reply.badge && (
                 <span
                   className={`ml-1 text-[11px] px-1.5 py-0.5 rounded-full font-medium ${
-                    reply.badge === "관리자" ? "bg-red-500 text-white" : "bg-blue-500 text-white"
-                  }`}
+                    reply.badge === "관리자" ? "bg-red-500" : "bg-blue-500"
+                  } text-white`}
                 >
                   {reply.badge}
                 </span>
               )}
             </div>
-            <span className="text-xs">{new Date(reply.createdDate).toLocaleString()}</span>
+            <time className="text-xs">{new Date(reply.createdDate).toLocaleString()}</time>
           </div>
-          <p className="text-white">{reply.text}</p>
-        </div>
+          <p className="mt-1 whitespace-pre-line text-gray-800">{reply.text}</p>
+          <div className="flex justify-between items-center mt-2">
+            <button
+              onClick={() => setShowReplyForm(!showReplyForm)}
+              className="text-xs text-indigo-500 hover:underline"
+            >
+              답글 달기
+            </button>
+            {reply.nickname === currentUser && !editing && (
+              <div className="flex gap-2 text-xs">
+                <button onClick={() => setEditing(true)} className="text-green-600 hover:underline">
+                  수정
+                </button>
+                <button onClick={handleDelete} className="text-red-600 hover:underline">
+                  삭제
+                </button>
+              </div>
+            )}
+          </div>
+        </>
       )}
-
-      <div className="flex justify-between items-center mt-2">
-        <button onClick={() => setShowReplyForm(!showReplyForm)} className="text-xs text-indigo-500 hover:underline">
-          답글 달기
-        </button>
-        {reply.nickname === currentUser && !editing && (
-          <div className="flex gap-2">
-            <button onClick={() => setEditing(true)} className="text-xs text-green-600 hover:underline">
-              수정
-            </button>
-            <button onClick={handleDelete} className="text-xs text-red-600 hover:underline">
-              삭제
-            </button>
-          </div>
-        )}
-      </div>
-
       {showReplyForm && <ReplyForm bno={bno} parentRno={reply.rno} onSubmit={refresh} />}
     </div>
   );
-};
-
-export default ReplyItem;
+}

@@ -2,11 +2,20 @@ package com.example.server.controller;
 
 import com.example.server.dto.ReplyDTO;
 import com.example.server.dto.ReplyResponseDTO;
+import com.example.server.entity.Member;
 import com.example.server.entity.Reply;
+import com.example.server.jwt.JwtUtil;
+import com.example.server.repository.MemberRepository;
+import com.example.server.security.CustomMemberDetails;
 import com.example.server.service.ReplyService;
+
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -20,11 +29,20 @@ import java.util.Map;
 public class ReplyController {
 
     private final ReplyService replyService;
+    private final JwtUtil jwtUtil;
+    private final MemberRepository memberRepository;
 
     // 댓글 등록
     @PostMapping
-    public ResponseEntity<Long> createReply(@RequestBody ReplyDTO dto) {
-        return ResponseEntity.ok(replyService.create(dto));
+    public ResponseEntity<?> createReply(@RequestBody ReplyDTO dto,
+            HttpServletRequest request) {
+        Member member = getMemberFromRequest(request);
+        if (member == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        Long rno = replyService.create(dto, member);
+        return ResponseEntity.ok("댓글 작성 완료 (rno=" + rno + ")");
     }
 
     // 댓글 목록 조회 (sort: best 또는 recent)
@@ -52,9 +70,16 @@ public class ReplyController {
 
     // 댓글 수정
     @PutMapping("/{rno}")
-    public ResponseEntity<Long> updateReply(@PathVariable Long rno, @RequestBody ReplyDTO dto) {
-        dto.setRno(rno);
-        return ResponseEntity.ok(replyService.update(dto));
+    public ResponseEntity<?> updateReply(@PathVariable Long rno,
+            @RequestBody ReplyDTO dto,
+            HttpServletRequest request) {
+        Member member = getMemberFromRequest(request);
+        if (member == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        replyService.update(rno, dto.getText(), member);
+        return ResponseEntity.ok("댓글 수정 완료");
     }
 
     // 댓글 추천
@@ -72,8 +97,35 @@ public class ReplyController {
 
     // 댓글 삭제
     @DeleteMapping("/{rno}")
-    public ResponseEntity<Void> deleteReply(@PathVariable Long rno) {
-        replyService.delete(rno);
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> deleteReply(@PathVariable Long rno,
+            HttpServletRequest request) {
+        Member member = getMemberFromRequest(request);
+        if (member == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        replyService.delete(rno, member);
+        return ResponseEntity.ok("댓글 삭제 완료");
     }
+
+    // ✅ 토큰에서 Member 객체 추출 (공통)
+    private Member getMemberFromRequest(HttpServletRequest request) {
+        String token = extractToken(request);
+        if (token == null || !jwtUtil.isTokenValid(token)) {
+            return null;
+        }
+
+        String email = jwtUtil.getEmail(token); // 또는 jwtUtil.validateAndGetSubject(token)
+        return memberRepository.findByEmail(email).orElse(null);
+    }
+
+    // ✅ Authorization 헤더에서 Bearer 토큰 추출
+    private String extractToken(HttpServletRequest request) {
+        String authHeader = request.getHeader("Authorization");
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            return authHeader.substring(7); // "Bearer " 제거
+        }
+        return null;
+    }
+
 }
