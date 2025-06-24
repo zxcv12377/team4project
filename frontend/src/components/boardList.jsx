@@ -11,7 +11,7 @@ function BoardList() {
 
   useEffect(() => {
     axios
-      .get(`api/board/list?page=${page}`)
+      .get(`board/list?page=${page}`)
       .then((res) => {
         console.log(res.data);
         // setBoards(res.data.dtoList)

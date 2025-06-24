@@ -5,58 +5,78 @@ import UserItemWithDropdown from "@/components/common/UserItemWithDropdown";
 import { useRealtime } from "@/context/RealtimeContext";
 
 export default function FriendPanel() {
-  const [friends, setFriends] = useState([]);
   const [showAdd, setShowAdd] = useState(false);
   const [search, setSearch] = useState("");
   const [result, setResult] = useState([]);
   const [adding, setAdding] = useState(false);
-  const { state } = useRealtime();
-  const [receivedRequests, setReceivedRequests] = useState([]);
-  const [sentRequests, setSentRequests] = useState([]);
+  const { state, dispatch } = useRealtime();
+  const friends = state.friends || [];
 
   useEffect(() => {
     console.log("Online Users:", Array.from(state.onlineUsers));
-    console.log(state);
     console.log("Friends:", friends);
   }, [state.onlineUsers, friends]);
 
   useEffect(() => {
-    axios.get("/friends").then((res) => setFriends(res.data || []));
-  }, []);
+    const fetchFriends = async () => {
+      try {
+        const res = await axios.get("/friends");
+        dispatch({ type: "SET_FRIENDS", payload: res.data || [] });
+      } catch (err) {
+        console.error("❌ 친구 목록 불러오기 실패", err);
+      }
+    };
 
-  useEffect(() => {
-    axios.get("/friends/requests/received").then((res) => setReceivedRequests(res.data || []));
-    axios.get("/friends/requests/sent").then((res) => setSentRequests(res.data || []));
-  }, []);
+    const fetchReceived = async () => {
+      try {
+        const res = await axios.get("/friends/requests/received");
+        dispatch({ type: "SET_RECEIVED", payload: res.data || [] });
+      } catch (err) {
+        console.error("❌ 받은 친구 요청 불러오기 실패", err);
+      }
+    };
+
+    const fetchSent = async () => {
+      try {
+        const res = await axios.get("/friends/requests/sent");
+        dispatch({ type: "SET_SENT", payload: res.data || [] });
+      } catch (err) {
+        console.error("❌ 보낸 친구 요청 불러오기 실패", err);
+      }
+    };
+
+    fetchFriends();
+    fetchReceived();
+    fetchSent();
+  }, [dispatch]);
 
   const handleSearch = () => {
     if (!search.trim()) return;
     setResult([]);
     setAdding(true);
     axios
-      .get(`/members/search?name=${encodeURIComponent(search)}`)
+      .get(`/member/search?name=${encodeURIComponent(search)}`)
       .then((res) => {
-        console.log("검색결과 확인", res.data);
         setResult(res.data || []);
       })
       .finally(() => setAdding(false));
   };
 
   const handleAdd = (id) => {
-    if (!id) {
-      console.error("targetMemberId is null or undefined");
-      return;
-    }
+    if (!id) return;
     axios.post("/friends", { targetMemberId: id }).then(() => {
       const newFriend = result.find((r) => r.mno === id || r.id === id || r.memberId === id);
       if (newFriend) {
-        setSentRequests((prev) => [
-          ...prev,
-          {
-            requestId: id,
-            receiverNickname: newFriend.name,
-          },
-        ]);
+        dispatch({
+          type: "SET_SENT",
+          payload: [
+            ...state.sentRequests,
+            {
+              requestId: id,
+              receiverNickname: newFriend.name,
+            },
+          ],
+        });
       }
       setShowAdd(false);
       setSearch("");
@@ -64,46 +84,47 @@ export default function FriendPanel() {
     });
   };
 
-  const handleDelete = (friendId) => {
+  const handleDelete = async (friendId) => {
     if (!window.confirm("정말 이 친구를 삭제하시겠습니까?")) return;
-    axios
-      .delete(`/friends/${friendId}`)
-      .then(() => {
-        setFriends((f) => f.filter((friend) => friend.friendId !== friendId));
-      })
-      .catch((err) => {
-        console.error("친구 삭제 실패", err);
-        alert("친구 삭제에 실패했습니다.");
+    try {
+      await axios.delete(`/friends/${friendId}`);
+      dispatch({
+        type: "SET_FRIENDS",
+        payload: state.friends.filter((f) => f.friendId !== friendId),
       });
+    } catch (err) {
+      console.error("친구 삭제 실패", err);
+      alert("친구 삭제에 실패했습니다.");
+    }
   };
 
-  const handleAccept = (friendId) => {
-    axios.post(`/friends/${friendId}/accept`).then(() => {
-      const acceptedRequest = receivedRequests.find((r) => r.requestId === friendId);
-      if (acceptedRequest) {
-        setFriends((f) => [
-          ...f,
-          {
-            friendId: acceptedRequest.requestId,
-            memberId: acceptedRequest.requesterId,
-            name: acceptedRequest.requesterNickname,
-            username: acceptedRequest.username || acceptedRequest.requesterUsername,
-          },
-        ]);
-      }
-      setReceivedRequests((r) => r.filter((req) => req.requestId !== friendId));
-    });
+  const handleAccept = async (friendId) => {
+    try {
+      await axios.post(`/friends/${friendId}/accept`);
+      dispatch({
+        type: "SET_RECEIVED",
+        payload: state.receivedRequests.filter((req) => req.requestId !== friendId),
+      });
+    } catch (err) {
+      console.error("❌ 친구 수락 실패", err);
+    }
   };
 
   const handleReject = (friendId) => {
     axios.post(`/friends/${friendId}/reject`).then(() => {
-      setReceivedRequests((r) => r.filter((req) => req.requestId !== friendId));
+      dispatch({
+        type: "SET_RECEIVED",
+        payload: state.receivedRequests.filter((req) => req.requestId !== friendId),
+      });
     });
   };
 
   const handleCancel = (friendId) => {
     axios.delete(`/friends/${friendId}`).then(() => {
-      setSentRequests((s) => s.filter((req) => req.requestId !== friendId));
+      dispatch({
+        type: "SET_SENT",
+        payload: state.sentRequests.filter((req) => req.requestId !== friendId),
+      });
     });
   };
 
@@ -119,10 +140,10 @@ export default function FriendPanel() {
         </button>
       </div>
 
-      {receivedRequests.length > 0 && (
+      {state.receivedRequests.length > 0 && (
         <div className="p-4 border-b border-zinc-800">
           <div className="text-zinc-400 text-sm mb-2">받은 친구 요청</div>
-          {receivedRequests.map((req) => (
+          {state.receivedRequests.map((req) => (
             <div key={req.requestId} className="flex items-center justify-between py-2 px-2 rounded hover:bg-zinc-800">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center">
@@ -152,10 +173,10 @@ export default function FriendPanel() {
         </div>
       )}
 
-      {sentRequests.length > 0 && (
+      {state.sentRequests.length > 0 && (
         <div className="p-4 border-b border-zinc-800">
           <div className="text-zinc-400 text-sm mb-2">보낸 친구 요청</div>
-          {sentRequests.map((req) => (
+          {state.sentRequests.map((req) => (
             <div key={req.requestId} className="flex items-center justify-between py-2 px-2 rounded hover:bg-zinc-800">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 rounded-full bg-zinc-700 flex items-center justify-center">
@@ -216,7 +237,7 @@ export default function FriendPanel() {
       {showAdd && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
           <div className="bg-zinc-900 rounded p-6 w-80 flex flex-col gap-3">
-            <div className="text-white font-bold mb-2">검색 할 유저 닉네임 입력</div>
+            <div className="text-white font-bold mb-2">검색할 유저 닉네임 입력</div>
             <div className="flex gap-2">
               <input
                 className="flex-1 rounded p-2"

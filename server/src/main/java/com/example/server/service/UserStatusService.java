@@ -33,23 +33,31 @@ public class UserStatusService {
     private final MemberRepository memberRepository;
 
     public void markOnline(String email, String sessionId) {
-        String sessionsKey = "user:" + email + ":sessions";
-        redisTemplate.opsForSet().add(sessionsKey, sessionId);
-        Long count = redisTemplate.opsForSet().size(sessionsKey);
+        String sessionKey = "user:" + email + ":sessions";
 
-        // 디버깅 로그
-        log.info("🟢 Connected: user={}, sessionId={}, count={}", email, sessionId, count);
+        // Redis에 등록된 기존 세션들을 가져온다
+        Set<String> oldSessions = redisTemplate.opsForSet().members(sessionKey);
+        if (oldSessions != null) {
+            for (String oldSession : oldSessions) {
+                redisTemplate.opsForSet().remove(sessionKey, oldSession);
+                log.info("♻️ 재연결: 이전 세션 {} 제거됨", oldSession);
+            }
+        }
 
-        if (count == 1) {
-            redisTemplate.opsForSet().add("online_users", email);
+        // 새 세션만 남도록 등록
+        redisTemplate.opsForSet().add(sessionKey, sessionId);
 
-            // 상태 브로드캐스트
+        // online_users 등록 (이미 들어있어도 중복 안전)
+        redisTemplate.opsForSet().add("online_users", email);
+        log.info(" 최종 세션 등록: user={}, sessionId={}", email, sessionId);
+
+        // 최초 등록인 경우에만 브로드캐스트
+        if (oldSessions == null || oldSessions.isEmpty()) {
             eventPublisher.publishOnline(email);
             messagingTemplate.convertAndSend("/topic/online-users",
                     new StatusChangeEvent(email, UserStatus.ONLINE));
 
-            // 친구에게만 전송
-            for (String friend : getFriendEmails(email)) {
+            for (String friend : getFriendemails(email)) {
                 messagingTemplate.convertAndSendToUser(friend, "/queue/status",
                         Map.of("email", email, "status", "ONLINE"));
             }
@@ -74,16 +82,16 @@ public class UserStatusService {
                     new StatusChangeEvent(email, UserStatus.OFFLINE));
 
             // 친구에게만 전송
-            for (String friend : getFriendEmails(email)) {
+            for (String friend : getFriendemails(email)) {
                 messagingTemplate.convertAndSendToUser(friend, "/queue/status",
                         Map.of("email", email, "status", "OFFLINE"));
             }
         }
     }
 
-    public List<String> getOnlineFriendEmails(String myEmail) {
-        Long myId = memberRepository.findByEmail(myEmail)
-                .orElseThrow(() -> new UsernameNotFoundException(myEmail))
+    public List<String> getOnlineFriendemails(String myemail) {
+        Long myId = memberRepository.findByEmail(myemail)
+                .orElseThrow(() -> new UsernameNotFoundException(myemail))
                 .getId();
 
         List<String> allFriends = friendRepository.findFriendEmailsByStatusAndMyId(FriendStatus.ACCEPTED,
@@ -92,9 +100,9 @@ public class UserStatusService {
         return allFriends.stream().filter(online::contains).collect(Collectors.toList());
     }
 
-    public List<String> getFriendEmails(String myEmail) {
-        Long myId = memberRepository.findByEmail(myEmail)
-                .orElseThrow(() -> new UsernameNotFoundException(myEmail))
+    public List<String> getFriendemails(String myemail) {
+        Long myId = memberRepository.findByEmail(myemail)
+                .orElseThrow(() -> new UsernameNotFoundException(myemail))
                 .getId();
 
         return friendRepository.findFriendEmailsByStatusAndMyId(FriendStatus.ACCEPTED, myId);

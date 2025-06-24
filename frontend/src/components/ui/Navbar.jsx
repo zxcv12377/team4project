@@ -3,10 +3,12 @@ import { useUserContext } from "@/context/UserContext";
 import { motion } from "framer-motion";
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { useLogout } from "../../hooks/useLogout";
 
 const Navbar = ({ onLogout }) => {
   const context = useUserContext();
   const { user, loading } = context;
+  const logout = useLogout();
   const isLoggedIn = !!localStorage.getItem("token");
   const navigate = useNavigate();
   const { dark, setDark } = useTheme();
@@ -29,7 +31,7 @@ const Navbar = ({ onLogout }) => {
         <div className="flex items-center space-x-4 text-sm">
           {/* 로그인 사용자 닉네임 표시 */}
           {isLoggedIn && user?.name && <span className="text-gray-500"> 닉네임: {user.name}</span>}
-          <Link to="/posts" className="hover:underline">
+          <Link to="/boardList" className="hover:underline">
             게시판
           </Link>
           {isLoggedIn ? (
@@ -37,7 +39,7 @@ const Navbar = ({ onLogout }) => {
               <Link to="/mypage" className="hover:underline">
                 마이페이지
               </Link>
-              <button onClick={handleLogout} className="hover:underline">
+              <button onClick={logout} className="hover:underline bg-transparent border-none outline-none">
                 로그아웃
               </button>
             </>

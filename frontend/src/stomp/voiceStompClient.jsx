@@ -8,9 +8,14 @@ export const connectStomp = (onMessage, onConnectCallback) => {
   const socket = new SockJS(`http://localhost:8080/ws-voice?token=${token}`);
   voiceStompClient = new Client({
     webSocketFactory: () => socket,
-    reconnectDelay: 5000,
+    // reconnectDelay: 5000,
     onConnect: () => {
+      voiceStompClient.publish({
+        destination: "/app/auth",
+        body: JSON.stringify({ token: `Bearer ${token}` }),
+      });
       console.log("🔗 STOMP Connected");
+
       if (onConnectCallback) onConnectCallback();
     },
     onStompError: (frame) => {
@@ -44,6 +49,7 @@ export const sendSpeakingStatus = (memberId, channelId, speaking) => {
 
   voiceStompClient.publish({
     destination: "/api/voice/speaking",
+    headers: { "content-type": "application/json" },
     body: JSON.stringify(message),
   });
 };

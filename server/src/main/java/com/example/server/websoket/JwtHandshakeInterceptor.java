@@ -36,13 +36,14 @@ public class JwtHandshakeInterceptor implements HandshakeInterceptor {
                 log.warn("Missing token in WebSocket handshake");
                 return false;
             }
+            log.warn("쿼리 상황 확인 : ", query);
 
             String token = Arrays.stream(query.split("&"))
                     .filter(p -> p.startsWith("token="))
                     .map(p -> p.substring("token=".length()))
                     .findFirst()
                     .orElse(null);
-
+            log.warn("토큰 상황 확인 : ", token);
             if (token == null || !jwtUtil.isTokenValid(token)) {
                 log.warn("Invalid JWT token");
                 return false;

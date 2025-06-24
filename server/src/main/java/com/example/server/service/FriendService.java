@@ -1,12 +1,19 @@
 package com.example.server.service;
 
 import com.example.server.dto.FriendDTO;
+import com.example.server.dto.FriendEvent;
 import com.example.server.entity.Friend;
 import com.example.server.entity.Member;
+import com.example.server.entity.enums.RedisChannelConstants;
 import com.example.server.entity.FriendStatus;
 import com.example.server.repository.FriendRepository;
 import com.example.server.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,6 +29,11 @@ public class FriendService {
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
     private final MemberService memberService;
+    private final SimpMessagingTemplate messagingTemplate;
+
+    @Autowired
+    @Qualifier("friendEventRedisTemplate")
+    private RedisTemplate<String, Object> redisTemplate;
 
     @Transactional(readOnly = true)
     public List<String> getFriendEmails(String email) {
@@ -39,6 +51,7 @@ public class FriendService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
         Member you = memberRepository.findById(targetId)
                 .orElseThrow(() -> new IllegalArgumentException("상대 없음"));
+        Friend friend;
 
         // 현재 방향 확인
         Optional<Friend> existing = friendRepository.findByMemberAAndMemberB(me, you);
@@ -49,6 +62,7 @@ public class FriendService {
                 f.setCreatedAt(LocalDateTime.now());
                 f.setMemberA(me);
                 f.setMemberB(you);
+                friend = f;
             } else {
                 throw new IllegalStateException("이미 친구 신청 중/수락됨");
             }
@@ -62,12 +76,13 @@ public class FriendService {
                     f.setCreatedAt(LocalDateTime.now());
                     f.setMemberA(me);
                     f.setMemberB(you);
+                    friend = f;
                 } else {
                     throw new IllegalStateException("이미 친구 신청 중/수락됨");
                 }
             } else {
                 // 새로운 친구 신청
-                Friend friend = Friend.builder()
+                friend = Friend.builder()
                         .memberA(me)
                         .memberB(you)
                         .status(FriendStatus.REQUESTED)
@@ -81,6 +96,13 @@ public class FriendService {
         friendRepository.findByMemberAAndMemberB(you, me)
                 .filter(f -> f.getStatus() == FriendStatus.REJECTED)
                 .ifPresent(friendRepository::delete);
+        FriendEvent event = new FriendEvent(
+                "REQUEST_RECEIVED",
+                targetId,
+                FriendDTO.RequestResponse.from(friend) // 정확한 정적 생성자 사용
+        );
+
+        redisTemplate.convertAndSend(RedisChannelConstants.FRIEND_REQUEST_CHANNEL, event);
     }
 
     @Transactional
@@ -96,6 +118,26 @@ public class FriendService {
         friend.setStatus(FriendStatus.ACCEPTED);
         friendRepository.save(friend);
 
+        // 요청자에게 → 친구 추가됨 메시지
+        FriendEvent toRequester = new FriendEvent(
+                "REQUEST_ACCEPTED",
+                friend.getMemberA().getId(), // 요청자 ID
+                FriendDTO.RequestResponse.from(friend));
+        redisTemplate.convertAndSend(RedisChannelConstants.FRIEND_REQUEST_CHANNEL, toRequester);
+
+        // 수락자에게도 → 친구 추가됨 메시지 (자기 목록 반영용)
+        FriendEvent toAccepter = new FriendEvent(
+                "REQUEST_ACCEPTED",
+                friend.getMemberB().getId(), // 수락자 ID
+                FriendDTO.RequestResponse.from(friend));
+        redisTemplate.convertAndSend(RedisChannelConstants.FRIEND_REQUEST_CHANNEL, toAccepter);
+
+        // 서버 연결끊김 대비 websoket 전송 보강
+        String requesterUsername = memberRepository.findEmailById(friend.getMemberA().getId());
+        String accepterUsername = memberRepository.findEmailById(friend.getMemberB().getId());
+
+        messagingTemplate.convertAndSendToUser(requesterUsername, "/queue/friend", toRequester);
+        messagingTemplate.convertAndSendToUser(accepterUsername, "/queue/friend", toAccepter);
         // 반대방향 REJECTED 기록 제거
         friendRepository.findByMemberAAndMemberB(friend.getMemberB(), friend.getMemberA())
                 .filter(f -> f.getStatus() == FriendStatus.REJECTED)
@@ -120,6 +162,39 @@ public class FriendService {
 
         friend.setStatus(FriendStatus.REJECTED);
         friendRepository.save(friend);
+
+        // 🔥 실시간 거절 이벤트 → 요청자에게 보내기
+        FriendEvent event = new FriendEvent(
+                "REQUEST_REJECTED",
+                friend.getMemberA().getId(), // 요청자 ID
+                FriendDTO.RequestResponse.from(friend));
+
+        redisTemplate.convertAndSend(RedisChannelConstants.FRIEND_REQUEST_CHANNEL, event);
+
+    }
+
+    // 친구요청 취소 (내가 요청자일 때만 가능)
+    @Transactional
+    public void cancelFriendRequest(Long friendId, Long myId) {
+        Friend friend = friendRepository.findById(friendId)
+                .orElseThrow(() -> new IllegalArgumentException("요청 없음"));
+
+        // 내가 요청자(A)여야만 함
+        if (!friend.getMemberA().getId().equals(myId)) {
+            throw new IllegalStateException("요청 취소 권한 없음");
+        }
+
+        Member receiver = friend.getMemberB();
+
+        friendRepository.delete(friend);
+
+        // 수신자에게 WebSocket 이벤트 발송
+        FriendEvent cancelEvent = new FriendEvent(
+                "REQUEST_CANCELLED",
+                receiver.getId(), // 수신자 ID
+                FriendDTO.RequestResponse.from(friend));
+
+        redisTemplate.convertAndSend(RedisChannelConstants.FRIEND_REQUEST_CHANNEL, cancelEvent);
     }
 
     // 상대와 나의 관계 상태 조회
@@ -137,11 +212,32 @@ public class FriendService {
         Friend friend = friendRepository.findById(friendId)
                 .orElseThrow(() -> new IllegalArgumentException("친구 없음"));
 
-        // 내가 상대가 맞는지 검증 (memberA 또는 memberB가 나)
-        if (!friend.getMemberA().getId().equals(myId) && !friend.getMemberB().getId().equals(myId))
+        Member me = memberRepository.findById(myId)
+                .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
+
+        Member other = null;
+        if (friend.getMemberA().getId().equals(myId)) {
+            other = friend.getMemberB();
+        } else if (friend.getMemberB().getId().equals(myId)) {
+            other = friend.getMemberA();
+        } else {
             throw new IllegalStateException("삭제 권한 없음");
+        }
 
         friendRepository.delete(friend);
+
+        // 🔥 삭제 이벤트 양방향 발송
+        FriendEvent toMe = new FriendEvent(
+                "FRIEND_DELETED",
+                me.getId(),
+                FriendDTO.RequestResponse.from(friend));
+        FriendEvent toOther = new FriendEvent(
+                "FRIEND_DELETED",
+                other.getId(),
+                FriendDTO.RequestResponse.from(friend));
+
+        redisTemplate.convertAndSend(RedisChannelConstants.FRIEND_REQUEST_CHANNEL, toMe);
+        redisTemplate.convertAndSend(RedisChannelConstants.FRIEND_REQUEST_CHANNEL, toOther);
     }
 
     // 내가 받은 친구 요청 목록
@@ -158,5 +254,12 @@ public class FriendService {
         return sentRequests.stream()
                 .map(FriendDTO.RequestResponse::from)
                 .collect(Collectors.toList());
+    }
+
+    // 친구 요청 시의 정보 조회(요청취소 등)
+    @Transactional(readOnly = true)
+    public Friend getFriendOrThrow(Long friendId) {
+        return friendRepository.findById(friendId)
+                .orElseThrow(() -> new IllegalArgumentException("친구 정보 없음"));
     }
 }

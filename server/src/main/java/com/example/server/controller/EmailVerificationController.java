@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/email")
+@RequestMapping("/api/email")
 public class EmailVerificationController {
 
     private final EmailVerificationService emailVerificationService;
@@ -25,11 +25,10 @@ public class EmailVerificationController {
     @PostMapping("/verify")
     public ResponseEntity<?> verifyAndRegister(@RequestBody EmailRequestDTO dto) {
         emailVerificationService.verifyTokenAndRegister(
-            dto.getEmail(),
-            dto.getNickname(),
-            dto.getPassword(),
-            dto.getToken()
-        );
+                dto.getEmail(),
+                dto.getNickname(),
+                dto.getPassword(),
+                dto.getToken());
         return ResponseEntity.ok("회원가입이 완료되었습니다.");
     }
 }

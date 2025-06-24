@@ -14,6 +14,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.web.socket.config.annotation.*;
+import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
 import com.example.server.Handler.StompHandler;
 import com.example.server.entity.Member;
@@ -36,10 +37,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+        // registry.addEndpoint("/ws-chat")
+        // .setAllowedOriginPatterns("*")
+        // .setHandshakeHandler(new DefaultHandshakeHandler())
+        // .addInterceptors(jwtHandshakeInterceptor) // JWT 인증 인터셉터
+        // .withSockJS();
+
         registry.addEndpoint("/ws-chat")
                 .setAllowedOriginPatterns("*");
+        // .setHandshakeHandler(new DefaultHandshakeHandler());
         // .addInterceptors(jwtHandshakeInterceptor); // JWT 인증 인터셉터
-        // .withSockJS();
 
         registry.addEndpoint("/ws-voice")
                 .setAllowedOriginPatterns("*")
@@ -49,8 +56,20 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureClientInboundChannel(ChannelRegistration registration) {
-        registration.interceptors(stompHandler);
         registration.interceptors(jwtChannelInterceptor());
+        registration.interceptors(new ChannelInterceptor() {
+            @Override
+            public Message<?> preSend(Message<?> message, MessageChannel channel) {
+                StompHeaderAccessor accessor = MessageHeaderAccessor.getAccessor(message, StompHeaderAccessor.class);
+                if (accessor != null && accessor.getSessionId() != null && accessor.getDestination() != null) {
+                    if (accessor.getDestination().startsWith("/voice")) {
+                        return stompHandler.preSend(message, channel); // voice 전용
+                    }
+                }
+                return message;
+            }
+        });
+        // registration.interceptors(stompHandler);
     }
 
     @Override
@@ -60,7 +79,9 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setRelayHost("localhost") // Redis 호스트
                 .setRelayPort(61613) // Redis STOMP 포트
                 .setClientLogin("guest") // Redis나 RabbitMQ 브로커 계정
-                .setClientPasscode("guest"); // Redis나 RabbitMQ 브로커 계정
+                .setClientPasscode("guest") // Redis나 RabbitMQ 브로커 계정
+                .setSystemHeartbeatSendInterval(10000)
+                .setSystemHeartbeatReceiveInterval(10000);
 
         registry.setApplicationDestinationPrefixes("/app"); // 클라이언트 전송 prefix
         registry.setUserDestinationPrefix("/user");
