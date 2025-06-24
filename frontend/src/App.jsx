@@ -18,10 +18,6 @@ import { ChatProvider } from "./context/ChatContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { RealtimeProvider } from "./context/RealtimeContext";
 
-import Navbar from "./components/navbar";
-import ReplyList from "./components/replyList";
-import UpdateMyProfile from "./components/updateMyProfile";
-import { BoardList } from "./components/Board";
 import LoginForm from "./components/loginForm";
 import RegisterForm from "./components/registerForm";
 

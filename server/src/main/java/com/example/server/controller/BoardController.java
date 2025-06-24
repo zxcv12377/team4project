@@ -24,7 +24,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-@RequestMapping("/board")
+@RequestMapping("/api/boards")
 @RestController
 @Log4j2
 @RequiredArgsConstructor
@@ -45,8 +45,8 @@ public class BoardController {
 
         PageResultDTO<BoardDTO> result = boardService.getList(pageRequestDTO);
 
-    // return ResponseEntity.ok(result);
-    // }
+        return ResponseEntity.ok(result);
+    }
 
     @GetMapping("/read/{bno}")
     public ResponseEntity<?> read(@PathVariable Long bno) {
@@ -69,25 +69,24 @@ public class BoardController {
         log.info("삭제 요청 bno: {}", bno);
         boardService.delete(bno);
 
-    // return ResponseEntity.ok().build();
-    // }
+        return ResponseEntity.ok().build();
+    }
 
-    // @PutMapping("/{bno}")
-    // @GetMapping("/modify")
-    // public ResponseEntity<?> modify(@PathVariable Long bno, @RequestBody BoardDTO
-    // dto) {
-    // log.info("수정 요청: {}", dto);
-    // dto.setBno(bno); // URL path로 받은 bno를 DTO에 세팅
-    // boardService.update(dto);
-    // return ResponseEntity.ok().build();
-    // }
+    @PutMapping("/{bno}")
+    @GetMapping("/modify")
+    public ResponseEntity<?> modify(@PathVariable Long bno, @RequestBody BoardDTO dto) {
+        log.info("수정 요청: {}", dto);
+        dto.setBno(bno); // URL path로 받은 bno를 DTO에 세팅
+        boardService.update(dto);
+        return ResponseEntity.ok().build();
+    }
 
     // 게시글 삭제
-    // @DeleteMapping("/{bno}")
-    // public ResponseEntity<?> remove(@PathVariable Long bno) {
-    // log.info("삭제 요청 bno: {}", bno);
-    // boardService.delete(bno);
-    // return ResponseEntity.ok().build();
-    // }
+    @DeleteMapping("/{bno}")
+    public ResponseEntity<?> remove(@PathVariable Long bno) {
+        log.info("삭제 요청 bno: {}", bno);
+        boardService.delete(bno);
+        return ResponseEntity.ok().build();
+    }
 
 }

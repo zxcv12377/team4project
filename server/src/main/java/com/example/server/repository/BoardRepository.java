@@ -9,5 +9,4 @@ public interface BoardRepository extends JpaRepository<Board, Long>, SearchBoard
     // Page<Object[]> getTotalList(String type, String keyword, Pageable pageable);
 
     // List<Object[]> getBoardRow(Long mno);
-
 }

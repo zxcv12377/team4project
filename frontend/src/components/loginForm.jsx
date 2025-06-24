@@ -20,7 +20,7 @@ export default function LoginForm({ onSwitchToRegister }) {
       localStorage.setItem("token", token);
       console.log("LoginForm Token : ", token);
 
-      const userRes = await axiosInstance.get("member/me");
+      const userRes = await axiosInstance.get("api/members/me");
       setUser({ ...userRes.data, token });
       navigate("/boardList");
     } catch (err) {

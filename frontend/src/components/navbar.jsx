@@ -20,7 +20,7 @@ export default function Navbar() {
 
     if (token) {
       axios
-        .get("member/me", {
+        .get("api/members/me", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {

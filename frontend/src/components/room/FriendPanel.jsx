@@ -34,7 +34,7 @@ export default function FriendPanel() {
     setResult([]);
     setAdding(true);
     axios
-      .get(`/members/search?name=${encodeURIComponent(search)}`)
+      .get(`/api/members/search?name=${encodeURIComponent(search)}`)
       .then((res) => {
         console.log("검색결과 확인", res.data);
         setResult(res.data || []);

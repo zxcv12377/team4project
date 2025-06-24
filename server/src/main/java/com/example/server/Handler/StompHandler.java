@@ -40,9 +40,11 @@ public class StompHandler implements ChannelInterceptor {
                     String nickname = jwtUtil.parseClaims(jwt).get("name", String.class);
 
                     accessor.setUser(auth);
+                    log.warn("전달된 header : {}", token);
                     accessor.getSessionAttributes().put("email", email);
+                    log.warn("session 이메일 : {}", email);
                     accessor.getSessionAttributes().put("nickname", nickname);
-                    accessor.getSessionAttributes().put("username", email);
+                    log.warn("session 닉네임 : {}", nickname);
 
                     log.info("✅ STOMP CONNECT - 사용자 인증 성공: {}", email);
                 } else {

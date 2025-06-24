@@ -61,32 +61,31 @@ public class BoardService {
     }
 
     // 4. 페이징 목록 조회
-    // public PageResultDTO<BoardDTO> getList(PageRequestDTO pageRequestDTO) {
-    // Pageable pageable = PageRequest.of(
-    // pageRequestDTO.getPage() - 1,
-    // pageRequestDTO.getSize(),
-    // Sort.by("bno").descending());
+    public PageResultDTO<BoardDTO> getList(PageRequestDTO pageRequestDTO) {
+        Pageable pageable = PageRequest.of(
+                pageRequestDTO.getPage() - 1,
+                pageRequestDTO.getSize(),
+                Sort.by("bno").descending());
 
         Page<Object[]> result = boardRepository.list(pageRequestDTO.getType(),
                 pageRequestDTO.getKeyword(), pageable);
         System.out.println(result);
         Function<Object[], BoardDTO> function = (en -> entityToDto((Board) en[0], (Member) en[1], (Long) en[2]));
 
-    // List<BoardDTO> dtoList =
-    // result.stream().map(function).collect(Collectors.toList());
-    // Long totalCount = result.getTotalElements();
-    // // List<BoardDTO> dtoList = result.stream()
-    // // .map(board -> entityToDto(board, board.getMember(), (long)
-    // // board.getReplies().size()))
-    // // .collect(Collectors.toList());
+        List<BoardDTO> dtoList = result.stream().map(function).collect(Collectors.toList());
+        Long totalCount = result.getTotalElements();
+        // List<BoardDTO> dtoList = result.stream()
+        // .map(board -> entityToDto(board, board.getMember(), (long)
+        // board.getReplies().size()))
+        // .collect(Collectors.toList());
 
-    // PageResultDTO<BoardDTO> pageResultDTO = PageResultDTO.<BoardDTO>withAll()
-    // .dtoList(dtoList)
-    // .totalCount(totalCount)
-    // .pageRequestDTO(pageRequestDTO)
-    // .build();
-    // return pageResultDTO;
-    // }
+        PageResultDTO<BoardDTO> pageResultDTO = PageResultDTO.<BoardDTO>withAll()
+                .dtoList(dtoList)
+                .totalCount(totalCount)
+                .pageRequestDTO(pageRequestDTO)
+                .build();
+        return pageResultDTO;
+    }
 
     public BoardDTO getRow(Long bno) {
         Board board = boardRepository.findById(bno).orElseThrow();
