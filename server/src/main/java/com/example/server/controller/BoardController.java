@@ -35,15 +35,16 @@ public class BoardController {
         return ResponseEntity.ok().build();
     }
 
-    @GetMapping("/list")
-    public ResponseEntity<?> getList(Model model, PageRequestDTO pageRequestDTO) {
-        log.info("list 요청", pageRequestDTO);
+    // @GetMapping("/list")
+    // public ResponseEntity<?> getList(Model model, PageRequestDTO pageRequestDTO)
+    // {
+    // log.info("list 요청", pageRequestDTO);
 
-        PageResultDTO<BoardDTO> result = boardService.getList(pageRequestDTO);
-        model.addAttribute("result", result);
+    // PageResultDTO<BoardDTO> result = boardService.getList(pageRequestDTO);
+    // model.addAttribute("result", result);
 
-        return ResponseEntity.ok(result);
-    }
+    // return ResponseEntity.ok(result);
+    // }
 
     @GetMapping("/read")
     public ResponseEntity<?> read(@PathVariable Long bno) {

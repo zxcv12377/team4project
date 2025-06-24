@@ -3,18 +3,21 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 import MyProfile from "./components/myProfile";
 
 import ProtectedRoute from "./components/protectedRoute";
-import { BoardList } from "./components/Board";
+
 import Navbar from "./components/navbar";
 import ReplyList from "./components/replyList";
 import UpdateMyProfile from "./components/updateMyProfile";
+import { BoardList } from "./components/Board";
+import LoginForm from "./components/loginForm";
+import RegisterForm from "./components/registerForm";
 
 function App() {
   return (
     <Router>
       <Routes>
         <Route element={<Navbar />}>
-          <Route path="/" element={<Navigate to="/board" />} />
-          <Route path="/boardList" element={<boardList />} />
+          <Route path="/" element={<Navigate to="/boardList" />} />
+          <Route path="/boardList" element={<BoardList />} />
           <Route path="/login" element={<LoginForm />} />
           <Route path="/register" element={<RegisterForm />} />
           <Route path="/reply" element={<ReplyList />} />
