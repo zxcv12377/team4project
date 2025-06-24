@@ -175,19 +175,10 @@ public class BoardRepositoryTest {
         System.out.println("삭제 후 존재 여부: " + existsAfter);
     }
 
-    // QUERY DSL
-    // @Test
-    // public void listTest() {
-    // List<Object[]> result = boardRepository.list();
-    // for (Object[] objects : result) {
-    // Board board = (Board) objects[0];
-    // Member member = (Member) objects[1];
-    // Long replyCnt = (Long) objects[2];
+    @Test
+    public void getBoardRowTest() {
+        Object[] result = boardRepository.getBoardRow(1L);
+        System.out.println(result);
+    }
 
-    // System.out.println(board);
-    // System.out.println(member);
-    // System.out.println(replyCnt);
-
-    // }
-    // }
 }
