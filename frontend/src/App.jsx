@@ -14,7 +14,9 @@ function App() {
       <Routes>
         <Route element={<Navbar />}>
           <Route path="/" element={<Navigate to="/board" />} />
-          <Route path="/board" element={<BoardList />} />
+          <Route path="/boardList" element={<boardList />} />
+          <Route path="/login" element={<LoginForm />} />
+          <Route path="/register" element={<RegisterForm />} />
           <Route path="/reply" element={<ReplyList />} />
           <Route path="/UpdateProfile" element={<UpdateMyProfile />} />
           {/* 보호된 라우트(로그인 인증 후 접근 가능한 경로 지정) */}
