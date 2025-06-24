@@ -89,8 +89,8 @@ axiosInstance.interceptors.response.use(
         isRefreshing = false;
         localStorage.removeItem("token");
         localStorage.removeItem("refresh_token");
-        localStorage.removeItem("username");
-        localStorage.removeItem("name");
+        localStorage.removeItem("email");
+        localStorage.removeItem("nickname");
 
         window.location.href = "/login";
         return Promise.reject(refreshError);

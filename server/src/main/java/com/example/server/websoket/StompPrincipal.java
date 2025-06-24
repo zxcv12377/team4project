@@ -13,7 +13,7 @@ public class StompPrincipal implements Principal {
 
     @Override
     public String getName() {
-        return email; // 🔥 여기서 username만 반환
+        return email; // 🔥 여기서 email만 반환
     }
 
     public String getSessionId() {

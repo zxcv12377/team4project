@@ -86,10 +86,14 @@ public class SecurityConfig {
                                                                 "/api/members/nickname")
                                                 .authenticated()
 
+                                                .requestMatchers(HttpMethod.PUT, "/api/boards/**", "/api/replies/**",
+                                                                "/api/members/mypage",
+                                                                "/api/members/nickname")
+                                                .authenticated()
+                                                .requestMatchers("/img/**").permitAll()
                                                 .requestMatchers(HttpMethod.DELETE, "/api/boards/**", "/api/replies/**",
                                                                 "/api/members/mypage")
                                                 .authenticated()
-                                                .requestMatchers("/img/**").permitAll()
                                                 .anyRequest().permitAll());
 
                 http.sessionManagement(seesion -> seesion.sessionCreationPolicy(SessionCreationPolicy.ALWAYS));

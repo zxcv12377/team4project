@@ -74,10 +74,6 @@ export const useWebSocket = (token, onConnect) => {
       client.debug = () => {};
       stompRef.current = client;
 
-      // client.connectHeaders = {
-      //   Authorization: [`Bearer ${token}`],
-      // };
-
       client.onWebSocketError = (e) => {
         console.error("❌ WebSocket Error", e);
         hardDisconnect();
