@@ -46,10 +46,7 @@ export const useWebSocket = (token, onConnect) => {
       }
     } catch (err) {
       console.error("❌ Token refresh failed", err);
-      localStorage.removeItem("token");
-      localStorage.removeItem("refresh_token");
-      localStorage.removeItem("username");
-      localStorage.removeItem("name");
+      localStorage.clear();
       window.location.href = "/login";
     }
     return null;
@@ -60,19 +57,26 @@ export const useWebSocket = (token, onConnect) => {
       let authToken = tokenArg || tokenRef.current;
       if (!authToken) return;
 
-      if (stompRef.current?.connected) {
-        console.log("⚠️ WebSocket already connected");
-        return;
-      }
-
-      if (stompRef.current?.ws && stompRef.current.ws.readyState !== WebSocket.CLOSED) {
-        console.log("🧹 Closing previous WebSocket before reconnect");
-        stompRef.current.ws.close();
+      // ✅ 기존 stomp 인스턴스 제거 (중복 방지)
+      if (stompRef.current) {
+        try {
+          stompRef.current.disconnect();
+        } catch (e) {
+          console.warn("⚠️ Disconnect error during cleanup", e);
+        }
+        stompRef.current = null;
       }
 
       const socket = new WebSocket("ws://localhost:8080/ws-chat");
       const client = Stomp.over(socket);
+      client.heartbeat.outgoing = 10000;
+      client.heartbeat.incoming = 10000;
       client.debug = () => {};
+      stompRef.current = client;
+
+      // client.connectHeaders = {
+      //   Authorization: [`Bearer ${token}`],
+      // };
 
       client.onWebSocketError = (e) => {
         console.error("❌ WebSocket Error", e);
@@ -90,7 +94,7 @@ export const useWebSocket = (token, onConnect) => {
         { Authorization: "Bearer " + authToken },
         () => {
           console.log("✅ WebSocket connected");
-          stompRef.current = client;
+          client.send("/app/auth", {}, JSON.stringify({ token: "Bearer " + authToken }));
           setConnected(true);
           reconnectAttempt.current = 0;
           reconnectTimer.current = null;

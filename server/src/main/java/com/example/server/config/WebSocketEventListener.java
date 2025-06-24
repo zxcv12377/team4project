@@ -32,6 +32,9 @@ public class WebSocketEventListener {
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
         Principal user = accessor.getUser();
+        log.info("전달된 user: {}", user);
+        log.info("전달된 sessionId: {}", accessor.getSessionId());
+        log.info("전달된 sessionId: {}", accessor.getSessionAttributes());
         String sessionId = accessor.getSessionId();
 
         if (user != null) {
