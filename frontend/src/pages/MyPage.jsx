@@ -28,7 +28,7 @@ const MyPage = () => {
   const checkNickname = async () => {
     if (!nickname) return;
     try {
-      const res = await axiosInstance.get("/members/check-nickname", {
+      const res = await axiosInstance.get("/api/members/check-nickname", {
         params: { nickname },
       });
 
@@ -52,7 +52,7 @@ const MyPage = () => {
     if (!isAvailable) return alert("닉네임 중복 확인이 필요합니다.");
 
     try {
-      const res = await axiosInstance.put("/members/nickname", {
+      const res = await axiosInstance.put("/api/members/nickname", {
         name: nickname,
       });
       const data = res.data;
@@ -92,7 +92,7 @@ const MyPage = () => {
     }
 
     try {
-      await axiosInstance.put("/members/password", {
+      await axiosInstance.put("/api/members/password", {
         currentPassword: currentPw,
         newPassword: newPw,
       });

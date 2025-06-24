@@ -18,7 +18,7 @@ const MyProfile = () => {
 
   const fetchProfile = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/member/me", { headers });
+      const res = await axios.get("http://localhost:8080/members/me", { headers });
       setProfile(res.data);
       setComment(res.data.comment || "");
     } catch (err) {
@@ -34,7 +34,7 @@ const MyProfile = () => {
 
   const updateComment = async () => {
     try {
-      await axios.put("http://localhost:8080/member/comment", { comment }, { headers });
+      await axios.put("http://localhost:8080/api/members/comment", { comment }, { headers });
       setMessage(" 코멘트가 저장되었습니다.");
       setError("");
       fetchProfile();

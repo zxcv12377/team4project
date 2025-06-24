@@ -50,7 +50,7 @@ const FindAccountModal = ({ mode, onClose }) => {
       return;
     }
     try {
-      await axiosInstance.put("/members/password/reset", { email: username, newPassword: newPw });
+      await axiosInstance.put("/api/members/password/reset", { email: username, newPassword: newPw });
       setResult("비밀번호가 성공적으로 변경되었습니다. 다시 로그인해주세요.");
     } catch (e) {
       console.log(e);

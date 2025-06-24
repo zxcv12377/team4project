@@ -17,7 +17,7 @@ export const UserProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const res = await axios.get("/member/me");
+      const res = await axios.get("/members/me");
       const token = localStorage.getItem("token");
       setUser({ ...res.data, token });
       console.log("UserContext data : ", { ...res.data, token });

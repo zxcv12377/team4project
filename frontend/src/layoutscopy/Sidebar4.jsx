@@ -21,7 +21,7 @@ export default function Sidebar4({ serverId, selectedMemberId, onSelectMember, s
     }
     setLoading(true);
     axios
-      .get(`/servers/${serverId}/members`)
+      .get(`/servers/${serverId}/api/members`)
       .then((res) => setMembers(res.data || []))
       .catch(() => setMembers([]))
       .finally(() => setLoading(false));

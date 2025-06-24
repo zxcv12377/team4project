@@ -18,7 +18,7 @@ import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/member/profile-image")
+@RequestMapping("/api/members/profile-image")
 public class ProfileImageController {
 
     private final MemberService memberService;
