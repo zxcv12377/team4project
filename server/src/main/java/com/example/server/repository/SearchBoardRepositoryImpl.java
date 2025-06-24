@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.data.support.PageableExecutionUtils;
 
+import com.example.server.base.Base;
 import com.example.server.entity.Board;
 import com.example.server.entity.QBoard;
 import com.example.server.entity.QMember;
@@ -37,7 +38,7 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
         QMember member = QMember.member;
         QReply reply = QReply.reply;
 
-        // 1. 기본 쿼리 구성: board LEFT JOIN member, reply
+        // 1. 기본 쿼리 구성 (join 없이 지연 로딩 그대로 사용)
         JPQLQuery<Tuple> query = from(board)
                 .leftJoin(board.member, member)
                 .leftJoin(reply).on(reply.board.eq(board))
@@ -45,9 +46,11 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                         board.bno,
                         board.title,
                         board.content,
+                        board.regDate,
+                        board.modDate,
+                        member.id,
                         member.nickname,
                         member.email,
-                        member.profileimg,
                         reply.count());
 
         // 2. WHERE 조건 추가
@@ -70,9 +73,11 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                 board.bno,
                 board.title,
                 board.content,
+                board.regDate,
+                board.modDate,
+                member.id,
                 member.nickname,
-                member.email,
-                member.profileimg);
+                member.email);
 
         // 4. 페이징 적용 + 결과 가져오기
         List<Tuple> resultList = getQuerydsl().applyPagination(pageable, query).fetch();
@@ -83,9 +88,11 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                         t.get(board.bno),
                         t.get(board.title),
                         t.get(board.content),
+                        t.get(board.regDate),
+                        t.get(board.modDate),
+                        t.get(member.id),
                         t.get(member.nickname),
                         t.get(member.email),
-                        t.get(member.profileimg),
                         t.get(reply.count())
                 })
                 .collect(Collectors.toList());
@@ -115,28 +122,6 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
         JPQLQuery<Tuple> tuple = query.select(board, member, replyCount);
         Tuple row = tuple.fetchFirst();
         return row != null ? row.toArray() : null;
-    }
-
-    @Override
-    public Object[] getBoardRow(Long bno) {
-        QBoard board = QBoard.board;
-        QMember member = QMember.member;
-        QReply reply = QReply.reply;
-
-        JPQLQuery<Board> query = from(board);
-        query.leftJoin(member).on(board.member.eq(member));
-        query.where(board.bno.eq(bno));
-
-        // 댓글개수
-        // r.BOARD_ID = b.BNO
-        JPQLQuery<Long> replyCount = JPAExpressions.select(reply.rno.count())
-                .from(reply)
-                .where(reply.board.eq(board)).groupBy(reply.board);
-
-        JPQLQuery<Tuple> tuple = query.select(board, member, replyCount);
-
-        Tuple row = tuple.fetchFirst();
-        return row.toArray();
     }
 
 }

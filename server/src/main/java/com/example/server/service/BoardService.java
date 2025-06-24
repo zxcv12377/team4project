@@ -1,5 +1,6 @@
 package com.example.server.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -77,10 +78,12 @@ public class BoardService {
                 .bno((Long) en[0])
                 .title((String) en[1])
                 .content((String) en[2])
-                .nickname((String) en[3])
-                .email((String) en[4])
-                // .profileImg((String) en[5])
-                .replyCount((Long) en[6])
+                .regDate((LocalDateTime) en[3])
+                .modDate((LocalDateTime) en[4])
+                .id((Long) en[5])
+                .nickname((String) en[6])
+                .email((String) en[7])
+                .replyCount((Long) en[8])
                 .build());
 
         return PageResultDTO.<BoardDTO>withAll()
