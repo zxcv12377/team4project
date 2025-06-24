@@ -117,4 +117,26 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
         return row != null ? row.toArray() : null;
     }
 
+    @Override
+    public Object[] getBoardRow(Long bno) {
+        QBoard board = QBoard.board;
+        QMember member = QMember.member;
+        QReply reply = QReply.reply;
+
+        JPQLQuery<Board> query = from(board);
+        query.leftJoin(member).on(board.member.eq(member));
+        query.where(board.bno.eq(bno));
+
+        // 댓글개수
+        // r.BOARD_ID = b.BNO
+        JPQLQuery<Long> replyCount = JPAExpressions.select(reply.rno.count())
+                .from(reply)
+                .where(reply.board.eq(board)).groupBy(reply.board);
+
+        JPQLQuery<Tuple> tuple = query.select(board, member, replyCount);
+
+        Tuple row = tuple.fetchFirst();
+        return row.toArray();
+    }
+
 }
