@@ -40,7 +40,7 @@ const RegisterPage = () => {
   const checkName = async () => {
     if (!form.name) return;
     try {
-      const res = await axiosInstance.get("/members/check-nickname", {
+      const res = await axiosInstance.get("/api/members/check-nickname", {
         params: { nickname: form.name },
       });
 
@@ -103,7 +103,7 @@ const RegisterPage = () => {
     }
 
     try {
-      await axiosInstance.post("/members/register", {
+      await axiosInstance.post("/api/members/register", {
         name: form.name,
         username: form.username,
         password: form.password,

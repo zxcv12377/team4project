@@ -37,9 +37,6 @@ public class JwtUtil {
 
     private CustomMemberDetailsService customMemberDetailsService;
 
-    // 토큰 유효시간: 1시간
-    // private static final long EXPIRATION_TIME_MS = 1000 * 60 * 60 * 1;
-
     public JwtUtil(CustomMemberDetailsService customMemberDetailsService) {
         this.customMemberDetailsService = customMemberDetailsService;
     }

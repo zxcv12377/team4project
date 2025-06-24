@@ -15,7 +15,7 @@ const LoginPage = ({ onLogin }) => {
 
   const onSubmit = async (data) => {
     try {
-      const response = await axiosInstance.post("/members/login", {
+      const response = await axiosInstance.post("/api/members/login", {
         username: data.username, // 이메일로 로그인
         password: data.password,
       });
