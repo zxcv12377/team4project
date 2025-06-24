@@ -23,13 +23,13 @@ import lombok.ToString;
 @Builder
 @NoArgsConstructor
 @ToString(exclude = { "member", "replies" })
-@Entity
 @AllArgsConstructor
+@Entity
 public class Board extends Base {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long bno; // 게시판 번호
+    private Long bno;
 
     private String title; // 게시글 제목
 

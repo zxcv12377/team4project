@@ -30,6 +30,7 @@ public class BoardDTO {
     // 게시글 내용
     @NotBlank(message = "내용을 입력해 주세요")
     private String content;
+    private String email;
 
     // 작성자 id
     private Long id;

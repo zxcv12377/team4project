@@ -63,6 +63,7 @@ public class BoardService {
     // Object[]를 DTO로 바꾸고 리스트로 감쌉니다.
     // .map(function)으로 게시글마다 BoardDTO로 변환합니다.
     public PageResultDTO<BoardDTO> getList(PageRequestDTO pageRequestDTO) {
+
         Pageable pageable = PageRequest.of(
                 pageRequestDTO.getPage() - 1,
                 pageRequestDTO.getSize(),
@@ -72,7 +73,15 @@ public class BoardService {
                 pageRequestDTO.getKeyword(), pageable);
         System.out.println(result);
 
-        Function<Object[], BoardDTO> function = (en -> entityToDto((Board) en[0], (Member) en[1], (Long) en[2]));
+        Function<Object[], BoardDTO> function = (en -> BoardDTO.builder()
+                .bno((Long) en[0])
+                .title((String) en[1])
+                .content((String) en[2])
+                .nickname((String) en[3])
+                .email((String) en[4])
+                // .profileImg((String) en[5])
+                .replyCount((Long) en[6])
+                .build());
 
         return PageResultDTO.<BoardDTO>withAll()
                 .dtoList(result.map(function).getContent())

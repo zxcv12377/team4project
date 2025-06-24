@@ -2,7 +2,6 @@ package com.example.server.repository;
 
 import java.util.HashSet;
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
 import java.util.Set;
 import java.util.stream.IntStream;
@@ -11,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.test.annotation.Commit;
 
 import com.example.server.entity.Board;
 import com.example.server.entity.Member;
@@ -52,18 +52,17 @@ public class BoardRepositoryTest {
                     .build();
 
             memberRepository.save(member);
-
         });
     }
 
+    // @Commit
     @Test
     public void insertBoardTest() {
+        List<Member> members = memberRepository.findAll();
 
         IntStream.rangeClosed(1, 20).forEach(i -> {
-            int rand = (int) (Math.random() * 10) + 1;
-            Long lRand = Long.valueOf(rand);
-            Member member = memberRepository.findById(lRand).orElseThrow();
 
+            Member member = members.get(new Random().nextInt(members.size()));
             Board board = Board.builder()
                     .title("테스트 게시글 제목 " + i)
                     .content("이것은 테스트 게시글 내용입니다. 번호: " + i)
@@ -175,19 +174,4 @@ public class BoardRepositoryTest {
         System.out.println("삭제 후 존재 여부: " + existsAfter);
     }
 
-    // QUERY DSL
-    // @Test
-    // public void listTest() {
-    // List<Object[]> result = boardRepository.list();
-    // for (Object[] objects : result) {
-    // Board board = (Board) objects[0];
-    // Member member = (Member) objects[1];
-    // Long replyCnt = (Long) objects[2];
-
-    // System.out.println(board);
-    // System.out.println(member);
-    // System.out.println(replyCnt);
-
-    // }
-    // }
 }

@@ -25,8 +25,10 @@ public class BoradMapper {
                 .title(board.getTitle())
                 .nickname(board.getMember().getNickname())
                 .id(board.getMember().getId())
+                .email(board.getMember().getEmail())
                 .replyCount(replyCount)
                 .regDate(board.getRegDate())
+                .modDate(board.getModDate())
                 .build();
     }
 
@@ -39,6 +41,7 @@ public class BoradMapper {
                 .content(board.getContent())
                 .nickname(board.getMember().getNickname())
                 .id(board.getMember().getId())
+                .email(board.getMember().getEmail())
                 .replyCount(replyCount)
                 .regDate(board.getRegDate())
                 .modDate(board.getModDate())

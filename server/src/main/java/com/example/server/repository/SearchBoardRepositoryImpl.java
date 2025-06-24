@@ -17,9 +17,6 @@ import com.example.server.entity.QMember;
 import com.example.server.entity.QReply;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
-import com.querydsl.core.types.Order;
-import com.querydsl.core.types.OrderSpecifier;
-import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 
@@ -40,63 +37,61 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
         QMember member = QMember.member;
         QReply reply = QReply.reply;
 
-        JPQLQuery<Board> query = from(board);
-        query.leftJoin(board.member, member);
-        query.groupBy(board);
+        // 1. 기본 쿼리 구성: board LEFT JOIN member, reply
+        JPQLQuery<Tuple> query = from(board)
+                .leftJoin(board.member, member)
+                .leftJoin(reply).on(reply.board.eq(board))
+                .select(
+                        board.bno,
+                        board.title,
+                        board.content,
+                        member.nickname,
+                        member.email,
+                        member.profileimg,
+                        reply.count());
 
+        // 2. WHERE 조건 추가
         if (type != null && keyword != null) {
             BooleanBuilder builder = new BooleanBuilder();
             if (type.contains("t")) {
                 builder.or(board.title.contains(keyword));
             }
+            if (type.contains("c")) {
+                builder.or(board.content.contains(keyword));
+            }
+            if (type.contains("w")) {
+                builder.or(member.nickname.contains(keyword));
+            }
             query.where(builder);
         }
 
-        // 댓글 개수 포함한 select
-        JPQLQuery<Tuple> tupleQuery = query.select(board, member, reply.count());
-        List<Tuple> resultList = getQuerydsl().applyPagination(pageable, tupleQuery).fetch();
+        // 3. GROUP BY: Oracle의 엄격한 규칙 대응을 위해 SELECT 필드 모두 포함
+        query.groupBy(
+                board.bno,
+                board.title,
+                board.content,
+                member.nickname,
+                member.email,
+                member.profileimg);
 
+        // 4. 페이징 적용 + 결과 가져오기
+        List<Tuple> resultList = getQuerydsl().applyPagination(pageable, query).fetch();
+
+        // 5. Tuple -> Object[] 변환
         List<Object[]> results = resultList.stream()
-                .map(t -> new Object[] { t.get(board), t.get(member), t.get(reply.count()) })
+                .map(t -> new Object[] {
+                        t.get(board.bno),
+                        t.get(board.title),
+                        t.get(board.content),
+                        t.get(member.nickname),
+                        t.get(member.email),
+                        t.get(member.profileimg),
+                        t.get(reply.count())
+                })
                 .collect(Collectors.toList());
 
-        return PageableExecutionUtils.getPage(results, pageable, tupleQuery::fetchCount);
-        // // 댓글 개수
-        // JPQLQuery<Long> replyCount = JPAExpressions.select(reply.rno.count())
-        // .from(reply)
-        // .where(reply.board.eq(reply.board));
+        return PageableExecutionUtils.getPage(results, pageable, query::fetchCount);
 
-        // JPQLQuery<Tuple> tuple = query.select(board, member, replyCount);
-
-        // log.info("===============");
-
-        // log.info("===============");
-
-        // // Sort 생성
-        // Sort sort = pageable.getSort();
-        // // sort 기준이 여러개 일 수 있어서
-        // sort.stream().forEach(order -> {
-        // // import com.querydsl.core.types.Order;
-        // Order direction = order.isAscending() ? Order.ASC : Order.DESC;
-
-        // String prop = order.getProperty();
-        // PathBuilder<Board> ordeBuilder = new PathBuilder<>(Board.class, "board");
-        // tuple.orderBy(new OrderSpecifier(direction, ordeBuilder.get(prop)));
-        // });
-
-        // // 페이지 처리
-        // tuple.offset(pageable.getOffset());
-        // // 10
-        // tuple.limit(pageable.getPageSize());
-        // // 전체개수
-        // long count = tuple.fetchCount();
-
-        // List<Tuple> result = tuple.fetch();
-
-        // List<Object[]> list = result.stream().map(t ->
-        // t.toArray()).collect(Collectors.toList());
-
-        // return new PageImpl<>(list, pageable, count);
     }
 
     @Override
@@ -105,49 +100,21 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
         QMember member = QMember.member;
         QReply reply = QReply.reply;
 
+        // 기본 게시글 + 작성자 조인
         JPQLQuery<Board> query = from(board);
         query.leftJoin(member).on(board.member.eq(member));
         query.where(board.bno.eq(bno));
 
-        JPQLQuery<Long> replyCount = JPAExpressions.select(reply.rno.count())
+        // 현재 게시글의 댓글 수 서브쿼리
+        JPQLQuery<Long> replyCount = JPAExpressions.select(reply.count())
                 .from(reply)
-                .where(reply.board.eq(board)).groupBy(reply.board);
+                .where(reply.board.eq(board)); // 현재 게시글에 해당하는 댓글만 카운트
+                                               // // board는 외부 쿼리의 별칭
 
+        // 게시글, 작성자, 댓글 수 포함된 튜플
         JPQLQuery<Tuple> tuple = query.select(board, member, replyCount);
         Tuple row = tuple.fetchFirst();
-
-        return row.toArray();
+        return row != null ? row.toArray() : null;
     }
-    // @Override
-    // public Page<Object[]> getTotalList(String type, String keyword, Pageable
-    // pageable) {
-    // QBoard board = QBoard.board;
-    // QMember member = QMember.member;
-    // QReply reply = QReply.reply;
-
-    // JPQLQuery<Board> query = from(board);
-    // query.leftJoin(board.member, member);
-    // query.groupBy(board);
-
-    // if (type != null && keyword != null) {
-    // BooleanBuilder builder = new BooleanBuilder();
-    // if (type.contains("t")) {
-    // builder.or(board.title.contains(keyword));
-    // }
-    // query.where(builder);
-    // }
-
-    // // 댓글 개수 포함한 select
-    // JPQLQuery<Tuple> tupleQuery = query.select(board, member, reply.count());
-    // List<Tuple> resultList = getQuerydsl().applyPagination(pageable,
-    // tupleQuery).fetch();
-
-    // List<Object[]> results = resultList.stream()
-    // .map(t -> new Object[] { t.get(board), t.get(member), t.get(reply.count()) })
-    // .collect(Collectors.toList());
-
-    // return PageableExecutionUtils.getPage(results, pageable,
-    // tupleQuery::fetchCount);
-    // }
 
 }
