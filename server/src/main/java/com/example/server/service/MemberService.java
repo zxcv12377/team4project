@@ -1,5 +1,9 @@
 package com.example.server.service;
 
+import java.util.List;
+
+import org.springframework.transaction.annotation.Transactional;
+
 import com.example.server.dto.MemberRequestDTO;
 import com.example.server.dto.MemberResponseDTO;
 import com.example.server.entity.Member;
@@ -23,4 +27,7 @@ public interface MemberService {
     void updateProfileImage(String email, String profileimg); // 새 이미지 파일명 저장용
 
     Member getByEmail(String email);
+
+    @Transactional(readOnly = true)
+    public List<MemberResponseDTO> searchMembers(String name, Long myMno);
 }

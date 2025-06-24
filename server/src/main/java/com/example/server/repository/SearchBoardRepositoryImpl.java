@@ -42,9 +42,10 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
         query.leftJoin(member).on(board.member.eq(member));
 
         // 댓글 개수
-        JPQLQuery<Long> replyCount = JPAExpressions.select(reply.rno.count())
+        JPQLQuery<Long> replyCount = JPAExpressions
+                .select(reply.count())
                 .from(reply)
-                .where(reply.board.eq(reply.board));
+                .where(reply.board.eq(board));
 
         JPQLQuery<Tuple> tuple = query.select(board, member, replyCount);
 
@@ -76,6 +77,28 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
         List<Object[]> list = result.stream().map(t -> t.toArray()).collect(Collectors.toList());
 
         return new PageImpl<>(list, pageable, count);
+    }
+
+    @Override
+    public Object[] getBoardRow(Long bno) {
+        QBoard board = QBoard.board;
+        QMember member = QMember.member;
+        QReply reply = QReply.reply;
+
+        JPQLQuery<Board> query = from(board);
+        query.leftJoin(member).on(board.member.eq(member));
+        query.where(board.bno.eq(bno));
+
+        // 댓글개수
+        // r.BOARD_ID = b.BNO
+        JPQLQuery<Long> replyCount = JPAExpressions.select(reply.rno.count())
+                .from(reply)
+                .where(reply.board.eq(board)).groupBy(reply.board);
+
+        JPQLQuery<Tuple> tuple = query.select(board, member, replyCount);
+
+        Tuple row = tuple.fetchFirst();
+        return row.toArray();
     }
 
 }

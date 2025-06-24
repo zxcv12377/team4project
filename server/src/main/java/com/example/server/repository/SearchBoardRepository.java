@@ -7,4 +7,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface SearchBoardRepository {
     Page<Object[]> list(String type, String keyword, Pageable pageable);
+
+    Object[] getBoardRow(Long bno);
 }

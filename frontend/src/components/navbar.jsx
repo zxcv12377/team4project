@@ -20,7 +20,7 @@ export default function Navbar() {
 
     if (token) {
       axios
-        .get("http://localhost:8080/member/me", {
+        .get("member/me", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
@@ -78,6 +78,9 @@ export default function Navbar() {
               <Link to="/" className="text-gray-700 hover:text-blue-500">
                 Contact
               </Link>
+              <Link to="/chatting" className="text-gray-700 hover:text-blue-500">
+                Chatting
+              </Link>
               {isLoggedIn ? (
                 <>
                   <Link
@@ -130,6 +133,9 @@ export default function Navbar() {
               </Link>
               <Link to="/contact" className="text-gray-700 hover:text-blue-500">
                 Contact
+              </Link>
+              <Link to="/chatting" className="text-gray-700 hover:text-blue-500">
+                Chatting
               </Link>
               {isLoggedIn ? (
                 <>

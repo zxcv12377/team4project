@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../lib/axiosInstance";
 
 function RegisterForm({ onSwitchToLogin }) {
   const [formData, setFormData] = useState({
@@ -20,7 +21,7 @@ function RegisterForm({ onSwitchToLogin }) {
 
   const requestEmailVerification = async () => {
     try {
-      await axios.post("http://localhost:8080/email/send", {
+      await axiosInstance.post("/email/send", {
         email: formData.email,
       });
       alert("인증 코드가 이메일로 전송되었습니다.");
@@ -33,7 +34,7 @@ function RegisterForm({ onSwitchToLogin }) {
   const handleRegister = async () => {
     try {
       setLoading(true);
-      await axios.post("http://localhost:8080/email/verify", formData);
+      await axiosInstance.post("/email/verify", formData);
       alert("회원가입 성공!");
       window.location.reload();
     } catch (error) {

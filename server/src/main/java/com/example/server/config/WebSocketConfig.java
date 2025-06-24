@@ -14,6 +14,7 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.web.socket.config.annotation.*;
+import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
 import com.example.server.Handler.StompHandler;
 import com.example.server.entity.Member;
@@ -36,10 +37,16 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+        // registry.addEndpoint("/ws-chat")
+        // .setAllowedOriginPatterns("*")
+        // .setHandshakeHandler(new DefaultHandshakeHandler())
+        // .addInterceptors(jwtHandshakeInterceptor) // JWT 인증 인터셉터
+        // .withSockJS();
+
         registry.addEndpoint("/ws-chat")
                 .setAllowedOriginPatterns("*");
+        // .setHandshakeHandler(new DefaultHandshakeHandler());
         // .addInterceptors(jwtHandshakeInterceptor); // JWT 인증 인터셉터
-        // .withSockJS();
 
         registry.addEndpoint("/ws-voice")
                 .setAllowedOriginPatterns("*")

@@ -26,6 +26,6 @@ public class CustomMemberDetailsService implements UserDetailsService {
         if (!member.isEmailVerified()) {
             throw new RuntimeException("이메일 인증이 완료되지 않았습니다.");
         }
-        return new CustomMemberDetails(member);
+        return CustomMemberDetails.from(member);
     }
 }
