@@ -17,8 +17,10 @@ export const UserProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const res = await axios.get("/members/me");
-      setUser(res.data);
+      const res = await axios.get("/member/me");
+      const token = localStorage.getItem("token");
+      setUser({ ...res.data, token });
+      console.log("UserContext data : ", { ...res.data, token });
     } catch (err) {
       console.error("유저 정보 가져오기 실패" + err);
       setUser(null);

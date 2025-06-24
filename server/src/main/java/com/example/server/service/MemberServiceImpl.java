@@ -10,6 +10,8 @@ import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
+import java.util.List;
+
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -111,5 +113,14 @@ public class MemberServiceImpl implements MemberService {
         log.debug("getByEmail 호출됨, email={}", email);
         return memberRepository.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException("존재하지 않는 사용자"));
+    }
+
+    @Override
+    public List<MemberResponseDTO> searchMembers(String nickname, Long myMno) {
+        List<Member> found = memberRepository.findAllByNickname(nickname);
+        return found.stream()
+                .filter(m -> !m.getId().equals(myMno))
+                .map(MemberMapper::toDTO)
+                .toList();
     }
 }

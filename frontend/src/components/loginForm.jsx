@@ -1,21 +1,28 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
+import axiosInstance from "@/lib/axiosInstance";
+import { useUserContext } from "../context/UserContext";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
+  const { setUser } = useUserContext();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("http://localhost:8080/member/login", {
+      const response = await axiosInstance.post("member/login", {
         email,
         password,
       });
-      localStorage.setItem("token", response.data.token);
-      navigate("/board");
+      const token = response.data.token;
+      localStorage.setItem("token", token);
+      console.log("LoginForm Token : ", token);
+
+      const userRes = await axiosInstance.get("member/me");
+      setUser({ ...userRes.data, token });
+      navigate("/boardList");
     } catch (err) {
       alert("로그인 실패: 이메일 또는 비밀번호를 확인하세요.");
       console.log("로그인 에러 : {}", err);

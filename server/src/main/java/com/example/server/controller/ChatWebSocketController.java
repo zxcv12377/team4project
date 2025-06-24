@@ -38,6 +38,7 @@ public class ChatWebSocketController {
         // WebSocket 세션에서 사용자 정보 가져오기
         String username = (String) headerAccessor.getSessionAttributes().get("username");
         String nickname = (String) headerAccessor.getSessionAttributes().get("nickname");
+        log.warn("헤더 전체 출력: {}", headerAccessor.getSessionAttributes());
         log.warn("💬 세션에서 꺼낸 사용자정보 username={}, nickname={}", username, nickname);
 
         // 메시지 DB에 저장
@@ -58,6 +59,7 @@ public class ChatWebSocketController {
 
     @MessageMapping("/auth")
     public void authenticate(@Payload Map<String, String> payload, StompHeaderAccessor accessor) {
+        log.warn("🟢 authenticate 메서드 호출됨");
         String token = payload.get("token");
         if (token != null && jwtTokenProvider.isTokenValid(token)) {
             Authentication auth = jwtTokenProvider.getAuthentication(token);

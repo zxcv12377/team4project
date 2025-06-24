@@ -1,51 +1,117 @@
-// ✅ src/hooks/useWebSocket.js
 import { useRef, useState, useCallback, useEffect } from "react";
 import Stomp from "stompjs";
+import refreshAxios from "@/lib/axiosInstance"; // refreshAxios 사용
 
 export const useWebSocket = (token, onConnect) => {
   const stompRef = useRef(null);
   const [connected, setConnected] = useState(false);
-  const connectedOnce = useRef(false);
+  const [reconnectTrigger, setReconnectTrigger] = useState(0);
   const tokenRef = useRef(token);
+  const reconnectAttempt = useRef(0);
+  const reconnectTimer = useRef(null);
 
   useEffect(() => {
-    tokenRef.current = token; // ✅ 항상 최신 토큰 유지
+    tokenRef.current = token;
   }, [token]);
 
+  const hardDisconnect = () => {
+    if (stompRef.current) {
+      try {
+        if (stompRef.current.connected) {
+          stompRef.current.disconnect(() => {
+            console.log("🔌 STOMP disconnected");
+          });
+        } else if (stompRef.current.ws?.readyState !== WebSocket.CLOSED) {
+          console.log("❌ Forcibly closing socket");
+          stompRef.current.ws.close();
+        }
+      } catch (e) {
+        console.warn("⚠️ Disconnect error", e);
+      }
+    }
+    stompRef.current = null;
+    setConnected(false);
+  };
+
+  const attemptRefreshToken = async () => {
+    try {
+      const refreshToken = localStorage.getItem("refresh_token");
+      const res = await refreshAxios.post("/auth/refresh", { refreshToken });
+      const newToken = res.data.token;
+
+      if (newToken) {
+        localStorage.setItem("token", newToken);
+        tokenRef.current = newToken;
+        return newToken;
+      }
+    } catch (err) {
+      console.error("❌ Token refresh failed", err);
+      localStorage.removeItem("token");
+      localStorage.removeItem("refresh_token");
+      localStorage.removeItem("username");
+      localStorage.removeItem("name");
+      window.location.href = "/login";
+    }
+    return null;
+  };
+
   const connect = useCallback(
-    (tokenArg, callback) => {
-      const authToken = tokenArg || token;
+    async (tokenArg, callback) => {
+      let authToken = tokenArg || tokenRef.current;
       if (!authToken) return;
 
-      if (stompRef.current && stompRef.current.connected) {
+      if (stompRef.current?.connected) {
         console.log("⚠️ WebSocket already connected");
         return;
       }
 
-      if (connectedOnce.current) {
-        console.log("⚠️ connect() already called once – skipping");
-        return;
+      if (stompRef.current?.ws && stompRef.current.ws.readyState !== WebSocket.CLOSED) {
+        console.log("🧹 Closing previous WebSocket before reconnect");
+        stompRef.current.ws.close();
       }
-
-      connectedOnce.current = true;
 
       const socket = new WebSocket("ws://localhost:8080/ws-chat");
       const client = Stomp.over(socket);
       client.debug = () => {};
 
+      client.onWebSocketError = (e) => {
+        console.error("❌ WebSocket Error", e);
+        hardDisconnect();
+        setReconnectTrigger((prev) => prev + 1);
+      };
+
+      client.onWebSocketClose = () => {
+        console.warn("🔌 WebSocket Closed");
+        hardDisconnect();
+        setReconnectTrigger((prev) => prev + 1);
+      };
+
       client.connect(
         { Authorization: "Bearer " + authToken },
         () => {
+          console.log("✅ WebSocket connected");
           stompRef.current = client;
           setConnected(true);
-          console.log("✅ WebSocket connected");
+          reconnectAttempt.current = 0;
+          reconnectTimer.current = null;
           onConnect?.();
           callback?.();
         },
-        (err) => {
-          console.error("❌ 백그라운드 사용으로 연결 끊김", err);
-          setConnected(false);
-          connectedOnce.current = false;
+        async (err) => {
+          const msg = err?.headers?.message || "";
+          console.warn("❌ STOMP connect error", msg);
+
+          if (msg.includes("Invalid JWT token")) {
+            const newToken = await attemptRefreshToken();
+            if (newToken) {
+              console.log("🔄 Retrying connection with new token");
+              connect(newToken);
+              return;
+            }
+          }
+
+          hardDisconnect();
+          setReconnectTrigger((prev) => prev + 1);
         }
       );
     },
@@ -53,25 +119,28 @@ export const useWebSocket = (token, onConnect) => {
   );
 
   useEffect(() => {
-    if (!connected && tokenRef.current) {
-      const timeout = setTimeout(() => {
-        console.warn("WebSocket 재연결 시도");
-        connect(tokenRef.current);
-      }, 3000); // 3초마다 재연결 시도
+    if (!tokenRef.current || reconnectTimer.current) return;
 
-      return () => clearTimeout(timeout);
-    }
-  }, [connected, connect]);
+    const delay = Math.min(5000 * 2 ** reconnectAttempt.current, 30000);
+    console.warn(`🔁 Reconnecting in ${delay / 1000}s`);
+
+    reconnectTimer.current = setTimeout(() => {
+      reconnectTimer.current = null;
+      reconnectAttempt.current += 1;
+      connect(tokenRef.current);
+    }, delay);
+
+    return () => {
+      if (reconnectTimer.current) {
+        clearTimeout(reconnectTimer.current);
+        reconnectTimer.current = null;
+      }
+    };
+  }, [reconnectTrigger, connect]);
 
   const disconnect = useCallback(() => {
-    if (stompRef.current && stompRef.current.connected) {
-      stompRef.current.disconnect(() => {
-        console.log("🔌 WebSocket 연결 종료 됨");
-        setConnected(false);
-        stompRef.current = null;
-        connectedOnce.current = false;
-      });
-    }
+    hardDisconnect();
+    reconnectAttempt.current = 0;
   }, []);
 
   const subscribe = useCallback(
@@ -88,7 +157,9 @@ export const useWebSocket = (token, onConnect) => {
       return {
         unsubscribe: () => {
           try {
-            sub.unsubscribe();
+            if (stompRef.current?.connected) {
+              sub.unsubscribe();
+            }
           } catch (e) {
             console.warn("❗ unsubscribe failed", e);
           }

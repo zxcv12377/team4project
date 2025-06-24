@@ -42,9 +42,10 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
         query.leftJoin(member).on(board.member.eq(member));
 
         // 댓글 개수
-        JPQLQuery<Long> replyCount = JPAExpressions.select(reply.rno.count())
+        JPQLQuery<Long> replyCount = JPAExpressions
+                .select(reply.count())
                 .from(reply)
-                .where(reply.board.eq(reply.board));
+                .where(reply.board.eq(board));
 
         JPQLQuery<Tuple> tuple = query.select(board, member, replyCount);
 

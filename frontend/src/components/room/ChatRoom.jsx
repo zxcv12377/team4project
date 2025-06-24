@@ -142,6 +142,7 @@ export default function ChatRoom({ roomId, subscribe, send, connected }) {
   // 구독
   useEffect(() => {
     if (!roomId || !connected) return;
+    console.log("🟢 Subscribing to", `/topic/chatroom.${roomId} + ${connected}`);
     const sub = subscribe(`/topic/chatroom.${roomId}`, (payload) => {
       setMessageMap((prev) => ({
         ...prev,
@@ -151,7 +152,7 @@ export default function ChatRoom({ roomId, subscribe, send, connected }) {
     return () => {
       sub?.unsubscribe?.();
     };
-  }, [roomId, subscribe, connected]);
+  }, [roomId, subscribe]);
 
   function sendMessage() {
     if (!input.trim()) return;

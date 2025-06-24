@@ -44,8 +44,6 @@ public class SecurityConfig {
         SecurityFilterChain securityFilterChain(HttpSecurity http, RememberMeServices rememberMeServices)
                         throws Exception {
 
-                JwtAuthenticationFilter jwtFilter = new JwtAuthenticationFilter(jwtUtil, userDetailsService);
-
                 http.csrf(AbstractHttpConfigurer::disable);
 
                 http
@@ -62,7 +60,8 @@ public class SecurityConfig {
                                                                 "/error")
                                                 .permitAll()
                                                 // WebSocket/STOMP endpoints
-                                                .requestMatchers("/ws-chat/**", "/ws-voice/**", "/app/**", "/topic/**")
+                                                .requestMatchers("/ws-chat/**", "/ws-voice/**", "/app/**", "/topic/**",
+                                                                "/auth/refresh")
                                                 .permitAll()
 
                                                 // .requestMatchers("/api/members/register", "/api/members/login",
@@ -95,7 +94,7 @@ public class SecurityConfig {
 
                 http.sessionManagement(seesion -> seesion.sessionCreationPolicy(SessionCreationPolicy.ALWAYS));
                 http.exceptionHandling(exception -> exception.authenticationEntryPoint(jwtAuthenticationEntryPoint));
-                http.addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                http.addFilterBefore(jwtFilter(), UsernamePasswordAuthenticationFilter.class);
                 http.userDetailsService(userDetailsService);
 
                 http.rememberMe(remember -> remember.rememberMeServices(rememberMeServices()).key("myKey"));
@@ -138,10 +137,11 @@ public class SecurityConfig {
                 return rememberMeServices;
         }
 
-        // AuthenticationManager 수동 등록 (로그인 처리에 필요)
         @Bean
-        public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-                return config.getAuthenticationManager();
+        public AuthenticationManager authenticationManager(HttpSecurity http) throws Exception {
+                AuthenticationManagerBuilder builder = http.getSharedObject(AuthenticationManagerBuilder.class);
+                builder.userDetailsService(userDetailsService).passwordEncoder(passwordEncoder());
+                return builder.build();
         }
 
         @Bean
@@ -156,6 +156,11 @@ public class SecurityConfig {
                                                 .allowCredentials(true);
                         }
                 };
+        }
+
+        @Bean
+        public JwtAuthenticationFilter jwtFilter() {
+                return new JwtAuthenticationFilter(jwtUtil);
         }
 
         @Bean

@@ -17,7 +17,8 @@ export default function MainLayout() {
   const [speakingUsers, setSpeakingUsers] = useState([]);
   const [friendMode, setFriendMode] = useState(false);
   const { user } = useUserContext();
-  const { subscribe, send, connected } = useWebSocket(user?.token);
+  const token = user?.token || localStorage.getItem("token");
+  const { subscribe, send, connected } = useWebSocket(token);
 
   console.log("▶️ MainLayout user:", user);
   console.log("▶️ MainLayout token:", user?.token);

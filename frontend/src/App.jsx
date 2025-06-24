@@ -7,13 +7,18 @@ import LoginForm from "./components/loginForm";
 
 import RegisterForm from "./components/registerForm";
 import ProtectedRoute from "./components/protectedRoute";
-import { BoardList } from "./components/Board";
 import Navbar from "./components/navbar";
 import UpdateMyProfile from "./components/UpdateMyProfile";
 import ReplyList from "./components/replyList";
 import axiosInstance from "./lib/axiosInstance";
 import { useWebSocket } from "./hooks/useWebSocket";
 import ChattingModule from "./components/ChattingModule";
+import { BoardList } from "./components/boardList";
+import { UserContext, UserProvider } from "./context/UserContext";
+import { WebSocketContext } from "./context/WebSocketContext";
+import { ChatProvider } from "./context/ChatContext";
+import { ThemeProvider } from "./context/ThemeContext";
+import { RealtimeProvider } from "./context/RealtimeContext";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -65,31 +70,40 @@ function App() {
 
   if (isLoading) return <div>Loading...</div>;
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginForm />} />
-        <Route path="/register" element={<RegisterForm />} />
-
-        <Route element={<Navbar />}>
-          <Route path="/" element={<Navigate to="/board" />} />
-          <Route path="/boardList" element={<boardList />} />
-          <Route path="/login" element={<LoginForm />} />
-          <Route path="/register" element={<RegisterForm />} />
-          <Route path="/reply" element={<ReplyList />} />
-          <Route path="/UpdateProfile" element={<UpdateMyProfile />} />
-          <Route path="/chatting" element={<ChattingModule />} />
-          {/* 보호된 라우트(로그인 인증 후 접근 가능한 경로 지정) */}
-          <Route
-            path="/profile"
-            element={
-              <ProtectedRoute>
-                <MyProfile />
-              </ProtectedRoute>
-            }
-          />
-        </Route>
-      </Routes>
-    </BrowserRouter>
+    <WebSocketContext.Provider value={ws}>
+      <ChatProvider>
+        <ThemeProvider>
+          <UserProvider>
+            <RealtimeProvider socket={ws}>
+              <BrowserRouter>
+                <Routes>
+                  <Route path="/login" element={<LoginForm />} />
+                  <Route path="/register" element={<RegisterForm />} />
+                  <Route element={<Navbar />}>
+                    <Route path="/" element={<Navigate to="/boardList" />} />
+                    <Route path="/boardList" element={<BoardList />} />
+                    <Route path="/login" element={<LoginForm />} />
+                    <Route path="/register" element={<RegisterForm />} />
+                    <Route path="/reply" element={<ReplyList />} />
+                    <Route path="/UpdateProfile" element={<UpdateMyProfile />} />
+                    <Route path="/chatting/*" element={<ChattingModule />} />
+                    {/* 보호된 라우트(로그인 인증 후 접근 가능한 경로 지정) */}
+                    <Route
+                      path="/profile"
+                      element={
+                        <ProtectedRoute>
+                          <MyProfile />
+                        </ProtectedRoute>
+                      }
+                    />
+                  </Route>
+                </Routes>
+              </BrowserRouter>
+            </RealtimeProvider>
+          </UserProvider>
+        </ThemeProvider>
+      </ChatProvider>
+    </WebSocketContext.Provider>
   );
 }
 export default App;

@@ -14,10 +14,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 
+import com.example.server.security.CustomMemberDetails;
 import com.example.server.security.CustomMemberDetailsService;
 
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.Date;
 
@@ -49,6 +51,23 @@ public class JwtUtil {
         // this.key = Keys.hmacShaKeyFor(keyBytes);
         byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
         this.key = Keys.hmacShaKeyFor(keyBytes);
+    }
+
+    public String createRefreshToken(String username) {
+        Date now = new Date();
+        Date expiry = new Date(now.getTime() + Duration.ofDays(14).toMillis());
+
+        String refreshToken = Jwts.builder()
+                .setSubject(username)
+                .setIssuedAt(now)
+                .setExpiration(expiry)
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+
+        log.info("🔐 RefreshToken 생성 - username: {}, 만료: {}, token: {}",
+                username, expiry, refreshToken);
+
+        return refreshToken;
     }
 
     // 토큰 생성
@@ -129,6 +148,16 @@ public class JwtUtil {
                 .setExpiration(expiry)
                 .signWith(key)
                 .compact();
+    }
+
+    public boolean validateRefreshToken(String refreshToken) {
+        return isTokenValid(refreshToken); // 내부적으로 유효성 검증
+    }
+
+    public String generateAccessTokenFromRefresh(String refreshToken) {
+        String username = getEmail(refreshToken);
+        return generateToken(username,
+                ((CustomMemberDetails) customMemberDetailsService.loadUserByUsername(username)).getName());
     }
 
 }
