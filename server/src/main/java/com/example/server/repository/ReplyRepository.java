@@ -17,6 +17,8 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
 
     List<Reply> findByBoardsBnoAndParentIsNullOrderByCreatedDateAsc(Long bno);
 
+    List<Reply> findByBnoAndLikeCountGreaterThanOrderByLikeCountDesc(Long bno, int count);
+
     @Query("SELECT r FROM Reply r LEFT JOIN r.likes l WHERE r.boards.bno = :bno GROUP BY r ORDER BY COUNT(l) DESC")
     List<Reply> findTop3BestReplies(@Param("bno") Long bno);
 

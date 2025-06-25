@@ -71,10 +71,34 @@ public class ReplyService {
                 List<Reply> bestReplies = replyRepository.findTop3BestReplies(bno);
                 List<Reply> allTopLevel = replyRepository.findByBoardsBnoAndParentIsNullOrderByCreatedDateAsc(bno);
 
+                // 2. 댓글별 추천 수 매핑
+                Map<Reply, Long> likeCounts = allTopLevel.stream()
+                                .collect(Collectors.toMap(
+                                                reply -> reply,
+                                                reply -> replyLikeRepository.countByReply(reply)));
+
+                // 3. 추천 수가 1 이상인 댓글만 필터링
+                List<Map.Entry<Reply, Long>> sortedReplies = likeCounts.entrySet().stream()
+                                .filter(entry -> entry.getValue() > 0)
+                                .sorted((a, b) -> Long.compare(b.getValue(), a.getValue())) // 내림차순
+                                .toList();
+
+                // 4. 최대 추천 수 확인
+                long maxLike = sortedReplies.isEmpty() ? 0 : sortedReplies.get(0).getValue();
+
+                // 5. 최대 추천 수와 같은 댓글만 BEST 후보로 추출
+                List<Reply> bestReplies = sortedReplies.stream()
+                                .filter(entry -> entry.getValue() == maxLike)
+                                .limit(3) // 최대 3개까지만 BEST
+                                .map(Map.Entry::getKey)
+                                .toList();
+
+                // 6. 나머지는 일반 댓글로 분류
                 List<Reply> generalReplies = allTopLevel.stream()
                                 .filter(reply -> !bestReplies.contains(reply))
-                                .collect(Collectors.toList());
+                                .toList();
 
+                // 7. 변환 후 결과 반환
                 Map<String, List<ReplyResponseDTO>> result = new HashMap<>();
                 result.put("best", bestReplies.stream().map(this::toResponseDTOWithChildren).toList());
                 result.put("general", generalReplies.stream().map(this::toResponseDTOWithChildren).toList());
@@ -125,7 +149,7 @@ public class ReplyService {
                 Reply reply = replyRepository.findById(rno)
                                 .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
 
-                Member member = memberRepository.findByEmail(nickname)
+                Member member = memberRepository.findByNickname(nickname)
                                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
                 boolean alreadyLiked = replyLikeRepository.existsByReplyAndMember(reply, member);
