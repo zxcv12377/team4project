@@ -29,7 +29,6 @@ function App() {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
   const ws = useWebSocket(token); // ✅ 단일 생성
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
