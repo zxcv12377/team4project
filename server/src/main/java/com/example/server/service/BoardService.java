@@ -87,10 +87,11 @@ public class BoardService {
         return pageResultDTO;
     }
 
-    public BoardDTO getRow(Long bno) {
-        Board board = boardRepository.findById(bno).orElseThrow();
-        return entityToDto(board, board.getMember(), (long) board.getReplies().size());
-    }
+    // public BoardDTO getRow(Long bno) {
+    // Board board = boardRepository.findById(bno).orElseThrow();
+    // return entityToDto(board, board.getMember(), (long)
+    // board.getReplies().size());
+    // }
 
     // ====== 변환 메서드 ======
     private BoardDTO entityToDto(Board board, Member member, Long replyCount) {

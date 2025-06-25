@@ -22,7 +22,7 @@ const PostFormPage = ({ isEdit = false }) => {
 
   useEffect(() => {
     if (isEdit && bno) {
-      axiosInstance.get(`/boards/${bno}`).then((res) => {
+      axiosInstance.get(`/board/${bno}`).then((res) => {
         const { title, content } = res.data;
         setTitle(title);
         setInitialContent(content || "");
@@ -112,12 +112,12 @@ const PostFormPage = ({ isEdit = false }) => {
       };
 
       if (isEdit && bno) {
-        await axiosInstance.put(`/boards/${bno}`, payload);
+        await axiosInstance.put(`/board/${bno}`, payload);
         toast({ title: "수정 완료" });
         navigate(`/posts/${bno}`);
         window.location.reload();
       } else {
-        const res = await axiosInstance.post("/boards", payload);
+        const res = await axiosInstance.post("/board", payload);
         toast({ title: "등록 완료" });
         navigate(`/posts/${res.data.bno}`);
       }

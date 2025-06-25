@@ -21,6 +21,9 @@ import { RealtimeProvider } from "./context/RealtimeContext";
 import LoginForm from "./components/loginForm";
 import RegisterForm from "./components/registerForm";
 import LoginPage from "./pages/LoginPage";
+import PostDetailPage from "./pages/PostDetailPage";
+import PostListPage from "./pages/PostListPage";
+import PostFormPage from "./pages/PostFormPage";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -82,6 +85,10 @@ function App() {
                   <Route element={<Navbar />}>
                     <Route path="/" element={<Navigate to="/boardList" />} />
                     <Route path="/boardList" element={<BoardList />} />
+                    <Route path="posts" element={<PostListPage />} />
+                    <Route path="posts/new" element={<PostFormPage />} />
+                    <Route path="posts/:bno" element={<PostDetailPage name={user?.name} />} />
+                    <Route path="posts/:bno/edit" element={<PostFormPage isEdit={true} />} />
                     <Route path="/login" element={<LoginForm />} />
                     <Route path="/register" element={<RegisterForm />} />
                     <Route path="/reply" element={<ReplyList />} />

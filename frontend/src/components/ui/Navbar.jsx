@@ -31,7 +31,7 @@ const Navbar = ({ onLogout }) => {
         <div className="flex items-center space-x-4 text-sm">
           {/* 로그인 사용자 닉네임 표시 */}
           {isLoggedIn && user?.name && <span className="text-gray-500"> 닉네임: {user.name}</span>}
-          <Link to="/boardList" className="hover:underline">
+          <Link to="/posts" className="hover:underline">
             게시판
           </Link>
           {isLoggedIn ? (

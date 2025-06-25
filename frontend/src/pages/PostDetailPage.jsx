@@ -5,6 +5,7 @@ import axiosInstance from "@/lib/axiosInstance";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import ReplyList from "../components/replyList";
 
 const PostDetailPage = ({ name }) => {
   const { bno } = useParams();
@@ -13,7 +14,7 @@ const PostDetailPage = ({ name }) => {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    axiosInstance.get(`/boards/${bno}/full`).then((res) => {
+    axiosInstance.get(`/board/${bno}/full`).then((res) => {
       setData(res.data);
     });
   }, [bno]);
@@ -22,7 +23,7 @@ const PostDetailPage = ({ name }) => {
     if (!window.confirm("정말 삭제하시겠습니까?")) return;
 
     try {
-      await axiosInstance.delete(`/boards/${bno}`);
+      await axiosInstance.delete(`/board/${bno}`);
       toast({ title: "삭제 완료", description: "게시글이 삭제되었습니다." });
       navigate("/posts");
     } catch (error) {

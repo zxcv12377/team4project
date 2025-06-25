@@ -12,12 +12,12 @@ import com.example.server.entity.Reply;
 public interface ReplyRepository extends JpaRepository<Reply, Long> {
 
     @Modifying
-    @Query("DELETE FROM Reply r WHERE r.board.bno = :bno")
+    @Query("DELETE FROM Reply r WHERE r.boards.bno = :bno")
     void deleteByBoardBno(@Param("bno") Long bno);
 
-    List<Reply> findByBoardBnoAndParentIsNullOrderByCreatedDateAsc(Long bno);
+    List<Reply> findByBoardsBnoAndParentIsNullOrderByCreatedDateAsc(Long bno);
 
-    @Query("SELECT r FROM Reply r LEFT JOIN r.likes l WHERE r.board.bno = :bno GROUP BY r ORDER BY COUNT(l) DESC")
+    @Query("SELECT r FROM Reply r LEFT JOIN r.likes l WHERE r.boards.bno = :bno GROUP BY r ORDER BY COUNT(l) DESC")
     List<Reply> findTop3BestReplies(@Param("bno") Long bno);
 
 }

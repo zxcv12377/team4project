@@ -3,22 +3,17 @@ package com.example.server.controller;
 import com.example.server.dto.ReplyDTO;
 import com.example.server.dto.ReplyResponseDTO;
 import com.example.server.entity.Member;
-import com.example.server.entity.Reply;
 import com.example.server.jwt.JwtUtil;
 import com.example.server.repository.MemberRepository;
-import com.example.server.security.CustomMemberDetails;
 import com.example.server.service.ReplyService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 

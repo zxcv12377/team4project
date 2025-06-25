@@ -27,7 +27,7 @@ const PostListPage = () => {
 
   const fetchPosts = useCallback(async () => {
     try {
-      const res = await axiosInstance.get("/boards", {
+      const res = await axiosInstance.get("/board", {
         params: { type, keyword, page, size: 10, sort: "DESC" },
       });
       setPosts(res.data.content);
