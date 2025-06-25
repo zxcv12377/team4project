@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form";
 import { Input } from "@/components/ui/Input";
 import { Button } from "@/components/ui/Button";
-import { useToast } from "@/hooks/use-toast";
 import axiosInstance from "@/lib/axiosInstance";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -9,7 +8,6 @@ import FindAccountModal from "@/components/ui/FindAccountModal";
 
 const LoginPage = ({ onLogin }) => {
   const { register, handleSubmit } = useForm();
-  const { toast } = useToast();
   const navigate = useNavigate();
   const [findMode, setFindMode] = useState(null);
 
@@ -27,10 +25,7 @@ const LoginPage = ({ onLogin }) => {
         localStorage.setItem("username", result.username); // 이메일
         localStorage.setItem("name", result.name); // 닉네임
 
-        toast({
-          title: "로그인 성공 🎉",
-          description: `${result.name}님 환영합니다!`,
-        });
+        alert("로그인 성공!");
 
         onLogin(result.token);
         navigate("/");
@@ -39,17 +34,9 @@ const LoginPage = ({ onLogin }) => {
       }
     } catch (error) {
       if (error.response?.status === 401 || error.response?.status === 403) {
-        toast({
-          title: "인증 오류",
-          description: "이메일 또는 비밀번호가 올바르지 않습니다.",
-          variant: "destructive",
-        });
+        alert("로그인 정보가 올바르지 않습니다. 다시 시도해주세요.");
       } else {
-        toast({
-          title: "로그인 실패",
-          description: error.message || "예상치 못한 오류가 발생했습니다.",
-          variant: "destructive",
-        });
+        alert("로그인 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.");
       }
       onLogin(null);
       console.error("로그인 에러:", error);
