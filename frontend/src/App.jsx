@@ -3,9 +3,7 @@ import React, { useEffect, useState } from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import MyProfile from "./components/myProfile";
-import LoginForm from "./components/loginForm";
 
-import RegisterForm from "./components/registerForm";
 import ProtectedRoute from "./components/protectedRoute";
 import Navbar from "./components/navbar";
 import UpdateMyProfile from "./components/UpdateMyProfile";
@@ -19,6 +17,10 @@ import { WebSocketContext } from "./context/WebSocketContext";
 import { ChatProvider } from "./context/ChatContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { RealtimeProvider } from "./context/RealtimeContext";
+
+import LoginForm from "./components/loginForm";
+import RegisterForm from "./components/registerForm";
+import LoginPage from "./pages/LoginPage";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -77,8 +79,6 @@ function App() {
             <RealtimeProvider socket={ws}>
               <BrowserRouter>
                 <Routes>
-                  <Route path="/login" element={<LoginForm />} />
-                  <Route path="/register" element={<RegisterForm />} />
                   <Route element={<Navbar />}>
                     <Route path="/" element={<Navigate to="/boardList" />} />
                     <Route path="/boardList" element={<BoardList />} />

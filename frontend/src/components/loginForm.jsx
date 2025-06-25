@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import axiosInstance from "@/lib/axiosInstance";
 import { useUserContext } from "../context/UserContext";
 
-export default function LoginForm() {
+export default function LoginForm({ onSwitchToRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ export default function LoginForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axiosInstance.post("member/login", {
+      const response = await axiosInstance.post("members/login", {
         email,
         password,
       });
@@ -20,7 +20,7 @@ export default function LoginForm() {
       localStorage.setItem("token", token);
       console.log("LoginForm Token : ", token);
 
-      const userRes = await axiosInstance.get("member/me");
+      const userRes = await axiosInstance.get("members/me");
       setUser({ ...userRes.data, token });
       navigate("/boardList");
     } catch (err) {
@@ -30,63 +30,62 @@ export default function LoginForm() {
   };
 
   return (
-    <div className="min-h-screen bg-[#0f172a] flex items-center justify-center px-4">
-      <div className="absolute top-6 left-6">
-        <a
-          href="/board"
-          className="text-white text-2xl font-extrabold tracking-wide hover:text-indigo-400 transition-colors"
-        >
-          STRONGBERRY
-        </a>
-      </div>
-      <div className="bg-[#0f172a] p-10 rounded-xl w-full max-w-sm text-white">
-        <div className="flex justify-center mb-6"></div>
-        <h2 className="text-2xl font-semibold text-center mb-8">로그인</h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div>
-            <label htmlFor="email" className="block mb-1 text-sm">
-              Gmail 주소
-            </label>
-            <input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              className="w-full px-3 py-2 bg-[#1e293b] border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <div>
-            <label htmlFor="password" className="block mb-1 text-sm">
-              비밀번호
-            </label>
-            <input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full px-3 py-2 bg-[#1e293b] border border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          </div>
-          <button
-            type="submit"
-            className="w-full py-2 rounded-md bg-indigo-500 hover:bg-indigo-600 transition text-white font-semibold"
-          >
-            로그인
-          </button>
-        </form>
-        <div className="mt-6 text-center text-sm text-gray-400">
-          {/* 아직 미구현 */}
-          <a href="#" className="text-indigo-400 hover:underline">
+    <div className="relative mx-auto" style={{ width: 1200, height: 800 }}>
+      {/* 1. 프레임 이미지 */}
+      <img
+        src="/strawberry-frame.png"
+        alt="strawberry frame"
+        className="absolute inset-0 w-full h-full z-0 pointer-events-none"
+      />
+
+      {/* 2. 폼은 고정 너비로 가운데 배치 */}
+      <form
+        onSubmit={handleSubmit}
+        className="absolute left-1/2 top-1/2 z-10 flex flex-col items-center space-y-4 px-6"
+        style={{
+          width: 400,
+          transform: "translate(-50%, -50%)",
+        }}
+      >
+        <h2 className="text-3xl font-bold text-red-500">로그인</h2>
+        <input
+          id="email"
+          type="email"
+          placeholder="Gmail"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-black"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <input
+          id="password"
+          type="password"
+          placeholder="비밀번호"
+          className="w-full px-3 py-2 border border-gray-300 rounded text-black"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button type="submit" className="w-full bg-red-400 text-white py-2 rounded hover:bg-red-500">
+          로그인
+        </button>
+        <div className="text-sm text-gray-600  mt-2 flex space-x-2">
+          <a href="#" className="hover:underline">
             비밀번호 찾기
           </a>
-          <span className="mx-2 text-gray-500">|</span>
-          <a href="/register" className="text-indigo-400 hover:underline">
-            회원가입하기
+          <span className="mx-2">|</span>
+          <a
+            href="#"
+            onClick={(e) => {
+              e.preventDefault();
+              onSwitchToRegister?.();
+            }}
+            className="hover:underline"
+          >
+            회원가입
           </a>
         </div>
-      </div>
+      </form>
     </div>
   );
 }

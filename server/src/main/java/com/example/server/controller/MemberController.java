@@ -27,7 +27,7 @@ import java.util.Map;
 
 @Log4j2
 @RestController
-@RequestMapping("/api/member")
+@RequestMapping("/api/members")
 @RequiredArgsConstructor
 public class MemberController {
 

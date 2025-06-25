@@ -56,18 +56,15 @@ public class SecurityConfig {
                                                 .permitAll()
                                                 .requestMatchers("/movie/list", "/movie/read").permitAll()
                                                 .requestMatchers("/reviews/**", "/upload/display/**").permitAll()
-                                                .requestMatchers(HttpMethod.POST, "/member/register", "/member/login",
+
+                                                .requestMatchers(HttpMethod.POST, "/api/members/register",
+                                                                "/api/members/login",
                                                                 "/error")
                                                 .permitAll()
                                                 // WebSocket/STOMP endpoints
                                                 .requestMatchers("/ws-chat/**", "/ws-voice/**", "/app/**", "/topic/**",
                                                                 "/auth/refresh")
                                                 .permitAll()
-
-                                                // .requestMatchers("/api/members/register", "/api/members/login",
-                                                // "/error")
-                                                // .permitAll() // 회원가입/로그인
-                                                // 허용
                                                 .requestMatchers(HttpMethod.PUT, "/api/members/password/reset",
                                                                 "/api/members/password")
                                                 .permitAll()
@@ -76,20 +73,23 @@ public class SecurityConfig {
                                                 .permitAll()
 
                                                 .requestMatchers("/api/chatrooms/**").authenticated() // 채팅 rest api
-                                                .requestMatchers(HttpMethod.GET, "/api/members/mypage").authenticated()
+                                                .requestMatchers(HttpMethod.GET, "/api/members/me").authenticated()
 
-                                                .requestMatchers(HttpMethod.POST, "/api/boards", "/api/replies/**",
-                                                                "/api/members/mypage")
+                                                .requestMatchers(HttpMethod.POST, "/api/boards", "/api/replies/**")
                                                 .authenticated()
+                                                .requestMatchers(HttpMethod.PUT, "/api/boards/**", "/api/replies/**",
+                                                                "/api/members/comment",
+                                                                "/api/members/nickname")
+                                                .authenticated()
+
                                                 .requestMatchers(HttpMethod.PUT, "/api/boards/**", "/api/replies/**",
                                                                 "/api/members/mypage",
                                                                 "/api/members/nickname")
                                                 .authenticated()
-
+                                                .requestMatchers("/img/**").permitAll()
                                                 .requestMatchers(HttpMethod.DELETE, "/api/boards/**", "/api/replies/**",
                                                                 "/api/members/mypage")
                                                 .authenticated()
-                                                .requestMatchers("/img/**").permitAll()
                                                 .anyRequest().permitAll());
 
                 http.sessionManagement(seesion -> seesion.sessionCreationPolicy(SessionCreationPolicy.ALWAYS));

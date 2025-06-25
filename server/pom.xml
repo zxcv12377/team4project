@@ -30,6 +30,10 @@
 		<java.version>17</java.version>
 	</properties>
 	<dependencies>
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jsr310</artifactId>
+		</dependency>
     <!-- JWT (JJWT 라이브러리) -->
 		<!-- amqp -->
 		<dependency>
