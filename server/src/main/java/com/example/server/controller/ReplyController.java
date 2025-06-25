@@ -80,7 +80,8 @@ public class ReplyController {
     // 댓글 추천
     @PostMapping("/{rno}/like")
     public ResponseEntity<Void> likeReply(@PathVariable Long rno, @RequestBody Map<String, String> payload) {
-        replyService.likeReply(rno, payload.get("nickname"));
+        log.info("페이로드 : {}", payload);
+        replyService.likeReply(rno, payload.get("email"));
         return ResponseEntity.ok().build();
     }
 

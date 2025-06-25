@@ -1,11 +1,13 @@
 import React, { useState, useEffect, useCallback } from "react";
 import ReplyItem from "./replyItem";
 import ReplyForm from "./replyForm";
+import { UserContext, useUserContext } from "../context/UserContext";
 
 export default function ReplyList({ bno }) {
   const [bestReplies, setBestReplies] = useState([]);
   const [generalReplies, setGeneralReplies] = useState([]);
   const [likedReplies, setLikedReplies] = useState(new Set());
+  const { user } = useUserContext();
 
   const fetchReplies = useCallback(async () => {
     try {
@@ -34,13 +36,14 @@ export default function ReplyList({ bno }) {
 
   const handleLike = async (rno) => {
     if (likedReplies.has(rno)) return;
-    const nickname = localStorage.getItem("username");
+    // const nickname = localStorage.getItem("username");
+    const email = user.email;
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`/api/replies/${rno}/like`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ nickname }),
+        body: JSON.stringify({ email }),
       });
       if (res.ok) {
         const updated = new Set(likedReplies);

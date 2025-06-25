@@ -68,7 +68,6 @@ public class ReplyService {
 
         // 추천/작성 기준 분리 목록
         public Map<String, List<ReplyResponseDTO>> getRepliesSeparated(Long bno) {
-                List<Reply> bestReplies = replyRepository.findTop3BestReplies(bno);
                 List<Reply> allTopLevel = replyRepository.findByBoardsBnoAndParentIsNullOrderByCreatedDateAsc(bno);
 
                 // 2. 댓글별 추천 수 매핑
@@ -145,11 +144,11 @@ public class ReplyService {
         }
 
         // 댓글 추천
-        public void likeReply(Long rno, String nickname) {
+        public void likeReply(Long rno, String email) {
                 Reply reply = replyRepository.findById(rno)
                                 .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
 
-                Member member = memberRepository.findByNickname(nickname)
+                Member member = memberRepository.findByEmail(email)
                                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
                 boolean alreadyLiked = replyLikeRepository.existsByReplyAndMember(reply, member);
