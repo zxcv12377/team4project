@@ -2,12 +2,12 @@ package com.example.server.service;
 
 import com.example.server.dto.ReplyDTO;
 import com.example.server.dto.ReplyResponseDTO;
-import com.example.server.entity.Board;
+import com.example.server.entity.Boards;
 import com.example.server.entity.Member;
 import com.example.server.entity.MemberRole;
 import com.example.server.entity.Reply;
 import com.example.server.entity.ReplyLike;
-import com.example.server.repository.BoardRepository;
+import com.example.server.repository.BoardsRepository;
 import com.example.server.repository.MemberRepository;
 import com.example.server.repository.ReplyLikeRepository;
 import com.example.server.repository.ReplyRepository;
@@ -26,12 +26,12 @@ public class ReplyService {
 
         private final ReplyRepository replyRepository;
         private final MemberRepository memberRepository;
-        private final BoardRepository boardRepository;
+        private final BoardsRepository boardRepository;
         private final ReplyLikeRepository replyLikeRepository;
 
         // 댓글 등록
         public Long create(ReplyDTO dto, Member member) {
-                Board board = boardRepository.findById(dto.getBno())
+                Boards board = boardRepository.findById(dto.getBno())
                                 .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
 
                 Reply parent = null;
@@ -42,7 +42,7 @@ public class ReplyService {
 
                 Reply reply = Reply.builder()
                                 .text(dto.getText())
-                                .board(board)
+                                .boards(board)
                                 .member(member) // 🔐 로그인된 사용자
                                 .parent(parent)
                                 .build();
@@ -52,7 +52,7 @@ public class ReplyService {
 
         // 특정 게시글 댓글 목록 (작성순)
         public List<ReplyResponseDTO> getList(Long bno) {
-                List<Reply> parentReplies = replyRepository.findByBoardBnoAndParentIsNullOrderByCreatedDateAsc(bno);
+                List<Reply> parentReplies = replyRepository.findByBoardsBnoAndParentIsNullOrderByCreatedDateAsc(bno);
                 return parentReplies.stream()
                                 .map(this::toResponseDTOWithChildren)
                                 .collect(Collectors.toList());
@@ -68,8 +68,7 @@ public class ReplyService {
 
         // 추천/작성 기준 분리 목록
         public Map<String, List<ReplyResponseDTO>> getRepliesSeparated(Long bno) {
-                // 1. 모든 최상위 댓글 불러오기
-                List<Reply> allTopLevel = replyRepository.findByBoardBnoAndParentIsNullOrderByCreatedDateAsc(bno);
+                List<Reply> allTopLevel = replyRepository.findByBoardsBnoAndParentIsNullOrderByCreatedDateAsc(bno);
 
                 // 2. 댓글별 추천 수 매핑
                 Map<Reply, Long> likeCounts = allTopLevel.stream()
@@ -145,11 +144,11 @@ public class ReplyService {
         }
 
         // 댓글 추천
-        public void likeReply(Long rno, String nickname) {
+        public void likeReply(Long rno, String email) {
                 Reply reply = replyRepository.findById(rno)
                                 .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
 
-                Member member = memberRepository.findByNickname(nickname)
+                Member member = memberRepository.findByEmail(email)
                                 .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
 
                 boolean alreadyLiked = replyLikeRepository.existsByReplyAndMember(reply, member);
@@ -180,7 +179,7 @@ public class ReplyService {
                 String badge = null;
                 if (reply.getMember().getRoles().contains(MemberRole.ADMIN)) {
                         badge = "관리자";
-                } else if (reply.getMember().getId().equals(reply.getBoard().getMember().getId())) {
+                } else if (reply.getMember().getId().equals(reply.getBoards().getMember().getId())) {
                         badge = "작성자";
                 }
 

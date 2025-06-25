@@ -18,7 +18,7 @@ const PostFormPage = ({ isEdit = false }) => {
 
   useEffect(() => {
     if (isEdit && bno) {
-      axiosInstance.get(`/boards/${bno}`).then((res) => {
+      axiosInstance.get(`/board/${bno}`).then((res) => {
         const { title, content } = res.data;
         setTitle(title);
         setInitialContent(content || "");

@@ -11,7 +11,9 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
 import com.example.server.entity.Board;
+import com.example.server.entity.Boards;
 import com.example.server.entity.QBoard;
+import com.example.server.entity.QBoards;
 import com.example.server.entity.QMember;
 import com.example.server.entity.QReply;
 import com.querydsl.core.Tuple;
@@ -27,25 +29,25 @@ import lombok.extern.log4j.Log4j2;
 public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport implements SearchBoardRepository {
 
     public SearchBoardRepositoryImpl() {
-        super(Board.class);
+        super(Boards.class);
     }
 
     @Override
     public Page<Object[]> list(String type, String keyword, Pageable pageable) {
         log.info("SearchBoard");
 
-        QBoard board = QBoard.board;
+        QBoards board = QBoards.boards;
         QMember member = QMember.member;
         QReply reply = QReply.reply;
 
-        JPQLQuery<Board> query = from(board);
+        JPQLQuery<Boards> query = from(board);
         query.leftJoin(member).on(board.member.eq(member));
 
         // 댓글 개수
         JPQLQuery<Long> replyCount = JPAExpressions
                 .select(reply.count())
                 .from(reply)
-                .where(reply.board.eq(board));
+                .where(reply.boards.eq(board));
 
         JPQLQuery<Tuple> tuple = query.select(board, member, replyCount);
 
@@ -81,11 +83,11 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
 
     @Override
     public Object[] getBoardRow(Long bno) {
-        QBoard board = QBoard.board;
+        QBoards board = QBoards.boards;
         QMember member = QMember.member;
         QReply reply = QReply.reply;
 
-        JPQLQuery<Board> query = from(board);
+        JPQLQuery<Boards> query = from(board);
         query.leftJoin(member).on(board.member.eq(member));
         query.where(board.bno.eq(bno));
 
@@ -93,7 +95,7 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
         // r.BOARD_ID = b.BNO
         JPQLQuery<Long> replyCount = JPAExpressions.select(reply.rno.count())
                 .from(reply)
-                .where(reply.board.eq(board)).groupBy(reply.board);
+                .where(reply.boards.eq(board)).groupBy(reply.boards);
 
         JPQLQuery<Tuple> tuple = query.select(board, member, replyCount);
 

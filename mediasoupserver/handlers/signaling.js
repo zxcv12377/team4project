@@ -130,9 +130,11 @@ function setupSignaling(io, router) {
     });
     // 오디오 트랙 produce 요청
     socket.on("produce", async ({ kind, rtpParameters }, callback) => {
+      console.log("🎤 서버에 produce 요청 도착");
       const transport = transports.get(socket.id);
       if (!transport) {
         console.warn(`[produce] ❌ 전송용 transport 없음: ${socket.id}`);
+        console.log("현재 transports 맵 상태:", Array.from(transports.entries()));
         return;
       }
       try {
@@ -148,10 +150,20 @@ function setupSignaling(io, router) {
         // 본인 제외 처리 + 다른 peer에게 이 producer 정보 전달
         // 두번 사용하는 이유는 새로운 유저가 들어올 때마다 새로 추가 해줘야 하기 때문
         for (const [peerId, peer] of peers.entries()) {
+          console.log("★★★★★★★ 새 유저 도착 시 한번 더 실행");
           if (peerId !== socket.id) {
             peer.socket.emit("newProducer", {
               producerId: producer.id,
               socketId: socket.id,
+            });
+          }
+        }
+        for (const [peerId, producerMap] of producers.entries()) {
+          if (peerId === socket.id) continue;
+          for (const [existingProducerId] of producerMap.entries()) {
+            socket.emit("newProducer", {
+              producerId: existingProducerId,
+              socketId: peerId,
             });
           }
         }

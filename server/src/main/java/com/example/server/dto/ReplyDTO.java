@@ -1,7 +1,12 @@
 package com.example.server.dto;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
+import com.example.server.entity.Board;
+import com.example.server.entity.Boards;
+import com.example.server.entity.Member;
 import com.example.server.entity.Reply;
 
 import lombok.AllArgsConstructor;
@@ -33,16 +38,28 @@ public class ReplyDTO {
 
     private boolean deleted;
 
+    @Builder.Default
+    private List<ReplyDTO> children = new ArrayList<>();
+
     public static ReplyDTO fromEntity(Reply reply) {
         return ReplyDTO.builder()
                 .rno(reply.getRno())
-                .bno(reply.getBoard().getBno())
+                .bno(reply.getBoards().getBno())
                 .text(reply.getText())
                 .id(reply.getMember().getId())
                 .nickname(reply.getMember().getNickname())
                 .parentRno(reply.getParent() != null ? reply.getParent().getRno() : null)
                 .createdDate(reply.getCreatedDate())
                 .deleted(reply.isDeleted())
+                .build();
+    }
+
+    public Reply toEntity(ReplyRequestDTO dto, Boards board, Member member, Reply parentReply) {
+        return Reply.builder()
+                .boards(board)
+                .member(member)
+                .text(dto.getText())
+                .parent(parentReply)
                 .build();
     }
 

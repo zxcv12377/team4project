@@ -16,7 +16,7 @@ import com.example.server.base.Base;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@ToString(exclude = { "board", "parent", "member" })
+@ToString(exclude = { "boards", "parent", "member" })
 
 public class Reply extends Base {
     @Id
@@ -25,7 +25,7 @@ public class Reply extends Base {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_bno")
-    private Board board;
+    private Boards boards;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_rno")
