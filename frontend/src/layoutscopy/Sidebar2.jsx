@@ -5,7 +5,7 @@ import { useVoiceChat } from "./../hooks/useVoiceChat";
 
 export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSelectDMRoom, onSelectChannel }) {
   const { user } = useUserContext();
-  const currentUserId = user?.mno;
+  const currentUserId = user?.id;  // ✅ 수정됨
 
   const [friends, setFriends] = useState([]);
   const [channels, setChannels] = useState([]);
@@ -16,18 +16,20 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
 
   const [inviteCode, setInviteCode] = useState("");
   const [inviteChannelId, setInviteChannelId] = useState(null);
-  // 음성 채널
+
   const [currentVoiceRoomId, setCurrentVoiceRoomId] = useState(null);
   const [speakingUsers, setSpeakingUsers] = useState([]);
+
   const { startSpeaking, stopSpeaking } = useVoiceChat({
     roomId: currentVoiceRoomId,
     member: {
-      memberId: user?.mno,
+      memberId: user?.id,
       name: user?.name,
       profile: user?.profile,
     },
     onSpeakingUsersChange: setSpeakingUsers,
   });
+
   useVoiceChat(currentVoiceRoomId, user);
 
   useEffect(() => {
@@ -42,7 +44,6 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
   useEffect(() => {
     if (!dmMode && serverId) fetchChannels();
     else setChannels([]);
-    // eslint-disable-next-line
   }, [dmMode, serverId]);
 
   function fetchChannels() {
@@ -87,6 +88,7 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
       setInviteChannelId(channelId);
     });
   }
+
   function closeInviteModal() {
     setInviteCode("");
     setInviteChannelId(null);
@@ -98,14 +100,13 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
         console.log("채널 ID 없음. joinRoom 생략");
         return;
       }
-      setCurrentVoiceRoomId(channelId); // 이게 훅에 반영됨
+      setCurrentVoiceRoomId(channelId);
     } catch (err) {
       console.error("마이크 접근 실패:", err);
       alert("마이크 장치를 확인해주세요.");
     }
   };
 
-  // --- 채널 그룹핑 ---
   const textChannels = channels.filter((ch) => (ch?.type || "").toUpperCase().trim() === "TEXT");
   const voiceChannels = channels.filter((ch) => (ch?.type || "").toUpperCase().trim() === "VOICE");
 
@@ -127,7 +128,6 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
               key={f.friendId}
               className="px-3 py-2 rounded flex items-center hover:bg-zinc-800 cursor-pointer transition"
               onClick={async () => {
-                // 로그 추가: 실제로 보내는 값 확인
                 console.log("DM방 생성 요청", {
                   myId: currentUserId,
                   friendId: f.memberId,
@@ -154,6 +154,7 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
       </div>
     );
   }
+
   return (
     <div className="w-[260px] min-w-[200px] max-w-[320px] h-full bg-[#2b2d31] flex flex-col border-r border-[#232428]">
       <div className="flex-1 flex flex-col">
@@ -205,6 +206,7 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
             </li>
           ))}
         </ul>
+
         {/* 음성 채널 */}
         <div className="flex items-center justify-between px-4 mt-2 mb-1">
           <span className="text-xs text-zinc-400 font-bold">음성 채널</span>
@@ -231,8 +233,7 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
                   return;
                 }
                 onSelectChannel?.(ch.id);
-                handleJoinVoiceChannel(ch.id, user.mno);
-                // startSpeaking();
+                handleJoinVoiceChannel(ch.id, user.id);
               }}
             >
               <span>🔊</span>
@@ -250,49 +251,51 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
             </li>
           ))}
         </ul>
-        {/* 채널 생성 모달 */}
-        {showCreate && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-40">
-            <div className="bg-zinc-900 p-4 rounded w-80 flex flex-col gap-2">
-              <div className="text-white font-bold mb-2">채널 개설</div>
-              <input
-                className="p-2 rounded"
-                value={newName}
-                onChange={(e) => setNewName(e.target.value)}
-                placeholder="채널명"
-              />
-              <div className="flex gap-2 mt-2">
-                <button onClick={handleCreateChannel} className="flex-1 bg-blue-600 text-white rounded py-1">
-                  생성
-                </button>
-                <button onClick={() => setShowCreate(false)} className="flex-1 bg-zinc-700 text-white rounded py-1">
-                  취소
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-        {/* 초대코드 모달 */}
-        {inviteCode && (
-          <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-            <div className="bg-zinc-900 p-4 rounded w-80 flex flex-col gap-2">
-              <div className="text-white font-bold mb-2">초대코드</div>
-              <div className="bg-zinc-800 rounded px-4 py-2 font-mono text-xl text-center mb-2">{inviteCode}</div>
-              <button
-                onClick={() => {
-                  navigator.clipboard.writeText(inviteCode);
-                }}
-                className="bg-blue-600 text-white rounded px-3 py-1 mb-2"
-              >
-                코드 복사
-              </button>
-              <button onClick={closeInviteModal} className="bg-zinc-700 text-white rounded px-3 py-1">
-                닫기
-              </button>
-            </div>
-          </div>
-        )}
       </div>
+
+      {/* 채널 생성 모달 */}
+      {showCreate && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-40">
+          <div className="bg-zinc-900 p-4 rounded w-80 flex flex-col gap-2">
+            <div className="text-white font-bold mb-2">채널 개설</div>
+            <input
+              className="p-2 rounded"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="채널명"
+            />
+            <div className="flex gap-2 mt-2">
+              <button onClick={handleCreateChannel} className="flex-1 bg-blue-600 text-white rounded py-1">
+                생성
+              </button>
+              <button onClick={() => setShowCreate(false)} className="flex-1 bg-zinc-700 text-white rounded py-1">
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* 초대코드 모달 */}
+      {inviteCode && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div className="bg-zinc-900 p-4 rounded w-80 flex flex-col gap-2">
+            <div className="text-white font-bold mb-2">초대코드</div>
+            <div className="bg-zinc-800 rounded px-4 py-2 font-mono text-xl text-center mb-2">{inviteCode}</div>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(inviteCode);
+              }}
+              className="bg-blue-600 text-white rounded px-3 py-1 mb-2"
+            >
+              코드 복사
+            </button>
+            <button onClick={closeInviteModal} className="bg-zinc-700 text-white rounded px-3 py-1">
+              닫기
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

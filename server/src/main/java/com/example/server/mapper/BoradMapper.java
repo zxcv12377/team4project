@@ -36,7 +36,7 @@ public class BoradMapper {
                 .bno(board.getBno())
                 .title(board.getTitle())
                 .nickname(board.getMember().getNickname())
-                .id(board.getMember().getId())
+                .memberid(board.getMember().getId())
                 .email(board.getMember().getEmail())
                 .replyCount(replyCount)
                 .attachments( // ✅ JSON 파싱 필요
@@ -56,7 +56,7 @@ public class BoradMapper {
                 .title(board.getTitle())
                 .content(board.getContent())
                 .nickname(board.getMember().getNickname())
-                .id(board.getMember().getId())
+                .memberid(board.getMember().getId())
                 .email(board.getMember().getEmail())
                 .replyCount(replyCount)
                 .attachments(

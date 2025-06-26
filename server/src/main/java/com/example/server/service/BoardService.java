@@ -8,6 +8,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.example.server.dto.BoardDTO;
@@ -18,6 +20,7 @@ import com.example.server.entity.Member;
 import com.example.server.repository.BoardRepository;
 import com.example.server.repository.MemberRepository;
 import com.example.server.repository.ReplyRepository;
+import com.example.server.security.CustomMemberDetails;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -58,7 +61,11 @@ public class BoardService {
     // create
     public Long create(BoardDTO dto) {
         // dto => entity(board) 변경
-        Board board = dtoToEntity(dto);
+        log.info("디티오 : {}", dto);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        CustomMemberDetails userDetails = (CustomMemberDetails) auth.getPrincipal();
+        Member loginMember = memberRepository.findById(userDetails.getId()).get();
+        Board board = dtoToEntity(dto, loginMember);
         return boardRepository.save(board).getBno();
     }
 
@@ -99,7 +106,7 @@ public class BoardService {
                 .content((String) en[2]) // 본문
                 .createdDate((LocalDateTime) en[3]) // 생성일
                 .updatedDate((LocalDateTime) en[4]) // 수정일
-                .id((Long) en[5]) // 작성자 ID
+                .memberid((Long) en[5]) // 작성자 ID
                 .nickname((String) en[6]) // 닉네임
                 .email((String) en[7]) // 이메일
                 .replyCount((Long) en[8]) // 댓글 수
@@ -130,7 +137,7 @@ public class BoardService {
                 .content(board.getContent()) // 상세 보기용
                 .createdDate(board.getCreatedDate())
                 .updatedDate(board.getUpdatedDate())
-                .id(member != null ? member.getId() : null)
+                .memberid(member != null ? member.getId() : null)
                 .nickname(member != null ? member.getNickname() : null)
                 .email(member != null ? member.getEmail() : null)
                 .replyCount(replyCount != null ? replyCount : 0L)
@@ -138,14 +145,15 @@ public class BoardService {
                 .build();
     }
 
-    private Board dtoToEntity(BoardDTO dto) {
-        Member member = memberRepository.findById(dto.getId())
-                .orElseThrow(() -> new IllegalArgumentException("No member found with id: " + dto.getId()));
-
+    private Board dtoToEntity(BoardDTO dto, Member member) {
+        log.info("디튀오 {} ", dto);
+        // Member member = memberRepository.findById(dto.getMemberid())
+        // .orElseThrow(() -> new IllegalArgumentException("No member found with id: " +
+        // dto.getMemberid()));
         Board board = Board.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
-                .attachmentsJson(toJson(dto.getAttachments()))
+                // .attachmentsJson(toJson(dto.getAttachments()))
                 .member(member)
                 .build();
         return board;

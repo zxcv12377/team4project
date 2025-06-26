@@ -39,7 +39,7 @@ const Navbar = ({ onLogout }) => {
               <Link to="/mypage" className="hover:underline">
                 마이페이지
               </Link>
-              <button onClick={logout} className="hover:underline bg-transparent border-none outline-none">
+              <button onClick={handleLogout} className="hover:underline bg-transparent border-none outline-none">
                 로그아웃
               </button>
             </>
