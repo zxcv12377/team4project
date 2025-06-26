@@ -25,8 +25,8 @@ public class BoradMapper {
                 .id(board.getMember().getId())
                 .email(board.getMember().getEmail())
                 .replyCount(replyCount)
-                .regDate(board.getRegDate())
-                .modDate(board.getModDate())
+                .createDate(board.getCreateDate())
+                .updateDate(board.getUpdateDate())
                 .build();
     }
 
@@ -41,8 +41,8 @@ public class BoradMapper {
                 .id(board.getMember().getId())
                 .email(board.getMember().getEmail())
                 .replyCount(replyCount)
-                .regDate(board.getRegDate())
-                .modDate(board.getModDate())
+                .createDate(board.getCreateDate())
+                .updateDate(board.getUpdateDate())
                 .build();
     }
 

@@ -37,8 +37,8 @@ public class BoardDTO {
     private Long id;
     private String nickname;
 
-    private LocalDateTime regDate;
-    private LocalDateTime modDate;
+    private LocalDateTime createDate;
+    private LocalDateTime updateDate;
 
     // 댓글 수
     private Long replyCount;

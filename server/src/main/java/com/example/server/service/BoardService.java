@@ -100,8 +100,8 @@ public class BoardService {
                 .bno((Long) en[0])
                 .title((String) en[1])
                 .content((String) en[2])
-                .regDate((LocalDateTime) en[3])
-                .modDate((LocalDateTime) en[4])
+                .createDate((LocalDateTime) en[3])
+                .updateDate((LocalDateTime) en[4])
                 .id((Long) en[5])
                 .nickname((String) en[6])
                 .email((String) en[7])
@@ -132,7 +132,7 @@ public class BoardService {
                 .content(board.getContent()) // 상세보기에만 사용
                 .id(member != null ? member.getId() : null)// 작성자id
                 .attachments(attachments)
-                .regDate(board.getRegDate())
+                .createDate(board.getCreateDate())
                 .replyCount(replyCount != null ? replyCount : 0L)
                 .build();
     }

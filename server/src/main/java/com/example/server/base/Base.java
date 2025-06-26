@@ -18,9 +18,9 @@ public class Base {
 
     @CreatedDate
     @Column(name = "REGDATE", updatable = false)
-    private LocalDateTime regDate;
+    private LocalDateTime createDate;
 
     @LastModifiedDate
     @Column(name = "MODDATE")
-    private LocalDateTime modDate;
+    private LocalDateTime updateDate;
 }
