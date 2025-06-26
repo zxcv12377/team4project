@@ -18,10 +18,13 @@ import { RealtimeProvider } from "./context/RealtimeContext";
 import Layout from "./layoutscopy/Layout";
 import LoginForm from "./components/loginForm";
 import RegisterForm from "./components/registerForm";
-import LoginPage from "./pages/LoginPage";
-import PostDetailPage from "./pages/PostDetailPage";
-import PostListPage from "./pages/PostListPage";
-import PostFormPage from "./pages/PostFormPage";
+import BoardList from "./components/boardList";
+import BoardDetail from "./components/boardDetail";
+// import LoginPage from "./pages/LoginPage";
+// import PostDetailPage from "./pages/PostDetailPage";
+// import PostListPage from "./pages/PostListPage";
+// import PostFormPage from "./pages/PostFormPage";
+import BoardCreate from "./components/boardCreate";
 
 function App() {
   const [token, setToken] = useState(null);

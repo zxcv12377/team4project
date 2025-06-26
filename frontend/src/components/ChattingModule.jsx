@@ -55,7 +55,8 @@ function ChattingModule() {
     ws.disconnect(); // ✅ 위에서 생성한 ws 활용
     localStorage.clear();
     setUser(null);
-    window.location.href = "/login";
+    alert("로그아웃");
+    window.location.href = "/boards";
   };
 
   return (

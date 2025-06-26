@@ -19,7 +19,7 @@ export const useLogout = () => {
 
       alert("로그인 완료");
 
-      navigate("/login");
+      navigate("/boards");
     } catch (error) {
       console.error("🚫 로그아웃 실패:", error);
       alert("로그인 실패");
