@@ -114,7 +114,7 @@ const PostFormPage = ({ isEdit = false }) => {
         window.location.reload();
       } else {
         const res = await axiosInstance.post("/boards", payload);
-        alert({ title: "등록 완료" });
+        alert("게시글이 등록되었습니다.");
         navigate(`/posts/${res.data.bno}`);
       }
       // eslint-disable-next-line no-unused-vars
@@ -150,7 +150,7 @@ const PostFormPage = ({ isEdit = false }) => {
             내용
           </Label>
           <div className="w-full">
-            <Editor
+            {/* <Editor
               ref={editorRef}
               initialValue={initialContent}
               previewStyle="vertical"
@@ -170,7 +170,7 @@ const PostFormPage = ({ isEdit = false }) => {
               ]}
               usageStatistics={false}
               className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl"
-            />
+            /> */}
           </div>
         </div>
 
