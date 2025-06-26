@@ -76,7 +76,7 @@ export default function ChatRoom({ roomId, token, connect, connected, subscribe,
 
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-2 bg-white">
+      <div className="flex-1 overflow-y-auto p-2 bg-zinc-950">
         {messages.map((msg, i) => (
           <div key={`${msg.message}-${i}`}>
             {msg?.sender && <span className="font-bold">{msg.sender}:</span>} {msg?.message}

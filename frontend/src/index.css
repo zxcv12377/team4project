@@ -3,6 +3,6 @@
 @tailwind utilities;
 
 body {
-  
+  padding-top: 6rem;
   background-color: cornsilk;
 }
