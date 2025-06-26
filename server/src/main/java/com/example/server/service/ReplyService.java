@@ -144,15 +144,11 @@ public class ReplyService {
         }
 
         // 댓글 추천
-        public void likeReply(Long rno, String email) {
+        public void likeReply(Long rno, Member member) {
                 Reply reply = replyRepository.findById(rno)
                                 .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
 
-                Member member = memberRepository.findByEmail(email)
-                                .orElseThrow(() -> new IllegalArgumentException("회원이 존재하지 않습니다."));
-
-                boolean alreadyLiked = replyLikeRepository.existsByReplyAndMember(reply, member);
-                if (alreadyLiked) {
+                if (replyLikeRepository.existsByReplyAndMember(reply, member)) {
                         throw new IllegalArgumentException("이미 추천한 댓글입니다.");
                 }
 

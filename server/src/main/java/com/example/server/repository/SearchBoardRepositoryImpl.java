@@ -36,6 +36,7 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
     public Page<Object[]> list(String type, String keyword, Pageable pageable) {
         log.info("SearchBoard");
 
+        // QBoards board = QBoards.boards;
         QBoards board = QBoards.boards;
         QMember member = QMember.member;
         QReply reply = QReply.reply;

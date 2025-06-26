@@ -79,10 +79,21 @@ public class ReplyController {
 
     // 댓글 추천
     @PostMapping("/{rno}/like")
-    public ResponseEntity<Void> likeReply(@PathVariable Long rno, @RequestBody Map<String, String> payload) {
-        log.info("페이로드 : {}", payload);
-        replyService.likeReply(rno, payload.get("email"));
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> likeReply(@PathVariable Long rno, HttpServletRequest request) {
+        Member member = getMemberFromRequest(request);
+        if (member == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        try {
+            replyService.likeReply(rno, member);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            log.error("댓글 추천 실패", e);
+            return ResponseEntity.status(500).body("서버 오류로 추천에 실패했습니다.");
+        }
     }
 
     // 추천 수 조회
