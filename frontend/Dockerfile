@@ -2,10 +2,12 @@
 FROM node:20
 
 WORKDIR /app
+COPY package.json yarn.lock ./
+RUN yarn install --frozen-lockfile
+
 COPY . .
-RUN npm install
-RUN npm run build
+RUN yarn build
 
 # serve static
-RUN npm install -g serve
+RUN yarn global add serve
 CMD ["serve", "-s", "build", "-l", "3000"]

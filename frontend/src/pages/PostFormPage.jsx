@@ -109,7 +109,7 @@ const PostFormPage = ({ isEdit = false }) => {
         navigate(`/posts/${bno}`);
         window.location.reload();
       } else {
-        const res = await axiosInstance.post("/boards", payload);
+        const res = await axiosInstance.post("/board", payload);
         alert("게시글이 등록되었습니다.");
         navigate(`/posts/${res.data.bno}`);
       }
@@ -142,7 +142,7 @@ const PostFormPage = ({ isEdit = false }) => {
             내용
           </Label>
           <div className="w-full">
-            <Editor
+            {/* <Editor
               ref={editorRef}
               initialValue={initialContent}
               previewStyle="vertical"
@@ -162,7 +162,7 @@ const PostFormPage = ({ isEdit = false }) => {
               ]}
               usageStatistics={false}
               className="bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-700 rounded-xl"
-            />
+            /> */}
           </div>
         </div>
 

@@ -6,7 +6,7 @@ import MyProfile from "./components/myProfile";
 
 import ProtectedRoute from "./components/protectedRoute";
 import Navbar from "./components/navbar";
-import UpdateMyProfile from "./components/UpdateMyProfile";
+import UpdateMyProfile from "./components/updateMyProfile";
 import ReplyList from "./components/replyList";
 import axiosInstance from "./lib/axiosInstance";
 import { useWebSocket } from "./hooks/useWebSocket";
