@@ -1,5 +1,8 @@
 package com.example.server.controller;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.ui.Model;
@@ -41,20 +44,24 @@ public class BoardController {
 
     @GetMapping("/list")
     public ResponseEntity<?> getList(PageRequestDTO pageRequestDTO) {
+        if (pageRequestDTO != null) {
+            log.info("페이지 리퀘스트 null 아님");
+        } else {
+            log.info("페이지 리퀘스트 null");
+        }
         log.info("list 요청", pageRequestDTO);
 
         PageResultDTO<BoardDTO> result = boardService.getList(pageRequestDTO);
-
         return ResponseEntity.ok(result);
     }
 
-    // @GetMapping("/read/{bno}")
-    // public ResponseEntity<?> read(@PathVariable Long bno) {
-    // log.info("게시글 조회 요청 bno: {}", bno);
+    @GetMapping("/read/{bno}")
+    public ResponseEntity<?> read(@PathVariable Long bno) {
+        log.info("게시글 조회 요청 bno: {}", bno);
 
-    // BoardDTO dto = boardService.getRow(bno);
-    // return ResponseEntity.ok(dto);
-    // }
+        BoardDTO dto = boardService.getRow(bno);
+        return ResponseEntity.ok(dto);
+    }
 
     @PutMapping("/update/{bno}")
     public ResponseEntity<?> update(@PathVariable("bno") Long bno, @RequestBody BoardDTO dto) {

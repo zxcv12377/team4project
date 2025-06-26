@@ -17,8 +17,11 @@ import lombok.Getter;
 public class Base {
 
     @CreatedDate
-    @Column(updatable = false)
+    @Column(name = "createdDate", updatable = false)
     private LocalDateTime createdDate;
+
     @LastModifiedDate
+    @Column(name = "updatedDate")
     private LocalDateTime updatedDate;
+
 }

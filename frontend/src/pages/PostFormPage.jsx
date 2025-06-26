@@ -76,10 +76,14 @@ const PostFormPage = ({ isEdit = false }) => {
       const uploadedUrl = await uploadFile(blob);
       const fullUrl = `${import.meta.env.VITE_API_BASE_URL}${uploadedUrl}`;
       callback(fullUrl, "업로드 이미지");
-      alert("이미지가 업로드되었습니다.");
+      alert({ title: "이미지가 본문에 삽입되었습니다." });
       // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      alert("이미지 업로드에 실패했습니다. 다시 시도해주세요.");
+      alert({
+        title: "이미지 업로드 실패",
+        description: "파일을 업로드할 수 없습니다.",
+        variant: "destructive",
+      });
     }
   };
 
@@ -105,17 +109,21 @@ const PostFormPage = ({ isEdit = false }) => {
 
       if (isEdit && bno) {
         await axiosInstance.put(`/boards/${bno}`, payload);
-        alert("게시글이 수정되었습니다.");
+        alert({ title: "수정 완료" });
         navigate(`/posts/${bno}`);
         window.location.reload();
       } else {
-        const res = await axiosInstance.post("/board", payload);
+        const res = await axiosInstance.post("/boards", payload);
         alert("게시글이 등록되었습니다.");
         navigate(`/posts/${res.data.bno}`);
       }
       // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      alert("게시글 등록에 실패했습니다. 다시 시도해주세요.");
+      alert({
+        title: "저장 실패",
+        description: "서버 오류 발생",
+        variant: "destructive",
+      });
     }
   };
 

@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import axios from "@/lib/axiosInstance";
+import axiosInstance from "./../lib/axiosInstance";
 
 export const UserContext = createContext({
   user: null,
@@ -17,7 +17,7 @@ export const UserProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const res = await axios.get("/members/me");
+      const res = await axiosInstance.get("/members/me");
       const token = localStorage.getItem("token");
       setUser({ ...res.data, token });
       console.log("UserContext data : ", { ...res.data, token });
