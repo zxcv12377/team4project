@@ -15,6 +15,7 @@ export default function FriendPanel() {
   useEffect(() => {
     console.log("Online Users:", Array.from(state.onlineUsers));
     console.log("Friends:", friends);
+    console.warn("✅ 현재 onlineUsers Set 내용:", Array.from(state.onlineUsers));
   }, [state.onlineUsers, friends]);
 
   useEffect(() => {
@@ -49,13 +50,26 @@ export default function FriendPanel() {
     fetchReceived();
     fetchSent();
   }, [dispatch]);
+  
+  useEffect(() => {
+  const fetchOnlineUsers = async () => {
+    try {
+      const res = await axios.get("/friends/online");
+      dispatch({ type: "SET_ONLINE_USERS", payload: res.data || [] });
+    } catch (err) {
+      console.error("❌ 온라인 유저 불러오기 실패", err);
+    }
+  };
+
+  fetchOnlineUsers();
+}, [dispatch]);
 
   const handleSearch = () => {
     if (!search.trim()) return;
     setResult([]);
     setAdding(true);
     axios
-      .get(`/member/search?name=${encodeURIComponent(search)}`)
+      .get(`/members/search?name=${encodeURIComponent(search)}`)
       .then((res) => {
         setResult(res.data || []);
       })
@@ -65,7 +79,7 @@ export default function FriendPanel() {
   const handleAdd = (id) => {
     if (!id) return;
     axios.post("/friends", { targetMemberId: id }).then(() => {
-      const newFriend = result.find((r) => r.mno === id || r.id === id || r.memberId === id);
+      const newFriend = result.find((r) =>r.id === id);
       if (newFriend) {
         dispatch({
           type: "SET_SENT",
@@ -73,7 +87,7 @@ export default function FriendPanel() {
             ...state.sentRequests,
             {
               requestId: id,
-              receiverNickname: newFriend.name,
+              receiverNickname: newFriend.nickname,
             },
           ],
         });
@@ -210,7 +224,7 @@ export default function FriendPanel() {
               <div>
                 <div className="text-white font-semibold">{f.name}</div>
                 <div className="text-zinc-400 text-xs">
-                  {state.onlineUsers.has(f.username) ? (
+                  {state.onlineUsers.has(f.email) ? (
                     <span className="flex items-center">
                       <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
                       온라인
@@ -240,7 +254,7 @@ export default function FriendPanel() {
             <div className="text-white font-bold mb-2">검색할 유저 닉네임 입력</div>
             <div className="flex gap-2">
               <input
-                className="flex-1 rounded p-2"
+                className="flex-1 rounded p-2 text-black"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="닉네임 입력"
@@ -255,7 +269,7 @@ export default function FriendPanel() {
             {adding && <div className="text-zinc-400 text-sm">검색중...</div>}
             <div>
               {result.map((user) => {
-                const userId = user.mno || user.id || user.memberId;
+                const userId = user.id 
                 if (!userId) return null;
                 return (
                   <UserItemWithDropdown

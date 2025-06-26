@@ -13,7 +13,9 @@ import com.example.server.repository.MemberRepository;
 import com.example.server.service.FriendService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class StatusChangeConsumer {
@@ -28,6 +30,7 @@ public class StatusChangeConsumer {
         List<String> friendEmails = friendService.getFriendEmails(event.getEmail());
         for (String friend : friendEmails) {
             messagingTemplate.convertAndSendToUser(friend, "/queue/status", event);
+            log.info("[친구에게 전송] 대상 friendEmail: {}", friend);
         }
     }
 

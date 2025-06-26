@@ -15,13 +15,13 @@ export default function UserItemWithDropdown({ user, currentUserId, onSelectDMRo
   return (
     <div onContextMenu={handleContextMenu} className="relative">
       <div className="flex items-center justify-between mt-2 px-2 py-1 bg-zinc-800 rounded">
-        <span className="text-white">{user.name}</span>
+        <span className="text-white">{user.nickname}</span>
         {rightElement}
       </div>
       {showDropdown && (
         <UserDropdown
           userId={user.mno || user.id || user.memberId}
-          userName={user.name}
+          userName={user.nickname}
           currentUserId={currentUserId}
           position={dropdownPosition}
           onClose={() => setShowDropdown(false)}
