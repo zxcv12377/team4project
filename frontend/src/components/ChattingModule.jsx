@@ -7,10 +7,10 @@ import { RealtimeProvider } from "../context/RealtimeContext";
 import RootLayout from "../layoutscopy/RootLayout";
 import Layout from "../layoutscopy/Layout";
 import HomePage from "../pages/HomePage";
-import LoginPage from "../pages/LoginPage";
+// import LoginPage from "../pages/LoginPage";
 import PostListPage from "../pages/PostListPage";
 import PostDetailPage from "../pages/PostDetailPage";
-import PostFormPage from "../pages/PostFormPage";
+// import PostFormPage from "../pages/PostFormPage";
 import RegisterPage from "../pages/RegisterPage";
 import MyPage from "../pages/MyPage";
 import axiosInstance from "../lib/axiosInstance";
@@ -81,14 +81,14 @@ function ChattingModule() {
       <Route path="/" element={<RootLayout onLogout={handleLogout} />}>
         <Route index element={<Layout />} />
         <Route path="posts" element={<PostListPage />} />
-        <Route path="posts/new" element={<PostFormPage />} />
+        {/* <Route path="posts/new" element={<PostFormPage />} /> */}
         <Route path="posts/:bno" element={<PostDetailPage name={user?.name} />} />
-        <Route path="posts/:bno/edit" element={<PostFormPage isEdit={true} />} />
+        {/* <Route path="posts/:bno/edit" element={<PostFormPage isEdit={true} />} /> */}
         <Route path="register" element={<RegisterPage />} />
         <Route path="mypage" element={<MyPage />} />
       </Route>
       {/* <Route path="/login" element={<LoginPage onLogin={handleLogin} />} /> */}
-      <Route path="/login" element={<LoginPage />} />
+      {/* <Route path="/login" element={<LoginPage />} /> */}
     </Routes>
     // {/* </BrowserRouter> */}
     // </RealtimeProvider>

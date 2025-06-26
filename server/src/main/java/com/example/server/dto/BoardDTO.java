@@ -1,5 +1,8 @@
 package com.example.server.dto;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 import com.example.server.entity.Member;
 
 import jakarta.validation.constraints.NotBlank;
@@ -28,16 +31,19 @@ public class BoardDTO {
     // 게시글 내용
     @NotBlank(message = "내용을 입력해 주세요")
     private String content;
+    private String email;
 
-    // -----------추가
     // 작성자 id
     private Long id;
-
-    // 작성자 닉네임
     private String nickname;
+
+    private LocalDateTime regDate;
+    private LocalDateTime modDate;
 
     // 댓글 수
     private Long replyCount;
 
-    private Long memberId;
+    // 프론트에 넘겨줄 이미지 리스트
+    private List<String> attachments;
+
 }

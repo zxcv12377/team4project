@@ -20,7 +20,7 @@ export default function Navbar() {
 
     if (token) {
       axios
-        .get("api/members/me", {
+        .get("http://localhost:8080/api/members/me", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
@@ -37,7 +37,7 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
-    navigate("/boardList");
+    navigate("/boards");
   };
 
   return (
@@ -69,15 +69,6 @@ export default function Navbar() {
 
             {/* 메뉴 (PC) */}
             <div className="hidden lg:flex space-x-6 items-center">
-              <Link to="/" className="text-gray-700 hover:text-blue-500">
-                About
-              </Link>
-              <Link to="/" className="text-gray-700 hover:text-blue-500">
-                Services
-              </Link>
-              <Link to="/" className="text-gray-700 hover:text-blue-500">
-                Contact
-              </Link>
               <Link to="/chatting" className="text-gray-700 hover:text-blue-500">
                 Chatting
               </Link>
@@ -125,15 +116,6 @@ export default function Navbar() {
           {/* 모바일 메뉴 */}
           {menuOpen && (
             <div className="flex flex-col gap-2 mt-4 lg:hidden">
-              <Link to="/about" className="text-gray-700 hover:text-blue-500">
-                About
-              </Link>
-              <Link to="/services" className="text-gray-700 hover:text-blue-500">
-                Services
-              </Link>
-              <Link to="/contact" className="text-gray-700 hover:text-blue-500">
-                Contact
-              </Link>
               <Link to="/chatting" className="text-gray-700 hover:text-blue-500">
                 Chatting
               </Link>

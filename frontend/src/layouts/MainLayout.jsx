@@ -4,6 +4,7 @@ import Sidebar1 from "./Sidebar1";
 import Sidebar2 from "./Sidebar2";
 import Sidebar3 from "./Sidebar3";
 import Sidebar4 from "./Sidebar4";
+import Navbar from "../components/navbar";
 
 export default function MainLayout() {
   const [selectedDM, setSelectedDM] = useState(false);

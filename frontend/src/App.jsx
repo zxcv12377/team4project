@@ -4,14 +4,12 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import MyProfile from "./components/myProfile";
 
-import ProtectedRoute from "./components/protectedRoute";
 import Navbar from "./components/navbar";
-import UpdateMyProfile from "./components/UpdateMyProfile";
+import UpdateMyProfile from "./components/updateMyProfile";
 import ReplyList from "./components/replyList";
 import axiosInstance from "./lib/axiosInstance";
 import { useWebSocket } from "./hooks/useWebSocket";
 import ChattingModule from "./components/ChattingModule";
-import { BoardList } from "./components/boardList";
 import { UserContext, UserProvider } from "./context/UserContext";
 import { WebSocketContext } from "./context/WebSocketContext";
 import { ChatProvider } from "./context/ChatContext";
@@ -20,13 +18,14 @@ import { RealtimeProvider } from "./context/RealtimeContext";
 
 import LoginForm from "./components/loginForm";
 import RegisterForm from "./components/registerForm";
-import LoginPage from "./pages/LoginPage";
+import BoardList from "./components/boardList";
+import BoardDetail from "./components/boardDetail";
+import BoardCreate from "./components/boardCreate";
 
 function App() {
   const [token, setToken] = useState(null);
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
-
   const ws = useWebSocket(token); // ✅ 단일 생성
   useEffect(() => {
     const savedToken = localStorage.getItem("token");
@@ -51,7 +50,7 @@ function App() {
       localStorage.setItem("token", token);
       setToken(token);
 
-      const res = await axiosInstance.get("/members/me");
+      const res = await axiosInstance.get("members/me");
       const full = { ...res.data, token };
       localStorage.setItem("user", JSON.stringify(full));
       setUser(full);
@@ -67,7 +66,7 @@ function App() {
     localStorage.clear();
     setToken(null);
     setUser(null);
-    window.location.href = "/login";
+    window.location.href = "/boards";
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -79,23 +78,17 @@ function App() {
             <RealtimeProvider socket={ws}>
               <BrowserRouter>
                 <Routes>
+                  <Route path="/" element={<Navigate to="/boards" replace />} />
                   <Route element={<Navbar />}>
-                    <Route path="/" element={<Navigate to="/boardList" />} />
-                    <Route path="/boardList" element={<BoardList />} />
                     <Route path="/login" element={<LoginForm />} />
                     <Route path="/register" element={<RegisterForm />} />
                     <Route path="/reply" element={<ReplyList />} />
                     <Route path="/UpdateProfile" element={<UpdateMyProfile />} />
                     <Route path="/chatting/*" element={<ChattingModule />} />
-                    {/* 보호된 라우트(로그인 인증 후 접근 가능한 경로 지정) */}
-                    <Route
-                      path="/profile"
-                      element={
-                        <ProtectedRoute>
-                          <MyProfile />
-                        </ProtectedRoute>
-                      }
-                    />
+                    <Route path="/boards" element={<BoardList />} />
+                    <Route path="/board/:bno" element={<BoardDetail />} />
+                    <Route path="/board/create" element={<BoardCreate />} />
+                    <Route path="/profile" element={<MyProfile />} />
                   </Route>
                 </Routes>
               </BrowserRouter>

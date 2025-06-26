@@ -74,12 +74,12 @@ export default function MainLayout() {
     // ① token 은 RealtimeContext 내에서 localStorage.getItem('token') 으로 꺼내므로
     //    MainLayout 에서는 그냥 RealtimeProvider 로 감싸주기만 하면 됩니다.
     <div className="flex flex-col h-screen w-screen">
-      <header className="bg-white shadow">
+      {/* <header className="bg-white shadow">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <div className="flex-1" />
           <NotificationCenter />
         </div>
-      </header>
+      </header> */}
 
       <div className="flex flex-1 min-h-0">
         <Sidebar1 onSelectDM={handleSelectDM} onSelectServer={handleSelectServer} />
@@ -100,9 +100,7 @@ export default function MainLayout() {
           currentUser={user}
         />
         <Sidebar4 serverId={selectedServerId} roomId={selectedRoomId} />
-        <div className="flex-1 min-w-0">
-          <Outlet />
-        </div>
+        {/* <div className="flex-1 min-w-0"><Outlet /></div> */}
       </div>
     </div>
   );

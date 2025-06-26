@@ -18,14 +18,14 @@ const MyProfile = () => {
 
   const fetchProfile = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/members/me", { headers });
+      const res = await axios.get("http://localhost:8080/api/members/me", { headers });
       setProfile(res.data);
       setComment(res.data.comment || "");
     } catch (err) {
       if (err.response?.status === 401) {
         alert("세션이 만료되었습니다. 다시 로그인해주세요.");
         localStorage.removeItem("token");
-        navigate("/login");
+        navigate("/boards");
       } else {
         setError("프로필 정보를 불러오지 못했습니다.");
       }

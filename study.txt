@@ -26,3 +26,13 @@ security jwt 사용
 | `JwtUtil`                    | ✅ 설정 파일 기반 비밀키 사용      
 | `SecurityConfig`             | ✅ 인증/인가 설정 및 CORS 대응   
 
+
+회원가입 흐름
+1. 프론트 : 이메일 닉네임 비밀번호 입력 <이메일인증> 클릭
+2. 백엔드 : EmailVerificationController 에서 /api/email/send 경로로 인증코드 전송 요청
+3. 백엔드 : 이메일로 6자리 (숫자,영문자) 인증코드 전송
+4. 백엔드 : 인증코드와 이메일 EmailVerificationToken 엔티티에 저장
+5. 프론트 : 사용자 인증코드 입력 > 백엔드 /api/email/verify로 인증 검증 요청
+6. 백엔드 : 인증코드 유효한지 확인 > token 상태를 인증 완료로 변경
+7. 백엔드 : 프론트엔드에서 <회원가입> 버튼을 누르면 백엔드 MemberController에서 post) register 에서 이메일 인증 여부 확인, 인증 완료된 이메일 member엔티티로 DB에 저장,Passwordencoder로 비밀번호 암호화
+8. 프론트 : 회원가입 완료 메세지 응답 > 현재 페이지 리로드(/boards)
