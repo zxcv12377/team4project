@@ -60,16 +60,6 @@
          <version>5.1.0</version>
          <classifier>jakarta</classifier>
       </dependency>
-
-      <dependency>
-        <groupId>jakarta.persistence</groupId>
-        <artifactId>jakarta.persistence-api</artifactId>
-      </dependency>
-      <dependency>
-        <groupId>jakarta.annotation</groupId>
-        <artifactId>jakarta.annotation-api</artifactId>
-      </dependency>
-      
       <dependency>
          <groupId>jakarta.annotation</groupId>
          <artifactId>jakarta.annotation-api</artifactId>
@@ -175,7 +165,6 @@
 
    <build>
       <plugins>
-
          <plugin>
             <groupId>com.mysema.maven</groupId>
             <artifactId>apt-maven-plugin</artifactId>
@@ -186,13 +175,12 @@
                   <goal>process</goal>
                </goals>
                <configuration>
-                  <outputDirectory>target/generated-sources/annotations</outputDirectory>
+                  <outputDirectory>target/generated-sources/java</outputDirectory>
                   <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor</processor>
                </configuration>
                </execution>
             </executions>
-         </plugin>
-
+            </plugin>
          <plugin>
             <groupId>org.apache.maven.plugins</groupId>
             <artifactId>maven-compiler-plugin</artifactId>
@@ -205,7 +193,6 @@
                </annotationProcessorPaths>
             </configuration>
          </plugin>
-         
          <plugin>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
@@ -218,7 +205,7 @@
                </excludes>
             </configuration>
          </plugin>
-
       </plugins>
    </build>
+
 </project>

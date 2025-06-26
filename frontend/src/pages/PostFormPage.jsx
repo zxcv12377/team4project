@@ -4,15 +4,11 @@ import axiosInstance from "@/lib/axiosInstance";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
-import "@toast-ui/editor/dist/toastui-editor.css";
-import { Editor } from "@toast-ui/react-editor";
 import { useTheme } from "@/context/ThemeContext"; // ⭐️ 다크모드 감지용
 
 const PostFormPage = ({ isEdit = false }) => {
   const { bno } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { dark } = useTheme(); // ⭐️ 현재 다크모드 상태
 
   const [title, setTitle] = useState("");
@@ -80,10 +76,10 @@ const PostFormPage = ({ isEdit = false }) => {
       const uploadedUrl = await uploadFile(blob);
       const fullUrl = `${import.meta.env.VITE_API_BASE_URL}${uploadedUrl}`;
       callback(fullUrl, "업로드 이미지");
-      toast({ title: "이미지가 본문에 삽입되었습니다." });
+      alert({ title: "이미지가 본문에 삽입되었습니다." });
       // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      toast({
+      alert({
         title: "이미지 업로드 실패",
         description: "파일을 업로드할 수 없습니다.",
         variant: "destructive",
@@ -113,17 +109,17 @@ const PostFormPage = ({ isEdit = false }) => {
 
       if (isEdit && bno) {
         await axiosInstance.put(`/boards/${bno}`, payload);
-        toast({ title: "수정 완료" });
+        alert({ title: "수정 완료" });
         navigate(`/posts/${bno}`);
         window.location.reload();
       } else {
         const res = await axiosInstance.post("/boards", payload);
-        toast({ title: "등록 완료" });
+        alert({ title: "등록 완료" });
         navigate(`/posts/${res.data.bno}`);
       }
       // eslint-disable-next-line no-unused-vars
     } catch (error) {
-      toast({
+      alert({
         title: "저장 실패",
         description: "서버 오류 발생",
         variant: "destructive",

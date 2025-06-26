@@ -92,7 +92,7 @@ axiosInstance.interceptors.response.use(
         localStorage.removeItem("email");
         localStorage.removeItem("nickname");
 
-        window.location.href = "/login";
+        // window.location.href = "/login";
         return Promise.reject(refreshError);
       }
     }

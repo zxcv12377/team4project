@@ -4,12 +4,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import axiosInstance from "@/lib/axiosInstance";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useToast } from "@/hooks/use-toast";
 
 const PostDetailPage = ({ name }) => {
   const { bno } = useParams();
   const navigate = useNavigate();
-  const { toast } = useToast();
   const [data, setData] = useState(null);
 
   useEffect(() => {
@@ -23,11 +21,11 @@ const PostDetailPage = ({ name }) => {
 
     try {
       await axiosInstance.delete(`/boards/${bno}`);
-      toast({ title: "삭제 완료", description: "게시글이 삭제되었습니다." });
+      alert({ title: "삭제 완료", description: "게시글이 삭제되었습니다." });
       navigate("/posts");
     } catch (error) {
       console.error(error);
-      toast({
+      alert({
         title: "삭제 실패",
         description: "서버 오류가 발생했습니다.",
         variant: "destructive",
