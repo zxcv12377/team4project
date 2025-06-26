@@ -6,7 +6,7 @@ import MyProfile from "./components/myProfile";
 
 import ProtectedRoute from "./components/protectedRoute";
 import Navbar from "./components/navbar";
-import UpdateMyProfile from "./components/UpdateMyProfile";
+import UpdateMyProfile from "./components/updateMyProfile";
 import ReplyList from "./components/replyList";
 import axiosInstance from "./lib/axiosInstance";
 import { useWebSocket } from "./hooks/useWebSocket";
@@ -20,6 +20,7 @@ import { RealtimeProvider } from "./context/RealtimeContext";
 import LoginForm from "./components/loginForm";
 import RegisterForm from "./components/registerForm";
 import LoginPage from "./pages/LoginPage";
+
 import BoardList from "./components/boardList";
 import BoardDetail from "./components/boardDetail";
 import BoardCreate from "./components/boardCreate";
@@ -88,8 +89,9 @@ function App() {
                     <Route path="/UpdateProfile" element={<UpdateMyProfile />} />
                     <Route path="/chatting/*" element={<ChattingModule />} />
                     <Route path="/boards" element={<BoardList />} />
-                    <Route path="/board/:bno" element={<BoardDetail />} />
-                    <Route path="/board/create" element={<BoardCreate />} />
+                    <Route path="/boards/create" element={<BoardCreate />} />
+                    <Route path="/boards/:bno" element={<BoardDetail />} />
+
                     {/* 보호된 라우트(로그인 인증 후 접근 가능한 경로 지정) */}
                     <Route
                       path="/profile"

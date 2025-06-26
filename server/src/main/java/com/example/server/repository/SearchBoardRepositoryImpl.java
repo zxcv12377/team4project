@@ -38,6 +38,11 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                 QMember member = QMember.member;
                 QReply reply = QReply.reply;
 
+                JPQLQuery<Long> replyCountSubQuery = JPAExpressions
+                                .select(reply.count())
+                                .from(reply)
+                                .where(reply.board.eq(board));
+
                 // 1. 기본 쿼리 구성 (join 없이 지연 로딩 그대로 사용)
                 JPQLQuery<Tuple> query = from(board)
                                 .leftJoin(board.member, member)
@@ -46,12 +51,12 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 board.bno,
                                                 board.title,
                                                 board.content,
-                                                board.regDate,
-                                                board.modDate,
+                                                board.createdDate,
+                                                board.updatedDate,
                                                 member.id,
                                                 member.nickname,
                                                 member.email,
-                                                reply.count());
+                                                replyCountSubQuery);
 
                 // 2. WHERE 조건 추가
                 if (type != null && keyword != null) {
@@ -73,8 +78,8 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                 board.bno,
                                 board.title,
                                 board.content,
-                                board.regDate,
-                                board.modDate,
+                                board.createdDate,
+                                board.updatedDate,
                                 member.id,
                                 member.nickname,
                                 member.email);
@@ -88,8 +93,8 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 t.get(board.bno),
                                                 t.get(board.title),
                                                 t.get(board.content),
-                                                t.get(board.regDate),
-                                                t.get(board.modDate),
+                                                t.get(board.createdDate),
+                                                t.get(board.updatedDate),
                                                 t.get(member.id),
                                                 t.get(member.nickname),
                                                 t.get(member.email),

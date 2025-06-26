@@ -25,9 +25,9 @@ export default function BoardDetail() {
   if (loading) return <div className="text-center mt-10 text-gray-500">⏳ 게시글을 불러오는 중입니다...</div>;
   if (!post) return <div className="text-center mt-10 text-red-500">❌ 게시글이 존재하지 않습니다.</div>;
 
-  const formattedRegDate = new Date(post.regDate).toLocaleString();
-  const formattedModDate = new Date(post.modDate).toLocaleString();
-  const isModified = post.regDate !== post.modDate;
+  const formattedRegDate = new Date(post.createDate).toLocaleString();
+  const formattedModDate = new Date(post.updateDate).toLocaleString();
+  const isModified = post.createDate !== post.updateDate;
 
   return (
     <div className="max-w-3xl mx-auto mt-24 p-6 bg-white shadow-md rounded-lg">
