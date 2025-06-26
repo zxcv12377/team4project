@@ -6,7 +6,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.server.entity.Boards;
+import com.example.server.entity.Board;
 import com.example.server.entity.Member;
 import com.example.server.repository.MemberRepository;
 
@@ -20,7 +20,7 @@ public class SecurityService {
     private final PasswordEncoder passwordEncoder;
 
     // 작성자 권한 검증
-    public void checkBoardOwnership(Boards board, Member currentUser) {
+    public void checkBoardOwnership(Board board, Member currentUser) {
         if (!board.getMember().getEmail().equals(currentUser.getEmail())) {
             throw new SecurityException("작성자만 수정/삭제할 수 있습니다.");
         }

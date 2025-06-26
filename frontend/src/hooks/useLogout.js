@@ -17,12 +17,12 @@ export const useLogout = () => {
       localStorage.removeItem("username");
       localStorage.removeItem("name");
 
-      alert("로그아웃 되었습니다.");
+      alert("로그인 완료");
 
       navigate("/login");
     } catch (error) {
       console.error("🚫 로그아웃 실패:", error);
-      alert("로그아웃 중 오류가 발생했습니다. 다시 시도해주세요.");
+      alert("로그인 실패");
     }
   };
 };

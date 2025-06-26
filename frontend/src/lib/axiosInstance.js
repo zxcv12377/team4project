@@ -97,8 +97,12 @@ axiosInstance.interceptors.response.use(
         console.warn("❌ RefreshToken 재발급 실패");
 
         isRefreshing = false;
-        clearSession();
-        redirectToLogin();
+        localStorage.removeItem("token");
+        localStorage.removeItem("refresh_token");
+        localStorage.removeItem("email");
+        localStorage.removeItem("nickname");
+
+        // window.location.href = "/login";
         return Promise.reject(refreshError);
       }
     }

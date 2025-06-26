@@ -1,5 +1,8 @@
 package com.example.server.controller;
 
+import java.util.List;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.ui.Model;
@@ -24,7 +27,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-@RequestMapping("/api/boards")
+@RequestMapping("/api/board")
 @RestController
 @Log4j2
 @RequiredArgsConstructor
@@ -44,7 +47,6 @@ public class BoardController {
         log.info("list 요청", pageRequestDTO);
 
         PageResultDTO<BoardDTO> result = boardService.getList(pageRequestDTO);
-
         return ResponseEntity.ok(result);
     }
 

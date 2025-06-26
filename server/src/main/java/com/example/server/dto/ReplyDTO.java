@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.example.server.entity.Board;
-import com.example.server.entity.Boards;
 import com.example.server.entity.Member;
 import com.example.server.entity.Reply;
 
@@ -44,7 +43,7 @@ public class ReplyDTO {
     public static ReplyDTO fromEntity(Reply reply) {
         return ReplyDTO.builder()
                 .rno(reply.getRno())
-                .bno(reply.getBoards().getBno())
+                .bno(reply.getBoard().getBno())
                 .text(reply.getText())
                 .id(reply.getMember().getId())
                 .nickname(reply.getMember().getNickname())
@@ -54,9 +53,9 @@ public class ReplyDTO {
                 .build();
     }
 
-    public Reply toEntity(ReplyRequestDTO dto, Boards board, Member member, Reply parentReply) {
+    public Reply toEntity(ReplyRequestDTO dto, Board board, Member member, Reply parentReply) {
         return Reply.builder()
-                .boards(board)
+                .board(board)
                 .member(member)
                 .text(dto.getText())
                 .parent(parentReply)

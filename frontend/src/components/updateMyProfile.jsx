@@ -23,7 +23,7 @@ const UpdateMyProfile = () => {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const res = await axios.get("http://localhost:8080/apimembers/me", { headers });
+      const res = await axios.get("http://localhost:8080/api/members/me", { headers });
       if (!res.data || !res.data.nickname) {
         throw new Error("프로필 응답 데이터가 올바르지 않습니다.");
       }
