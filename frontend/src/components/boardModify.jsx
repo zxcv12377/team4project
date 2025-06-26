@@ -1,31 +1,46 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
 import { useUserContext } from "@/context/UserContext";
 
-export default function BoardCreate() {
+export default function BoardModify() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const { bno } = useParams();
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
 
+  useEffect(() => {
+    const getData = async () => {
+      try {
+        await axios.get(`http://localhost:8080/api/boards/read/${bno}`, { title, content }, { headers }).then((e) => {
+          const { title, content } = e.data;
+          setTitle(title);
+          setContent(content);
+        });
+      } catch (error) {
+        console.error("게시글 정보 가져오기 실패:", error);
+        alert("게시글 등록에 실패했습니다.");
+      }
+    };
+    getData();
+  }, [bno]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!title.trim() || !content.trim()) {
       alert("제목과 내용을 모두 입력해주세요.");
       return;
     }
 
     try {
-      await axios.post("http://localhost:8080/api/boards/", { title, content }, { headers });
-      alert("게시글이 등록되었습니다.");
-      navigate("/boards");
+      await axios.put(`http://localhost:8080/api/boards/update/${bno}`, { title, content }, { headers });
+      alert("게시글이 성공적으로 수정되었습니다.");
+      navigate(`/boards/${bno}`);
     } catch (error) {
-      console.error("게시글 등록 실패:", error);
-      alert("게시글 등록에 실패했습니다.");
+      console.log("게시글 수정에 실패했습니다 : ", error);
     }
   };
 

@@ -48,7 +48,7 @@ export default function BoardList() {
           <div className="flex justify-end mb-4">
             <button
               className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
-              onClick={() => navigate("/board/create")}
+              onClick={() => navigate("/boards/create")}
             >
               질문등록
             </button>

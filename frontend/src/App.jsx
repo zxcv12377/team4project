@@ -24,6 +24,7 @@ import LoginPage from "./pages/LoginPage";
 import BoardList from "./components/boardList";
 import BoardDetail from "./components/boardDetail";
 import BoardCreate from "./components/boardCreate";
+import BoardModify from "./components/boardModify";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -91,6 +92,7 @@ function App() {
                     <Route path="/boards" element={<BoardList />} />
                     <Route path="/boards/create" element={<BoardCreate />} />
                     <Route path="/boards/:bno" element={<BoardDetail />} />
+                    <Route path="/boards/update/:bno" element={<BoardModify />} />
 
                     {/* 보호된 라우트(로그인 인증 후 접근 가능한 경로 지정) */}
                     <Route
