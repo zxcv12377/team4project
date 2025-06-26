@@ -1,8 +1,6 @@
 package com.example.server.mapper;
 
 import com.example.server.dto.BoardDTO;
-import com.example.server.dto.MemberRequestDTO;
-import com.example.server.dto.MemberResponseDTO;
 import com.example.server.entity.Board;
 import com.example.server.entity.Member;
 

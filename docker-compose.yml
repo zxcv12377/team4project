@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   frontend:
     build:
@@ -49,6 +47,7 @@ services:
     command: >
       bash -c "
         rabbitmq-plugins enable --offline rabbitmq_web_stomp &&
+        rabbitmq-plugins enable --offline rabbitmq_stomp &&
         rabbitmq-server
       "
 

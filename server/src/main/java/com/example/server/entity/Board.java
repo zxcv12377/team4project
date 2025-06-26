@@ -38,6 +38,9 @@ public class Board extends Base {
     @Column(length = 2000)
     private String content;
 
+    @Column(name = "attachments_json", columnDefinition = "TEXT")
+    private String attachmentsJson;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;

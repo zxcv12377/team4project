@@ -3,22 +3,17 @@ package com.example.server.controller;
 import com.example.server.dto.ReplyDTO;
 import com.example.server.dto.ReplyResponseDTO;
 import com.example.server.entity.Member;
-import com.example.server.entity.Reply;
 import com.example.server.jwt.JwtUtil;
 import com.example.server.repository.MemberRepository;
-import com.example.server.security.CustomMemberDetails;
 import com.example.server.service.ReplyService;
 
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -84,9 +79,21 @@ public class ReplyController {
 
     // 댓글 추천
     @PostMapping("/{rno}/like")
-    public ResponseEntity<Void> likeReply(@PathVariable Long rno, @RequestBody Map<String, String> payload) {
-        replyService.likeReply(rno, payload.get("nickname"));
-        return ResponseEntity.ok().build();
+    public ResponseEntity<?> likeReply(@PathVariable Long rno, HttpServletRequest request) {
+        Member member = getMemberFromRequest(request);
+        if (member == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        try {
+            replyService.likeReply(rno, member);
+            return ResponseEntity.ok().build();
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            log.error("댓글 추천 실패", e);
+            return ResponseEntity.status(500).body("서버 오류로 추천에 실패했습니다.");
+        }
     }
 
     // 추천 수 조회

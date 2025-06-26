@@ -3,4 +3,4 @@ WORKDIR /app
 COPY . .
 RUN npm install
 EXPOSE 4000
-CMD ["node", "mediasoup-server.js"]
+CMD ["node", "server.js"]

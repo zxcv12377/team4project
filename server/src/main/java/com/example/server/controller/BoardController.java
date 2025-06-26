@@ -27,7 +27,7 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
-@RequestMapping("/api/boards")
+@RequestMapping("/api/board")
 @RestController
 @Log4j2
 @RequiredArgsConstructor
@@ -50,13 +50,13 @@ public class BoardController {
         return ResponseEntity.ok(result);
     }
 
-    @GetMapping("/read/{bno}")
-    public ResponseEntity<?> read(@PathVariable Long bno) {
-        log.info("게시글 조회 요청 bno: {}", bno);
+    // @GetMapping("/read/{bno}")
+    // public ResponseEntity<?> read(@PathVariable Long bno) {
+    // log.info("게시글 조회 요청 bno: {}", bno);
 
-        BoardDTO dto = boardService.getRow(bno);
-        return ResponseEntity.ok(dto);
-    }
+    // BoardDTO dto = boardService.getRow(bno);
+    // return ResponseEntity.ok(dto);
+    // }
 
     @PutMapping("/update/{bno}")
     public ResponseEntity<?> update(@PathVariable("bno") Long bno, @RequestBody BoardDTO dto) {

@@ -1,5 +1,6 @@
 package com.example.server.repository;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -17,6 +18,8 @@ import com.example.server.entity.Member;
 import com.example.server.entity.MemberRole;
 import com.example.server.entity.Reply;
 import com.example.server.entity.ReplyLike;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 
@@ -55,20 +58,58 @@ public class BoardRepositoryTest {
         });
     }
 
-    // @Commit
     @Test
     public void insertBoardTest() {
         List<Member> members = memberRepository.findAll();
 
-        IntStream.rangeClosed(1, 20).forEach(i -> {
+        // 실제 이미지 주소
+        List<String> imageSamples = List.of(
+                "https://picsum.photos/id/0/5000/3333",
+                "https://picsum.photos/id/1/5000/3333",
+                "https://picsum.photos/id/2/5000/3333",
+                "https://picsum.photos/id/3/5000/3333",
+                "https://picsum.photos/id/4/5000/3333",
+                "https://picsum.photos/id/5/5000/3334",
+                "https://picsum.photos/id/6/5000/3333",
+                "https://picsum.photos/id/7/4728/3168",
+                "https://picsum.photos/id/8/5000/3333",
+                "https://picsum.photos/id/9/5000/3269",
+                "https://picsum.photos/id/10/2500/1667",
+                "https://picsum.photos/id/11/2500/1667",
+                "https://picsum.photos/id/12/2500/1667",
+                "https://picsum.photos/id/13/2500/1667",
+                "https://picsum.photos/id/14/2500/1667",
+                "https://picsum.photos/id/15/2500/1667",
+                "https://picsum.photos/id/16/2500/1667",
+                "https://picsum.photos/id/17/2500/1667",
+                "https://picsum.photos/id/18/2500/1667",
+                "https://picsum.photos/id/19/5000/3333");
+
+        Random random = new Random();
+
+        IntStream.rangeClosed(1, 50).forEach(i -> {
 
             Member member = members.get(new Random().nextInt(members.size()));
+
+            int imageCount = random.nextInt(6);
+            List<String> selectedImages = new ArrayList<>();
+            for (int j = 0; j < imageCount; j++) {
+                selectedImages.add(imageSamples.get(random.nextInt(imageSamples.size())));
+            }
+
+            String attachmentsJson = null;
+            try {
+                attachmentsJson = new ObjectMapper().writeValueAsString(selectedImages);
+            } catch (JsonProcessingException e) {
+                e.printStackTrace();
+            }
+
             Board board = Board.builder()
                     .title("테스트 게시글 제목 " + i)
                     .content("이것은 테스트 게시글 내용입니다. 번호: " + i)
+                    .attachmentsJson(attachmentsJson)
                     .member(member)
                     .build();
-
             boardRepository.save(board);
         });
     }

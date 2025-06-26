@@ -1,6 +1,7 @@
 package com.example.server.service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -20,6 +21,9 @@ import com.example.server.repository.BoardRepository;
 import com.example.server.repository.MemberRepository;
 import com.example.server.repository.ReplyRepository;
 import com.example.server.repository.SearchBoardRepository;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -34,12 +38,31 @@ public class BoardService {
     private final MemberRepository memberRepository;
     private final ReplyRepository replyRepository;
 
+    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    private String toJson(List<String> list) {
+        try {
+            return list == null ? null : objectMapper.writeValueAsString(list);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("JSON 직렬화 실패", e);
+        }
+    }
+
+    private List<String> fromJson(String json) {
+        try {
+            return (json == null || json.isBlank()) ? List.of()
+                    : objectMapper.readValue(json, new TypeReference<>() {
+                    });
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("JSON 파싱 실패", e);
+        }
+    }
+
     // create
     public Long create(BoardDTO dto) {
         // dto => entity(board) 변경
         Board board = dtoToEntity(dto);
-        Board newBoard = boardRepository.save(board);
-        return newBoard.getBno();
+        return boardRepository.save(board).getBno();
     }
 
     // Delete
@@ -56,14 +79,11 @@ public class BoardService {
 
         board.changeTitle(dto.getTitle());
         board.changeContent(dto.getContent());
-        // boardRepository.save(board);
 
         return board.getBno();
     }
 
-    // 4. 페이징 목록 조회
-    // Object[]를 DTO로 바꾸고 리스트로 감쌉니다.
-    // .map(function)으로 게시글마다 BoardDTO로 변환합니다.
+    // 4. 게시글 페이징 목록
     public PageResultDTO<BoardDTO> getList(PageRequestDTO pageRequestDTO) {
 
         Pageable pageable = PageRequest.of(
@@ -71,7 +91,8 @@ public class BoardService {
                 pageRequestDTO.getSize(),
                 Sort.by("bno").descending());
 
-        Page<Object[]> result = boardRepository.getBoardList(pageRequestDTO.getType(),
+        Page<Object[]> result = boardRepository.getBoardList(
+                pageRequestDTO.getType(),
                 pageRequestDTO.getKeyword(), pageable);
         System.out.println(result);
 
@@ -94,18 +115,23 @@ public class BoardService {
                 .build();
     }
 
+    // 5. 게시글 상세 조회
     public BoardDTO getRow(Long bno) {
         Object[] result = boardRepository.getBoardRow(bno);
         return entityToDto((Board) result[0], (Member) result[1], (Long) result[2]);
     }
 
-    // ====== 변환 메서드 ======
+    // ====== DTO 변환 메서드 ======
     private BoardDTO entityToDto(Board board, Member member, Long replyCount) {
+
+        List<String> attachments = fromJson(board.getAttachmentsJson());
+
         return BoardDTO.builder()
                 .bno(board.getBno())
                 .title(board.getTitle())
                 .content(board.getContent()) // 상세보기에만 사용
                 .id(member != null ? member.getId() : null)// 작성자id
+                .attachments(attachments)
                 .regDate(board.getRegDate())
                 .replyCount(replyCount != null ? replyCount : 0L)
                 .build();
@@ -118,6 +144,7 @@ public class BoardService {
         Board board = Board.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
+                .attachmentsJson(toJson(dto.getAttachments()))
                 .member(member)
                 .build();
         return board;

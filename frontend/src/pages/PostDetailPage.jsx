@@ -11,7 +11,7 @@ const PostDetailPage = ({ name }) => {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    axiosInstance.get(`/boards/${bno}/full`).then((res) => {
+    axiosInstance.get(`/board/${bno}/full`).then((res) => {
       setData(res.data);
     });
   }, [bno]);

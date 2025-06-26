@@ -1,6 +1,7 @@
 package com.example.server.dto;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import com.example.server.entity.Member;
 
@@ -41,5 +42,8 @@ public class BoardDTO {
 
     // 댓글 수
     private Long replyCount;
+
+    // 프론트에 넘겨줄 이미지 리스트
+    private List<String> attachments;
 
 }
