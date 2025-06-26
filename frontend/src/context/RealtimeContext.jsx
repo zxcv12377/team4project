@@ -22,8 +22,8 @@ function realtimeReducer(state, action) {
       return { ...state, onlineUsers: new Set(action.payload) };
     case "USER_STATUS_CHANGE": {
       const newSet = new Set(state.onlineUsers);
-      if (action.payload.status === "ONLINE") newSet.add(action.payload.username);
-      else if (action.payload.status === "OFFLINE") newSet.delete(action.payload.username);
+      if (action.payload.status === "ONLINE") newSet.add(action.payload.email);
+      else if (action.payload.status === "OFFLINE") newSet.delete(action.payload.email);
       return { ...state, onlineUsers: newSet };
     }
     case "ADD_NOTIFICATION":
@@ -31,7 +31,7 @@ function realtimeReducer(state, action) {
     case "TYPING_STATUS":
       return {
         ...state,
-        typingUsers: new Map(state.typingUsers).set(action.payload.username, action.payload.isTyping),
+        typingUsers: new Map(state.typingUsers).set(action.payload.email, action.payload.isTyping),
       };
     case "SET_RECEIVED":
       return { ...state, receivedRequests: action.payload };
@@ -109,7 +109,7 @@ export function RealtimeProvider({ children, socket }) {
       dispatch({ type: "ADD_NOTIFICATION", payload: msg });
     });
 
-    const subFriend = subscribe(`/user/queue/friend`, async (payload) => {
+    const subFriend = subscribe(`/user/queue/friend-events`, async (payload) => {
       try {
         const type = payload.type;
 

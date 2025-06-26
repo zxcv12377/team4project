@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 // import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
@@ -16,10 +16,13 @@ import { WebSocketContext } from "./context/WebSocketContext";
 import { ChatProvider } from "./context/ChatContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { RealtimeProvider } from "./context/RealtimeContext";
-
+import Layout from "./layoutscopy/Layout";
 import LoginForm from "./components/loginForm";
 import RegisterForm from "./components/registerForm";
 import LoginPage from "./pages/LoginPage";
+import PostDetailPage from "./pages/PostDetailPage";
+import PostListPage from "./pages/PostListPage";
+import PostFormPage from "./pages/PostFormPage";
 
 import BoardList from "./components/boardList";
 import BoardDetail from "./components/boardDetail";
@@ -82,6 +85,9 @@ function App() {
             <RealtimeProvider socket={ws}>
               <BrowserRouter>
                 <Routes>
+                  <Route path="/chatting/*" element={<ChattingModule />}>
+                    <Route index element={<Layout />} />
+                  </Route>
                   <Route path="/" element={<Navigate to="/boards" replace />} />
                   <Route element={<Navbar />}>
                     <Route path="/login" element={<LoginForm />} />

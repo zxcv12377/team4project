@@ -31,10 +31,10 @@ public class RedisSubscriber implements MessageListener {
             log.info("🔔 수신한 온라인 상태 이벤트: {}", event);
 
             // targetUserId → username 조회 필요
-            String username = memberRepository.findEmailById(event.getTargetUserId());
+            String email = memberRepository.findEmailById(event.getTargetUserId());
 
             messagingTemplate.convertAndSendToUser(
-                    username,
+                    email,
                     "/queue/friend",
                     event);
 
