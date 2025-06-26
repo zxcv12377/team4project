@@ -1,10 +1,8 @@
 package com.example.server.service;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,7 +18,6 @@ import com.example.server.entity.Member;
 import com.example.server.repository.BoardRepository;
 import com.example.server.repository.MemberRepository;
 import com.example.server.repository.ReplyRepository;
-import com.example.server.repository.SearchBoardRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -97,15 +94,16 @@ public class BoardService {
         System.out.println(result);
 
         Function<Object[], BoardDTO> function = (en -> BoardDTO.builder()
-                .bno((Long) en[0])
-                .title((String) en[1])
-                .content((String) en[2])
-                .createDate((LocalDateTime) en[3])
-                .updateDate((LocalDateTime) en[4])
-                .id((Long) en[5])
-                .nickname((String) en[6])
-                .email((String) en[7])
-                .replyCount((Long) en[8])
+                .bno((Long) en[0]) // 게시글 번호
+                .title((String) en[1]) // 제목
+                .content((String) en[2]) // 본문
+                .createdDate((LocalDateTime) en[3]) // 생성일
+                .updatedDate((LocalDateTime) en[4]) // 수정일
+                .id((Long) en[5]) // 작성자 ID
+                .nickname((String) en[6]) // 닉네임
+                .email((String) en[7]) // 이메일
+                .replyCount((Long) en[8]) // 댓글 수
+                // .attachments(fromJson((String) en[9])) // 첨부 이미지 리스트
                 .build());
 
         return PageResultDTO.<BoardDTO>withAll()
@@ -129,11 +127,14 @@ public class BoardService {
         return BoardDTO.builder()
                 .bno(board.getBno())
                 .title(board.getTitle())
-                .content(board.getContent()) // 상세보기에만 사용
-                .id(member != null ? member.getId() : null)// 작성자id
-                .attachments(attachments)
-                .createDate(board.getCreateDate())
+                .content(board.getContent()) // 상세 보기용
+                .createdDate(board.getCreatedDate())
+                .updatedDate(board.getUpdatedDate())
+                .id(member != null ? member.getId() : null)
+                .nickname(member != null ? member.getNickname() : null)
+                .email(member != null ? member.getEmail() : null)
                 .replyCount(replyCount != null ? replyCount : 0L)
+                .attachments(attachments)
                 .build();
     }
 

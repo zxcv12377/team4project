@@ -14,12 +14,14 @@ export default function BoardList() {
 
   // 게시글 목록 로딩
   useEffect(() => {
+    console.log("📡 useEffect 실행됨");
     boardList();
   }, [page]);
 
   const boardList = async () => {
     try {
       const res = await axios.get(`http://localhost:8080/api/boards/list?page=${page}&size=10`, { headers });
+      console.log("📦 받은 데이터:", res.data);
       const data = res.data;
       setPosts(data.dtoList || []);
       setTotalPages(data.totalPage || 1);
@@ -61,17 +63,24 @@ export default function BoardList() {
           {posts.map((post) => (
             <li
               key={post.bno}
-              onClick={() => navigate(`/board/${post.bno}`)}
+              onClick={() => navigate(`/boards/${post.bno}`)}
               className="cursor-pointer p-4 bg-white border border-gray-200 shadow-sm rounded-xl hover:shadow-md transition-shadow"
             >
               <div className="text-blue-600 font-semibold text-lg">
                 <span className="text-gray-600 font-bold mr-2">[{post.bno}]</span>
                 {post.title}
               </div>
+
               <div className="text-sm text-gray-600 mt-1">
-                작성자: {post.nickname || "익명"} | {new Date(post.regDate).toLocaleString()} | 댓글{" "}
-                {post.replyCount ?? 0}
+                작성자: {post.nickname || "익명"} |{" "}
+                {post.createdDate ? new Date(post.createdDate).toLocaleString() : "날짜 없음"} | 댓글{" "}
+                {typeof post.replyCount === "number" ? post.replyCount : 0}
               </div>
+
+              {/* ✅ 썸네일 이미지 (1장만) */}
+              {Array.isArray(post.attachments) && post.attachments.length > 0 && (
+                <img src={post.attachments[0]} alt="thumbnail" className="w-32 h-20 object-cover mt-2 rounded" />
+              )}
             </li>
           ))}
         </ul>
