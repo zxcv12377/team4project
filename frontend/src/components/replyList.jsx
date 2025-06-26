@@ -1,13 +1,11 @@
 import React, { useState, useEffect, useCallback } from "react";
 import ReplyItem from "./replyItem";
 import ReplyForm from "./replyForm";
-import { UserContext, useUserContext } from "../context/UserContext";
 
 export default function ReplyList({ bno }) {
   const [bestReplies, setBestReplies] = useState([]);
   const [generalReplies, setGeneralReplies] = useState([]);
   const [likedReplies, setLikedReplies] = useState(new Set());
-  const { user } = useUserContext();
 
   const fetchReplies = useCallback(async () => {
     try {
@@ -36,14 +34,13 @@ export default function ReplyList({ bno }) {
 
   const handleLike = async (rno) => {
     if (likedReplies.has(rno)) return;
-    // const nickname = localStorage.getItem("username");
-    const email = user.email;
     try {
       const token = localStorage.getItem("token");
       const res = await fetch(`/api/replies/${rno}/like`, {
         method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ email }),
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (res.ok) {
         const updated = new Set(likedReplies);
@@ -52,10 +49,12 @@ export default function ReplyList({ bno }) {
         localStorage.setItem("likedReplies", JSON.stringify([...updated]));
         fetchReplies();
       } else {
-        alert("추천 실패");
+        const errorText = await res.text();
+        alert("추천 실패: " + errorText);
       }
     } catch (err) {
       console.error("추천 실패", err);
+      alert("네트워크 오류로 추천에 실패했습니다.");
     }
   };
 
