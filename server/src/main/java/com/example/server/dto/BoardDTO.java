@@ -36,7 +36,7 @@ public class BoardDTO {
     private String email;
 
     // 작성자 id
-    private Long id;
+    private Long memberid;
     private String nickname;
 
     private LocalDateTime createdDate;

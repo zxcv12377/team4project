@@ -19,12 +19,9 @@ import Layout from "./layoutscopy/Layout";
 import LoginForm from "./components/loginForm";
 import RegisterForm from "./components/registerForm";
 import BoardList from "./components/boardList";
-import BoardDetail from "./components/boardDetail";
-// import LoginPage from "./pages/LoginPage";
-// import PostDetailPage from "./pages/PostDetailPage";
-// import PostListPage from "./pages/PostListPage";
-// import PostFormPage from "./pages/PostFormPage";
 import BoardCreate from "./components/boardCreate";
+import BoardDetail from "./components/boardDetail";
+import BoardModify from "./components/boardModify";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -93,8 +90,9 @@ function App() {
                     <Route path="/UpdateProfile" element={<UpdateMyProfile />} />
                     <Route path="/chatting/*" element={<ChattingModule />} />
                     <Route path="/boards" element={<BoardList />} />
-                    <Route path="/board/:bno" element={<BoardDetail />} />
-                    <Route path="/board/create" element={<BoardCreate />} />
+                    <Route path="/boards/create" element={<BoardCreate />} />
+                    <Route path="/boards/:bno" element={<BoardDetail />} />
+                    <Route path="/boards/update/:bno" element={<BoardModify />} />
                     <Route path="/profile" element={<MyProfile />} />
                   </Route>
                 </Routes>

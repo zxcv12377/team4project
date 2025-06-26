@@ -68,7 +68,7 @@ public class Member extends Base {
 
     // 선택: 양방향 관계
     @OneToMany(mappedBy = "member")
-    private List<Board> boards;
+    private List<Board> board;
 
     @OneToMany(mappedBy = "member")
     private List<Reply> replies;
