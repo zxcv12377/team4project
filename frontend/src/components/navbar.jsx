@@ -104,7 +104,7 @@ export default function Navbar() {
                   </button>
                   <button
                     onClick={() => setShowRegister(true)}
-                    className="text-sm bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600"
+                    className="text-sm bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 pb-15"
                   >
                     회원가입
                   </button>
@@ -151,7 +151,7 @@ export default function Navbar() {
                   </button>
                   <button
                     onClick={() => setShowRegister(true)}
-                    className="text-sm bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600"
+                    className="text-sm bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 mb-3"
                   >
                     회원가입
                   </button>

@@ -11,7 +11,7 @@ const PostDetailPage = ({ name }) => {
   const [data, setData] = useState(null);
 
   useEffect(() => {
-    axiosInstance.get(`/boards/${bno}/full`).then((res) => {
+    axiosInstance.get(`/board/${bno}/full`).then((res) => {
       setData(res.data);
     });
   }, [bno]);
@@ -21,10 +21,15 @@ const PostDetailPage = ({ name }) => {
 
     try {
       await axiosInstance.delete(`/boards/${bno}`);
+      alert({ title: "삭제 완료", description: "게시글이 삭제되었습니다." });
       navigate("/posts");
     } catch (error) {
       console.error(error);
-      alert("실패");
+      alert({
+        title: "삭제 실패",
+        description: "서버 오류가 발생했습니다.",
+        variant: "destructive",
+      });
     }
   };
 

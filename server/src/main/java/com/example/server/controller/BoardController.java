@@ -44,6 +44,11 @@ public class BoardController {
 
     @GetMapping("/list")
     public ResponseEntity<?> getList(PageRequestDTO pageRequestDTO) {
+        if (pageRequestDTO != null) {
+            log.info("페이지 리퀘스트 null 아님");
+        } else {
+            log.info("페이지 리퀘스트 null");
+        }
         log.info("list 요청", pageRequestDTO);
 
         PageResultDTO<BoardDTO> result = boardService.getList(pageRequestDTO);

@@ -38,6 +38,11 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                 QMember member = QMember.member;
                 QReply reply = QReply.reply;
 
+                JPQLQuery<Long> replyCountSubQuery = JPAExpressions
+                                .select(reply.count())
+                                .from(reply)
+                                .where(reply.board.eq(board));
+
                 // 1. 기본 쿼리 구성 (join 없이 지연 로딩 그대로 사용)
                 JPQLQuery<Tuple> query = from(board)
                                 .leftJoin(board.member, member)
@@ -51,7 +56,7 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 member.id,
                                                 member.nickname,
                                                 member.email,
-                                                reply.count());
+                                                replyCountSubQuery);
 
                 // 2. WHERE 조건 추가
                 if (type != null && keyword != null) {
