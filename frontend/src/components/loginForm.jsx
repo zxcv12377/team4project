@@ -22,7 +22,7 @@ export default function LoginForm({ onSwitchToRegister }) {
 
       const userRes = await axiosInstance.get("members/me");
       setUser({ ...userRes.data, token });
-      navigate("/boardList");
+      navigate("/boards");
     } catch (err) {
       alert("로그인 실패: 이메일 또는 비밀번호를 확인하세요.");
       console.log("로그인 에러 : {}", err);

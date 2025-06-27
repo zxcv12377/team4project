@@ -37,7 +37,7 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
-    navigate("/boardList");
+    navigate("/boards");
   };
 
   return (

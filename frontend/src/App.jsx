@@ -23,6 +23,9 @@ import LoginPage from "./pages/LoginPage";
 import PostDetailPage from "./pages/PostDetailPage";
 import PostListPage from "./pages/PostListPage";
 import PostFormPage from "./pages/PostFormPage";
+import BoardList from "./components/boardList";
+import BoardCreate from "./components/boardCreate";
+import BoardDetail from "./components/boardDetail";
 
 function App() {
   const [token, setToken] = useState(null);
