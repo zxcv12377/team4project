@@ -9,7 +9,6 @@ const BoardDetail = () => {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 게시글 불러오기
   useEffect(() => {
     axios
       .get(`/api/boards/read/${bno}`)
@@ -26,7 +25,6 @@ const BoardDetail = () => {
   if (loading) return <div className="text-center mt-10 text-gray-500">⏳ 게시글을 불러오는 중입니다...</div>;
   if (!post) return <div className="text-center mt-10 text-red-500">❌ 게시글이 존재하지 않습니다.</div>;
 
-  // 날짜 포맷
   const formattedCreated = post.createdDate
     ? new Date(post.createdDate).toLocaleString("ko-KR", {
         year: "numeric",
@@ -53,35 +51,34 @@ const BoardDetail = () => {
 
   return (
     <div className="max-w-3xl mx-auto mt-24 p-6 bg-white shadow-md rounded-lg">
-      {/* 제목 + 번호 */}
       <h2 className="text-2xl font-bold text-blue-700 mb-3">
         {post.title} <span className="text-sm text-gray-500">[{post.bno}]</span>
       </h2>
 
-      {/* 작성자, 작성일, 수정일 */}
       <div className="text-sm text-gray-600 mb-1">
         작성자: {post.nickname || "알 수 없음"} | 작성일: {formattedCreated}
       </div>
       {isModified && <div className="text-sm text-gray-400 mb-4">수정일: {formattedUpdated}</div>}
 
-      {/* 본문 */}
       <div className="text-gray-900 whitespace-pre-wrap text-lg mb-6">{post.content}</div>
 
-      {/* 첨부 이미지 전체 출력 */}
       {Array.isArray(post.attachments) && post.attachments.length > 0 && (
         <div className="grid grid-cols-3 gap-2 mb-6">
-          {post.attachments.map((imgUrl, index) => (
-            <img
-              key={index}
-              src={imgUrl.startsWith("http") ? imgUrl : `/files/${imgUrl}`}
-              alt={`첨부이미지-${index}`}
-              className="w-full h-32 object-cover rounded border"
-            />
-          ))}
+          {post.attachments.map((img, index) => {
+            const src = img.thumbnailUrl || img.originalUrl || "";
+            const finalSrc = src.startsWith("http") ? src : `http://localhost:8080${src}`;
+            return (
+              <img
+                key={index}
+                src={finalSrc}
+                alt={`첨부이미지-${index}`}
+                className="w-full h-32 object-cover rounded border"
+              />
+            );
+          })}
         </div>
       )}
 
-      {/* 버튼 */}
       <div className="flex gap-2 mb-6">
         <button onClick={() => navigate(-1)} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
           목록
@@ -107,7 +104,6 @@ const BoardDetail = () => {
         </button>
       </div>
 
-      {/* 댓글 */}
       <ReplyList bno={post.bno} />
     </div>
   );

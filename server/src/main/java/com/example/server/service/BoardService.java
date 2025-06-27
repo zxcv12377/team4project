@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.example.server.dto.BoardDTO;
+import com.example.server.dto.ImageDTO;
 import com.example.server.dto.PageRequestDTO;
 import com.example.server.dto.PageResultDTO;
 import com.example.server.entity.Board;
@@ -40,8 +41,8 @@ public class BoardService {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    // 이미지 첨부 → JSON 문자열로 변환
-    private String toJson(List<String> list) {
+    // 이미지 첨부 → JSON 문자열로 변환 (ImageDTO)
+    private String toJson(List<ImageDTO> list) {
         try {
             return list == null ? null : objectMapper.writeValueAsString(list);
         } catch (JsonProcessingException e) {
@@ -49,11 +50,11 @@ public class BoardService {
         }
     }
 
-    // JSON 문자열 → 이미지 첨부 리스트
-    private List<String> fromJson(String json) {
+    // JSON 문자열 → 이미지 첨부 리스트 (ImageDTO)
+    private List<ImageDTO> fromJson(String json) {
         try {
             return (json == null || json.isBlank()) ? List.of()
-                    : objectMapper.readValue(json, new TypeReference<>() {
+                    : objectMapper.readValue(json, new TypeReference<List<ImageDTO>>() {
                     });
         } catch (JsonProcessingException e) {
             throw new RuntimeException("JSON 파싱 실패", e);
@@ -62,16 +63,14 @@ public class BoardService {
 
     // 게시글 등록
     public Long create(BoardDTO dto) {
-        // 로그인한 사용자의 ID 가져오기(Spring Security에서 현재 사용자 정보 획득)
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         CustomMemberDetails userDetails = (CustomMemberDetails) auth.getPrincipal();
-        // DB에서 Member 엔티티 가져오기
         Member loginMember = memberRepository.findById(userDetails.getId()).orElseThrow();
 
         Board board = Board.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
-                .attachmentsJson(toJson(dto.getAttachments()))
+                .attachmentsJson(toJson(dto.getAttachments())) // ✅ ImageDTO로 저장
                 .member(loginMember)
                 .build();
 
@@ -92,7 +91,7 @@ public class BoardService {
 
         board.changeTitle(dto.getTitle());
         board.changeContent(dto.getContent());
-        board.changeAttachments(toJson(dto.getAttachments()));
+        board.changeAttachments(toJson(dto.getAttachments())); // ImageDTO 직렬화
 
         return board.getBno();
     }
@@ -115,7 +114,7 @@ public class BoardService {
                 .createdDate((LocalDateTime) en[2])
                 .nickname((String) en[3])
                 .replyCount((Long) en[4])
-                .attachments(fromJson((String) en[5]))
+                .attachments(fromJson((String) en[5])) // JSON → ImageDTO
                 .build());
 
         return PageResultDTO.<BoardDTO>withAll()
@@ -132,7 +131,7 @@ public class BoardService {
     }
 
     private BoardDTO entityToDto(Board board, Member member, Long replyCount) {
-        List<String> attachments = fromJson(board.getAttachmentsJson());
+        List<ImageDTO> attachments = fromJson(board.getAttachmentsJson()); // ImageDTO 리스트
 
         return BoardDTO.builder()
                 .bno(board.getBno())
@@ -143,7 +142,7 @@ public class BoardService {
                 .memberid(member != null ? member.getId() : null)
                 .nickname(member != null ? member.getNickname() : null)
                 .replyCount(replyCount != null ? replyCount : 0L)
-                .attachments(attachments)
+                .attachments(attachments) // ImageDTO 세팅
                 .build();
     }
 }

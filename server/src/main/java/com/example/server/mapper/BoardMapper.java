@@ -4,26 +4,27 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 import com.example.server.dto.BoardDTO;
+import com.example.server.dto.ImageDTO;
 import com.example.server.entity.Board;
 import com.example.server.entity.Member;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class BoardMapper {
 
-    // JSON 문자열 → List<String> 변환 (첨부파일용)
-    private static List<String> parseAttachments(String json) {
+    // ✅ JSON 문자열 → List<ImageDTO> 변환(첨부파일용)
+    private static List<ImageDTO> parseAttachments(String json) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readValue(json, new TypeReference<List<String>>() {
+            return objectMapper.readValue(json, new TypeReference<List<ImageDTO>>() {
             });
         } catch (Exception e) {
-            return List.of(); // 실패 시 빈 리스트 반환
+            return List.of();
         }
     }
 
-    // List<String> → JSON 문자열 변환 (첨부파일 저장용)
-    private static String toJson(List<String> attachments) {
+    // ✅ List<ImageDTO> → JSON 문자열 변환첨부파일 저장용)
+    private static String toJson(List<ImageDTO> attachments) {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             return objectMapper.writeValueAsString(attachments);
@@ -38,7 +39,7 @@ public class BoardMapper {
                 .bno(dto.getBno())
                 .title(dto.getTitle())
                 .content(dto.getContent())
-                .attachmentsJson(toJson(dto.getAttachments()))
+                .attachmentsJson(toJson(dto.getAttachments())) // ✅ ImageDTO JSON으로
                 .member(member)
                 .build();
     }

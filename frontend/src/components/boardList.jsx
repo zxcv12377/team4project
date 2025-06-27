@@ -12,7 +12,6 @@ export default function BoardList() {
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
 
-  // 게시글 목록 로딩
   useEffect(() => {
     console.log("📡 useEffect 실행됨");
     boardList();
@@ -36,21 +35,17 @@ export default function BoardList() {
     return <div className="text-center mt-6 text-gray-500">📦 게시글을 불러오는 중입니다...</div>;
   }
 
-  if (posts.length === 0) {
-    return <div className="text-center mt-6 text-gray-600">📭 게시글이 없습니다.</div>;
-  }
-
   return (
     <div className="min-h-[calc(100vh-96px)] mt-[96px] bg-consilk">
       <main className="max-w-3xl mx-auto p-6 pt-10">
-        {/* 질문등록 버튼 */}
+        {/* ✅ 질문등록 버튼 */}
         {token && (
           <div className="flex justify-end mb-4">
             <button
               className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
               onClick={() => navigate("/boards/create")}
             >
-              질문등록
+              게시글 등록
             </button>
           </div>
         )}
@@ -59,58 +54,78 @@ export default function BoardList() {
         <h2 className="text-2xl font-bold mb-4">📋 게시판 목록</h2>
 
         {/* 게시글 목록 */}
-        <ul className="space-y-4">
-          {posts.map((post) => (
-            <li
-              key={post.bno}
-              onClick={() => navigate(`/boards/${post.bno}`)}
-              className="flex justify-between items-start p-4 bg-white border border-gray-200 shadow-sm rounded-xl hover:shadow-md transition-shadow"
-            >
-              {/* 텍스트 영역 */}
-              <div className="flex-1 pr-4">
-                <div className="text-blue-600 font-semibold text-lg">
-                  <span className="text-gray-600 font-bold mr-2">[{post.bno}]</span>
-                  {post.title}
+        {posts.length === 0 ? (
+          <div className="text-center mt-6 text-gray-600">📭 게시글이 없습니다.</div>
+        ) : (
+          <ul className="space-y-4">
+            {posts.map((post) => (
+              <li
+                key={post.bno}
+                onClick={() => navigate(`/boards/${post.bno}`)}
+                className="flex justify-between items-start p-4 bg-white border border-gray-200 shadow-sm rounded-xl hover:shadow-md transition-shadow"
+              >
+                {/* 텍스트 영역 */}
+                <div className="flex-1 pr-4">
+                  <div className="text-blue-600 font-semibold text-lg">
+                    <span className="text-gray-600 font-bold mr-2">[{post.bno}]</span>
+                    {post.title}
+                  </div>
+
+                  <div className="text-sm text-gray-600 mt-1">
+                    작성자: {post.nickname || "익명"} | 작성일:{" "}
+                    {post.createdDate
+                      ? new Date(post.createdDate).toLocaleString("ko-KR", {
+                          year: "numeric",
+                          month: "numeric",
+                          day: "numeric",
+                          hour: "numeric",
+                          minute: "2-digit",
+                          hour12: true,
+                        })
+                      : "날짜 없음"}{" "}
+                    | 댓글 {typeof post.replyCount === "number" ? post.replyCount : 0}
+                  </div>
                 </div>
 
-                <div className="text-sm text-gray-600 mt-1">
-                  작성자: {post.nickname || "익명"} | 작성일:{" "}
-                  {post.createdDate
-                    ? new Date(post.createdDate).toLocaleString("ko-KR", {
-                        year: "numeric",
-                        month: "numeric",
-                        day: "numeric",
-                        hour: "numeric",
-                        minute: "2-digit",
-                        hour12: true,
-                      })
-                    : "날짜 없음"}{" "}
-                  | 댓글 {typeof post.replyCount === "number" ? post.replyCount : 0}
-                </div>
-              </div>
+                {/* ✅ 안전한 썸네일 */}
+                {Array.isArray(post.attachments) && post.attachments.length > 0 && (
+                  <img
+                    src={(() => {
+                      const img = post.attachments[0];
 
-              {/* 썸네일 */}
-              {Array.isArray(post.attachments) && post.attachments.length > 0 && (
-                <img src={post.attachments[0]} alt="thumbnail" className="w-32 h-20 object-cover rounded" />
-              )}
-            </li>
-          ))}
-        </ul>
+                      // 🔒 안전: fallback 처리
+                      if (typeof img === "string") {
+                        return img.startsWith("http") ? img : `http://localhost:8080${img}`;
+                      }
+
+                      const src = img.thumbnailUrl || img.originalUrl || "";
+                      return src.startsWith("http") ? src : `http://localhost:8080${src}`;
+                    })()}
+                    alt="썸네일"
+                    className="w-32 h-20 object-cover rounded"
+                  />
+                )}
+              </li>
+            ))}
+          </ul>
+        )}
 
         {/* 페이지네이션 */}
-        <div className="flex justify-center mt-6 gap-2">
-          {Array.from({ length: totalPages }, (_, i) => (
-            <button
-              key={i}
-              onClick={() => setPage(i + 1)}
-              className={`px-3 py-1 rounded border ${
-                page === i + 1 ? "bg-blue-500 text-white font-bold" : "bg-white text-gray-700 hover:bg-gray-100"
-              }`}
-            >
-              {i + 1}
-            </button>
-          ))}
-        </div>
+        {posts.length > 0 && (
+          <div className="flex justify-center mt-6 gap-2">
+            {Array.from({ length: totalPages }, (_, i) => (
+              <button
+                key={i}
+                onClick={() => setPage(i + 1)}
+                className={`px-3 py-1 rounded border ${
+                  page === i + 1 ? "bg-blue-500 text-white font-bold" : "bg-white text-gray-700 hover:bg-gray-100"
+                }`}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+        )}
       </main>
     </div>
   );
