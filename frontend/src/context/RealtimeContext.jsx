@@ -93,7 +93,9 @@ export function RealtimeProvider({ children, socket }) {
   }, [token]);
 
   useEffect(() => {
-    if (!connected || !ready || !email) return;
+    if (!connected || !email) return;
+
+    console.log("✅ 상태 구독 시작:", email);
 
     const subStatus = subscribe(`/user/queue/status`, (ev) => {
       console.log("🟢 실시간 상태 수신:", ev);
@@ -106,14 +108,17 @@ export function RealtimeProvider({ children, socket }) {
     });
 
     const subNoti = subscribe(`/user/queue/notifications.${email}`, (msg) => {
+      console.log("🔔 알림 수신:", msg);
       dispatch({ type: "ADD_NOTIFICATION", payload: msg });
     });
 
-    const subFriend = subscribe(`/user/queue/friend-events`, async (payload) => {
+    const subFriend = subscribe(`/user/queue/friend`, async (payload) => {
+      console.log("🤝 친구 이벤트 수신:", payload);
+
       try {
         const type = payload.type;
 
-        if (["REQUEST_RECEIVED", "REQUEST_CANCELLED", "REQUEST_ACCEPTED", "REQUEST_REJECTED"].includes(type)) {
+        if (["REQUEST_RECEIVED", "REQUEST_SENT", "REQUEST_CANCELLED", "REQUEST_ACCEPTED", "REQUEST_REJECTED"].includes(type)) {
           const [friendsRes, receivedRes, sentRes, onlineRes] = await Promise.all([
             axiosInstance.get("/friends"),
             axiosInstance.get("/friends/requests/received"),
@@ -125,7 +130,9 @@ export function RealtimeProvider({ children, socket }) {
           dispatch({ type: "SET_RECEIVED", payload: receivedRes.data || [] });
           dispatch({ type: "SET_SENT", payload: sentRes.data || [] });
           dispatch({ type: "SET_ONLINE_USERS", payload: onlineRes.data || [] });
-        } else if (type === "FRIEND_DELETED") {
+        }
+
+        if (type === "FRIEND_DELETED") {
           const friendId = payload.payload?.requestId;
           if (friendId) {
             dispatch({ type: "REMOVE_FRIEND", payload: friendId });
@@ -133,8 +140,16 @@ export function RealtimeProvider({ children, socket }) {
             console.warn("⚠️ FRIEND_DELETED 이벤트에 friendId 없음:", payload);
           }
         }
+
+        // ✅ 추가: FRIEND_STATUS_CHANGE 이벤트 처리
+        if (type === "FRIEND_STATUS_CHANGE") {
+          console.log("✅ FRIEND_STATUS_CHANGE 수신 → 온라인 상태 재조회");
+          const onlineRes = await axiosInstance.get("/friends/online");
+          dispatch({ type: "SET_ONLINE_USERS", payload: onlineRes.data || [] });
+        }
+
       } catch (err) {
-        console.error("❌ 친구 요청 WebSocket 처리 실패:", err);
+        console.error("❌ 친구 이벤트 WebSocket 처리 실패:", err);
       }
     });
 
@@ -146,7 +161,7 @@ export function RealtimeProvider({ children, socket }) {
       subNoti.unsubscribe();
       subFriend.unsubscribe();
     };
-  }, [connected, ready, subscribe, email]);
+  }, [connected, subscribe, email]);
 
   return <RealtimeContext.Provider value={{ state, dispatch }}>{children}</RealtimeContext.Provider>;
 }

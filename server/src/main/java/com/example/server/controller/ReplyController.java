@@ -1,6 +1,7 @@
 package com.example.server.controller;
 
 import com.example.server.dto.ReplyDTO;
+import com.example.server.dto.ReplyRequestDTO;
 import com.example.server.dto.ReplyResponseDTO;
 import com.example.server.entity.Member;
 import com.example.server.jwt.JwtUtil;
@@ -29,7 +30,7 @@ public class ReplyController {
 
     // 댓글 등록
     @PostMapping
-    public ResponseEntity<?> createReply(@RequestBody ReplyDTO dto,
+    public ResponseEntity<?> createReply(@RequestBody ReplyRequestDTO dto,
             HttpServletRequest request) {
         Member member = getMemberFromRequest(request);
         if (member == null) {

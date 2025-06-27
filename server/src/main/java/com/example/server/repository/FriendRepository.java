@@ -47,5 +47,16 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
       """)
   List<String> findFriendEmailsByStatusAndMyId(@Param("status") FriendStatus status, @Param("myId") Long myId);
 
+  @Query("""
+          SELECT CASE
+              WHEN f.memberA.email = :email THEN f.memberB.email
+              ELSE f.memberA.email
+          END
+          FROM Friend f
+          WHERE f.status = 'ACCEPTED'
+          AND (f.memberA.email = :email OR f.memberB.email = :email)
+      """)
+  List<String> findAllFriendEmailsForNotify(@Param("email") String email);
+
   // 상태 기준(신청, 수락 등) 전체 조회 등 자유롭게 추가 가능함
 }

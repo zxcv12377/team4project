@@ -14,16 +14,11 @@ export default function ReplyList({ bno }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       const data = await res.json();
-      if (!data || !Array.isArray(data.best)) throw new Error("형식 오류");
-
-      setBestReplies(data.best);
-      setGeneralReplies(data.general);
-
+      setBestReplies(data.best || []);
+      setGeneralReplies(data.general || []);
       const liked = localStorage.getItem("likedReplies");
       setLikedReplies(new Set(liked ? JSON.parse(liked) : []));
     } catch (err) {
-      setBestReplies([]);
-      setGeneralReplies([]);
       console.error("댓글 불러오기 실패", err);
     }
   }, [bno]);
@@ -38,9 +33,7 @@ export default function ReplyList({ bno }) {
       const token = localStorage.getItem("token");
       const res = await fetch(`/api/replies/${rno}/like`, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         const updated = new Set(likedReplies);
@@ -49,12 +42,11 @@ export default function ReplyList({ bno }) {
         localStorage.setItem("likedReplies", JSON.stringify([...updated]));
         fetchReplies();
       } else {
-        const errorText = await res.text();
-        alert("추천 실패: " + errorText);
+        const msg = await res.text();
+        alert("추천 실패: " + msg);
       }
     } catch (err) {
-      console.error("추천 실패", err);
-      alert("네트워크 오류로 추천에 실패했습니다.");
+      alert("네트워크 오류로 추천 실패");
     }
   };
 
