@@ -5,11 +5,9 @@ import com.example.server.dto.MemberRequestDTO;
 import com.example.server.dto.MemberResponseDTO;
 import com.example.server.jwt.JwtUtil;
 import com.example.server.security.CustomMemberDetails;
-import com.example.server.security.CustomMemberDetailsService;
 import com.example.server.service.MemberService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.java.Log;
 import lombok.extern.log4j.Log4j2;
 
 import org.springframework.http.HttpStatus;
@@ -18,9 +16,7 @@ import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;

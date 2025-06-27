@@ -1,17 +1,13 @@
 package com.example.server.repository;
 
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.data.support.PageableExecutionUtils;
 
-import com.example.server.base.Base;
 import com.example.server.entity.Board;
 import com.example.server.entity.QBoard;
 import com.example.server.entity.QMember;
@@ -51,13 +47,8 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 board.bno,
                                                 board.title,
                                                 board.content,
-<<<<<<< HEAD
-                                                board.createDate,
-                                                board.updateDate,
-=======
                                                 board.createdDate,
                                                 board.updatedDate,
->>>>>>> 4a97cb3f0ef09f16677f02c3bcd7a684761649eb
                                                 member.id,
                                                 member.nickname,
                                                 member.email,

@@ -1,8 +1,6 @@
 package com.example.server.controller.websocket;
 
-import java.util.Map;
 import org.springframework.messaging.Message;
-import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
@@ -14,6 +12,9 @@ import com.example.server.dto.SignalingMessage;
 import com.example.server.dto.voiceChat.SpeakingStatusRequest;
 import com.example.server.jwt.JwtUtil;
 
+import lombok.extern.log4j.Log4j2;
+
+@Log4j2
 @Controller
 public class SignalingController {
 
@@ -52,6 +53,7 @@ public class SignalingController {
             if (jwtUtil.isTokenValid(token)) {
                 Authentication auth = jwtUtil.getAuthentication(token);
                 String email = auth.getName();
+                log.info(email);
             }
         }
 

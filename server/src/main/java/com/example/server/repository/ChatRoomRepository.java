@@ -1,7 +1,6 @@
 package com.example.server.repository;
 
 import com.example.server.entity.ChatRoom;
-import com.example.server.entity.ChatRoomType;
 import com.example.server.entity.Server;
 
 import org.springframework.data.jpa.repository.JpaRepository;

@@ -5,7 +5,6 @@ import com.example.server.entity.ChannelType;
 import com.example.server.entity.ChatRoom;
 import com.example.server.entity.ChatRoomType;
 import com.example.server.security.CustomMemberDetails;
-import com.example.server.security.GlobalExceptionHandler;
 import com.example.server.service.ChatRoomService;
 import lombok.RequiredArgsConstructor;
 
