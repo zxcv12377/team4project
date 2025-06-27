@@ -15,7 +15,6 @@ export default function FriendPanel() {
   useEffect(() => {
     console.log("Online Users:", Array.from(state.onlineUsers));
     console.log("Friends:", friends);
-    console.warn("✅ 현재 onlineUsers Set 내용:", Array.from(state.onlineUsers));
   }, [state.onlineUsers, friends]);
 
   useEffect(() => {
@@ -50,7 +49,7 @@ export default function FriendPanel() {
     fetchReceived();
     fetchSent();
   }, [dispatch]);
-  
+
   useEffect(() => {
   const fetchOnlineUsers = async () => {
     try {
