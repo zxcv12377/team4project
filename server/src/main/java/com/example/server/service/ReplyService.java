@@ -1,6 +1,7 @@
 package com.example.server.service;
 
 import com.example.server.dto.ReplyDTO;
+import com.example.server.dto.ReplyRequestDTO;
 import com.example.server.dto.ReplyResponseDTO;
 import com.example.server.entity.Board;
 import com.example.server.entity.Member;
@@ -29,7 +30,7 @@ public class ReplyService {
         private final ReplyLikeRepository replyLikeRepository;
 
         // 댓글 등록
-        public Long create(ReplyDTO dto, Member member) {
+        public Long create(ReplyRequestDTO dto, Member member) {
                 Board board = boardRepository.findById(dto.getBno())
                                 .orElseThrow(() -> new IllegalArgumentException("게시글이 존재하지 않습니다."));
 

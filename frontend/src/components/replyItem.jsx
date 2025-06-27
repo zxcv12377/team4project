@@ -11,12 +11,11 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
     if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`/api/replies/${reply.rno}`, {
+      await fetch(`/api/replies/${reply.rno}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
-      if (res.ok) refresh();
-      else alert("삭제 실패");
+      refresh();
     } catch {
       alert("서버 오류");
     }
@@ -25,7 +24,7 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
   const handleEditSubmit = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`/api/replies/${reply.rno}`, {
+      await fetch(`/api/replies/${reply.rno}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -33,13 +32,8 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
         },
         body: JSON.stringify({ text: editedText }),
       });
-
-      if (res.ok) {
-        setEditing(false);
-        refresh();
-      } else {
-        alert("수정 실패");
-      }
+      setEditing(false);
+      refresh();
     } catch {
       alert("서버 오류");
     }
@@ -55,16 +49,10 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
             onChange={(e) => setEditedText(e.target.value)}
           />
           <div className="flex gap-2 mt-2 text-xs">
-            <button
-              onClick={handleEditSubmit}
-              className="px-3 py-1 rounded bg-indigo-500 text-white hover:bg-indigo-600"
-            >
+            <button onClick={handleEditSubmit} className="px-3 py-1 bg-indigo-500 text-white rounded">
               저장
             </button>
-            <button
-              onClick={() => setEditing(false)}
-              className="px-3 py-1 rounded border border-gray-300 text-gray-600 hover:bg-gray-100"
-            >
+            <button onClick={() => setEditing(false)} className="px-3 py-1 border rounded">
               취소
             </button>
           </div>
@@ -86,12 +74,9 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
             </div>
             <time className="text-xs">{new Date(reply.createdDate).toLocaleString()}</time>
           </div>
-          <p className="mt-1 whitespace-pre-line text-gray-800">{reply.text}</p>
+          <div className="mt-1 text-gray-800" dangerouslySetInnerHTML={{ __html: reply.text }} />
           <div className="flex justify-between items-center mt-2">
-            <button
-              onClick={() => setShowReplyForm(!showReplyForm)}
-              className="text-xs text-indigo-500 hover:underline"
-            >
+            <button onClick={() => setShowReplyForm(!showReplyForm)} className="text-xs text-indigo-500 hover:underline">
               답글 달기
             </button>
             {reply.nickname === currentUser && !editing && (
@@ -105,9 +90,12 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
               </div>
             )}
           </div>
+          {showReplyForm && <ReplyForm bno={bno} parentRno={reply.rno} onSubmit={refresh} />}
+          {reply.children && reply.children.map((child) => (
+            <ReplyItem key={child.rno} reply={child} bno={bno} refresh={refresh} depth={depth + 1} />
+          ))}
         </>
       )}
-      {showReplyForm && <ReplyForm bno={bno} parentRno={reply.rno} onSubmit={refresh} />}
     </div>
   );
 }
