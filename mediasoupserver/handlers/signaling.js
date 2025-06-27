@@ -28,7 +28,13 @@ function leaveVoiceRoom(io, socket) {
           voiceRooms.delete(roomId);
         }
       }
-
+      // ✅ producer 제거
+      if (producers.has(socket.id)) {
+        for (const producer of producers.get(socket.id).values()) {
+          producer.close();
+        }
+        producers.delete(socket.id);
+      }
       // ✅ 유저 수 갱신 (voiceRooms 기준)
       const size = socketSet?.size || 0;
       io.to(roomId).emit("userCount", size);
@@ -290,8 +296,7 @@ function setupSignaling(io, router) {
       // if (producer) producer.close();
       if (transport) {
         transport.close();
-        console.warn("⚠️ 이미 닫힌 transport에 connect 시도:", socket.id);
-        return callback("fail");
+        console.warn("transport 닫음 : ", socket.id);
       }
       if (consumer) consumer.close();
 
