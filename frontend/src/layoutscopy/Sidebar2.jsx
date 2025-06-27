@@ -4,6 +4,7 @@ import { useUserContext } from "@/context/UserContext";
 import { useVoiceChat } from "./../hooks/useVoiceChat";
 import VoiceChannelOuter from "../components/voice/VoiceChannelOuter";
 
+
 export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSelectDMRoom, onSelectChannel }) {
   const { user } = useUserContext();
   const currentUserId = user?.id; // ✅ 수정됨
