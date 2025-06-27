@@ -1,17 +1,13 @@
 package com.example.server.repository;
 
 import java.util.List;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 import org.springframework.data.support.PageableExecutionUtils;
 
-import com.example.server.base.Base;
 import com.example.server.entity.Board;
 import com.example.server.entity.QBoard;
 import com.example.server.entity.QMember;

@@ -40,13 +40,13 @@ public class BoardService {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    private String toJson(List<String> list) {
-        try {
-            return list == null ? null : objectMapper.writeValueAsString(list);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("JSON 직렬화 실패", e);
-        }
-    }
+    // private String toJson(List<String> list) {
+    // try {
+    // return list == null ? null : objectMapper.writeValueAsString(list);
+    // } catch (JsonProcessingException e) {
+    // throw new RuntimeException("JSON 직렬화 실패", e);
+    // }
+    // }
 
     private List<String> fromJson(String json) {
         try {

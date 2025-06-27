@@ -1,8 +1,6 @@
 package com.example.server.dto;
 
 import lombok.*;
-import com.example.server.entity.Member;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Getter
 @Setter

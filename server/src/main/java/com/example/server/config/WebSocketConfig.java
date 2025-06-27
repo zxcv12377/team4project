@@ -14,7 +14,6 @@ import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.messaging.support.ChannelInterceptor;
 import org.springframework.messaging.support.MessageHeaderAccessor;
 import org.springframework.web.socket.config.annotation.*;
-import org.springframework.web.socket.server.support.DefaultHandshakeHandler;
 
 import com.example.server.Handler.StompHandler;
 import com.example.server.entity.Member;

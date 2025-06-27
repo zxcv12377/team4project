@@ -9,7 +9,6 @@ import com.example.server.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -22,7 +21,6 @@ public class ChatMessageService {
 
         private final ChatMessageRepository chatMessageRepository;
         private final MemberRepository memberRepository;
-        private final SimpMessagingTemplate messagingTemplate;
         private final ChatRoomRepository chatRoomRepository;
 
         // 채팅방 메시지 조회

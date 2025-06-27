@@ -25,7 +25,6 @@ import java.util.stream.Collectors;
 public class ReplyService {
 
         private final ReplyRepository replyRepository;
-        private final MemberRepository memberRepository;
         private final BoardRepository boardRepository;
         private final ReplyLikeRepository replyLikeRepository;
 

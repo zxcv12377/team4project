@@ -10,9 +10,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import com.example.server.dto.StatusChangeEvent;
 import com.example.server.entity.FriendStatus;
-import com.example.server.entity.enums.UserStatus;
 import com.example.server.messaging.EventPublisher;
 import com.example.server.repository.FriendRepository;
 import com.example.server.repository.MemberRepository;
