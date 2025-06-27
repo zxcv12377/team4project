@@ -65,11 +65,7 @@ export default function BoardModify() {
     }
 
     try {
-      await axios.put(
-        `http://localhost:8080/api/boards/update/${bno}`,
-        { title, content, attachments }, // ✅ 이미지 포함해서 수정
-        { headers }
-      );
+      await axios.put(`http://localhost:8080/api/boards/update/${bno}`, { title, content, attachments }, { headers });
       alert("게시글이 성공적으로 수정되었습니다.");
       navigate(`/boards/${bno}`);
     } catch (error) {
@@ -116,7 +112,12 @@ export default function BoardModify() {
           {attachments.length > 0 && (
             <div className="mt-2 grid grid-cols-3 gap-2">
               {attachments.map((img, idx) => {
-                const src = img.thumbnailUrl || img.originalUrl || "";
+                let src = "";
+                if (typeof img === "string") {
+                  src = img;
+                } else {
+                  src = img.thumbnailUrl || img.originalUrl || "";
+                }
                 const finalSrc = src.startsWith("http") ? src : `http://localhost:8080${src}`;
                 return (
                   <img
