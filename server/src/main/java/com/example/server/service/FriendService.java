@@ -51,58 +51,76 @@ public class FriendService {
                 .orElseThrow(() -> new IllegalArgumentException("사용자 없음"));
         Member you = memberRepository.findById(targetId)
                 .orElseThrow(() -> new IllegalArgumentException("상대 없음"));
-        Friend friend;
 
-        // 현재 방향 확인
+        Friend friend = null;
+
+        // 👉 현재 방향 (A→B)
         Optional<Friend> existing = friendRepository.findByMemberAAndMemberB(me, you);
         if (existing.isPresent()) {
             Friend f = existing.get();
+
             if (f.getStatus() == FriendStatus.REJECTED) {
+                // ✅ REJECTED → REQUESTED 갱신
                 f.setStatus(FriendStatus.REQUESTED);
                 f.setCreatedAt(LocalDateTime.now());
                 f.setMemberA(me);
                 f.setMemberB(you);
+                friendRepository.save(f);
                 friend = f;
             } else {
-                throw new IllegalStateException("이미 친구 신청 중/수락됨");
+                throw new IllegalStateException("이미 친구 요청 중/수락됨");
             }
-        } else {
-            // 역방향 확인
+        }
+
+        // 👉 역방향 (B→A)
+        if (friend == null) {
             Optional<Friend> reverse = friendRepository.findByMemberAAndMemberB(you, me);
             if (reverse.isPresent()) {
                 Friend f = reverse.get();
                 if (f.getStatus() == FriendStatus.REJECTED) {
-                    f.setStatus(FriendStatus.REQUESTED);
-                    f.setCreatedAt(LocalDateTime.now());
-                    f.setMemberA(me);
-                    f.setMemberB(you);
-                    friend = f;
+                    // ✅ 역방향 REJECTED → 기존 삭제 후 새로 생성
+                    friendRepository.delete(f);
+                    friend = Friend.builder()
+                            .memberA(me)
+                            .memberB(you)
+                            .status(FriendStatus.REQUESTED)
+                            .createdAt(LocalDateTime.now())
+                            .build();
+                    friendRepository.save(friend);
                 } else {
-                    throw new IllegalStateException("이미 친구 신청 중/수락됨");
+                    throw new IllegalStateException("이미 친구 요청 중/수락됨");
                 }
-            } else {
-                // 새로운 친구 신청
-                friend = Friend.builder()
-                        .memberA(me)
-                        .memberB(you)
-                        .status(FriendStatus.REQUESTED)
-                        .createdAt(LocalDateTime.now())
-                        .build();
-                friendRepository.save(friend);
             }
         }
 
-        // 반대방향 REJECTED 정리
-        friendRepository.findByMemberAAndMemberB(you, me)
-                .filter(f -> f.getStatus() == FriendStatus.REJECTED)
-                .ifPresent(friendRepository::delete);
-        FriendEvent event = new FriendEvent(
+        // 👉 완전 신규
+        if (friend == null && existing.isEmpty()) {
+            friend = Friend.builder()
+                    .memberA(me)
+                    .memberB(you)
+                    .status(FriendStatus.REQUESTED)
+                    .createdAt(LocalDateTime.now())
+                    .build();
+            friendRepository.save(friend);
+        }
+
+        if (friend == null) {
+            throw new IllegalStateException("친구 요청 생성 실패");
+        }
+
+        // ✅ 1. 수신자에게 실시간 요청 알림
+        FriendEvent toReceiver = new FriendEvent(
                 "REQUEST_RECEIVED",
                 targetId,
-                FriendDTO.RequestResponse.from(friend) // 정확한 정적 생성자 사용
-        );
+                FriendDTO.RequestResponse.from(friend));
+        redisTemplate.convertAndSend(RedisChannelConstants.FRIEND_REQUEST_CHANNEL, toReceiver);
 
-        redisTemplate.convertAndSend(RedisChannelConstants.FRIEND_REQUEST_CHANNEL, event);
+        // ✅ 2. 신청자 본인에게도 실시간 보낸 요청 알림
+        FriendEvent toSender = new FriendEvent(
+                "REQUEST_SENT",
+                myId,
+                FriendDTO.RequestResponse.from(friend));
+        redisTemplate.convertAndSend(RedisChannelConstants.FRIEND_REQUEST_CHANNEL, toSender);
     }
 
     @Transactional

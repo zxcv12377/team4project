@@ -54,7 +54,15 @@ export default function FriendDropdown({ userId, userName, x, y, onClose }) {
       )}
       {status === "REQUESTED" && <div className="px-4 py-2 text-yellow-400 cursor-not-allowed">신청 보냄</div>}
       {status === "ACCEPTED" && <div className="px-4 py-2 text-green-400 cursor-not-allowed">이미 친구임</div>}
-      {status === "REJECTED" && <div className="px-4 py-2 text-gray-400 cursor-not-allowed">차단/거절됨</div>}
+      {status === "REJECTED" && (
+  <button
+    className="w-full text-left px-4 py-2 hover:bg-indigo-600"
+    onClick={handleAddFriend}
+    disabled={loading}
+  >
+    {loading ? "신청 중..." : "친구 추가"}
+  </button>
+)}
       {err && <div className="px-4 py-2 text-red-500">{err}</div>}
     </div>
   );

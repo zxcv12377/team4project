@@ -18,10 +18,13 @@ import { RealtimeProvider } from "./context/RealtimeContext";
 import Layout from "./layoutscopy/Layout";
 import LoginForm from "./components/loginForm";
 import RegisterForm from "./components/registerForm";
+
 import BoardList from "./components/boardList";
 import BoardCreate from "./components/boardCreate";
 import BoardDetail from "./components/boardDetail";
 import BoardModify from "./components/boardModify";
+
+
 
 function App() {
   const [token, setToken] = useState(null);

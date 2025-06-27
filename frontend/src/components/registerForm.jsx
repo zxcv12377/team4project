@@ -1,6 +1,4 @@
 import React, { useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import axiosInstance from "../lib/axiosInstance";
 
 function RegisterForm({ onSwitchToLogin }) {
@@ -12,7 +10,6 @@ function RegisterForm({ onSwitchToLogin }) {
   });
   const [step, setStep] = useState("input"); // "input" | "code"
   const [loading, setLoading] = useState(false);
-  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;

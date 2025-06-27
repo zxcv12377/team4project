@@ -62,21 +62,13 @@ export default function ReplyForm({ bno, parentRno = null, onSubmit }) {
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    const formData = new FormData();
-    formData.append("file", file);
 
-    try {
-      const res = await fetch("/api/uploads/images", {
-        method: "POST",
-        body: formData,
-      });
-      const data = await res.json();
-      const imageUrl = data.url;
-      insertAtCursor(`![image](${imageUrl})`);
-    } catch (err) {
-      console.error(err);
-      alert("이미지 업로드 실패");
-    }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const base64 = reader.result; // ✅ data:image/png;base64,... 형태
+      insertAtCursor(`<img src="${base64}" alt="image" />`);
+    };
+    reader.readAsDataURL(file); // ✅ base64로 읽음
   };
 
   return (

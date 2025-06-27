@@ -1,6 +1,5 @@
 package com.example.server.repository;
 
-import com.example.server.entity.Member;
 import com.example.server.security.entity.EmailVerificationToken;
 
 import jakarta.transaction.Transactional;

@@ -3,8 +3,6 @@ package com.example.server.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.example.server.entity.Member;
-
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

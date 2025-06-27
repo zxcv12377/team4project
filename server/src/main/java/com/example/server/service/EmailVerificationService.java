@@ -79,7 +79,7 @@ public class EmailVerificationService {
         tokenRepository.delete(token);
     }
 
-    private String generateCode() {
-        return String.valueOf((int) (Math.random() * 9000) + 1000); // 4자리 랜덤
-    }
+    // private String generateCode() {
+    // return String.valueOf((int) (Math.random() * 9000) + 1000); // 4자리 랜덤
+    // }
 }

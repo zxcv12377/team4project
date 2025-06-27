@@ -40,7 +40,7 @@ const MyProfile = () => {
       fetchProfile();
     } catch (err) {
       setMessage("err");
-      setError(" 코멘트 저장 실패");
+      setError("코멘트 저장 실패");
     }
   };
 

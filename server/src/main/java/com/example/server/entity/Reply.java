@@ -34,7 +34,7 @@ public class Reply extends Base {
     @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
 
-    @Column(nullable = false)
+    @Column(nullable = false, columnDefinition = "TEXT")
     private String text;
 
     @Column(nullable = true)
