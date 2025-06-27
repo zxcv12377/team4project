@@ -7,9 +7,76 @@ responseDTO : 서버 -> 클라이언트
 
 modelmapper : DTO ↔ Entity 변환을 쉽게 해주는 라이브러리
 
-
 security jwt 사용
 사용이유 : 서버에 부담이 덜함(기존 session방식은 서버에 유저정보를 전부 저장해서 부담이 심해지지만 token 생성방식은 유효기간을 설정&자동삭제해줌)
+
+CustomMemberDetails : 사용자 정보를 보관하는 객체
+    userdetails 인터페이스 구현
+    로그인성공 후 springsecurity -> springcontext
+    토큰 인증 후 이 객체가 인증된 사용자로 반환
+
+CustomMemberDetailsService : 사용자 조회 로직 담당
+    userDetailsService 인터페이스 구현
+    JWT 검증 후 사용자 인증을 위해 loadUserByUsername()
+    DB에서 해당 사용자(Member) 정보를 찾아 CustomMemberDetails 객체로 포장해서 반환
+
+AuthenticationManager : spring의 사용자 인증 기능 인증이 맞으면 authenticate()반환,
+                        틀리면 authenticationexception() 반환
+
+<로그인 흐름>
+1. 클라이언트가 로그인 요청 /api/member/login 으로 email + password 전달
+2. MemberController 에서 AuthenticationManager.authenticate() 호출 > UsernamePasswordAuthenticationToken (인증전)
+3. AuthenticationManager 가 내부적으로 AuthenticationProvider 사용
+4. AuthenticationProvider 가 CustomMemberDetailsService에서 loadUserByUsername 호출, email 로 db에서 member검색
+5. 조회된 사용자 정보를 기반으로 CustomMemberDetails 객체 생성 (userdetails기능, 인증된 사용자 정보 보관)
+6. 입력한 password 와 DB 비밀번호를 PasswordEncoder.matches() 로 비교
+7. 성공 시 UsernamePasswordAuthenticationToken 생성 / 실패 시 AuthenticationException 
+8. SecurityContextHolder.getContext().setAuthentication() 로 저장 이 시점부터 인증된 사용자로 간주
+9. controller에서 JwtUtil에 token 생성요청 후 응답
+10. 클라이언트에서 이 토큰을 localstorage에 저장
+11. 클라이언트 요청 시 header에 {Authorization: Bearer ${token}} 추가
+12. 서버에서 jwt 검증 JwtAuthenticationFilter 작동
+    1. Authorization 헤더에서 token 추출
+    2. JwtUtil.validateToken(token)으로 유효성검사(작동하고있나?)
+    3. 토큰에서 이메일 추출 > CustomMemberDetailsService에서 loadUserByUsername()호출
+    4. CustomMemberDetails 반환 → Authentication 객체 생성
+    5. SecurityContextHolder 에 저장
+13. 이제 MemberController에서 @AuthenticationPrincipal로 인증된 사용자 가져와짐
+
+<회원가입 흐름>
+1. 클라이언트에서 이메일, 닉네임, 비밀번호 입력
+2. 백엔드 처리 (EmailVerificationController.sendCode)
+    기존 이메일 인증 정보가 있는지 확인
+    기존 인증 정보가 있으면 삭제 or 갱신
+    랜덤 인증 코드(6자리) 생성
+    EmailVerificationToken 엔티티에 저장 : email, code, expirationDate, verified
+    실제 이메일 전송 : JavaMailSender 사용
+    클라이언트에 "인증 코드가 발송되었습니다" 응답
+3. 인증 코드 입력 UI 표시 (프론트)
+    인증 코드 입력칸이 동적으로 화면에 생성됨
+    "인증 확인" 버튼 활성화
+4. 백엔드 처리 (EmailVerificationController.verifyCode)
+    DB에서 email에 해당하는 EmailVerificationToken 조회
+    코드가 일치하는지 확인
+    만료 시간 검증 (선택적으로 createdAt + 5분)
+    코드가 유효하면:
+    verified = true 로 상태 변경
+    저장 후 "인증 완료" 응답 반환
+5. 인증 성공 후 회원가입 버튼 활성화 (프론트)
+    "이메일 인증이 완료되었습니다" 메시지 출력
+    이제 사용자가 닉네임, 비밀번호 등 입력 확인 후 "회원가입" 버튼 클릭 가능
+6. 전달받은 이메일로 EmailVerificationToken 조회
+    verified == true인지 확인
+    아니면 403 Forbidden, "이메일 인증이 필요합니다"
+    중복 이메일/닉네임 검사
+    비밀번호 암호화 (BCryptPasswordEncoder)
+    Member 엔티티 생성 : email, password (암호화된 값), nickname, id, profileimg, emailverified
+    저장 완료 시 "회원가입 성공" 응답 반환
+7. 회원가입 성공 메시지 받고 board로 이동
+
+
+
+
 
 회원가입 : post register -> dto -> controller -> dto -> service -> entity -> repository -> db
 
@@ -34,5 +101,5 @@ security jwt 사용
 4. 백엔드 : 인증코드와 이메일 EmailVerificationToken 엔티티에 저장
 5. 프론트 : 사용자 인증코드 입력 > 백엔드 /api/email/verify로 인증 검증 요청
 6. 백엔드 : 인증코드 유효한지 확인 > token 상태를 인증 완료로 변경
-7. 백엔드 : 프론트엔드에서 <회원가입> 버튼을 누르면 백엔드 MemberController에서 post) register 에서 이메일 인증 여부 확인, 인증 완료된 이메일 member엔티티로 DB에 저장,Passwordencoder로 비밀번호 암호화
+7. 백엔드 : 프론트엔드에서 <회원가입> 버튼을 누르면 백엔드 MemberController에서 post register 에서 이메일 인증 여부 확인, 인증 완료된 이메일 member엔티티로 DB에 저장,Passwordencoder로 비밀번호 암호화
 8. 프론트 : 회원가입 완료 메세지 응답 > 현재 페이지 리로드(/boards)

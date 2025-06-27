@@ -24,14 +24,14 @@ import java.util.stream.Collectors;
 @NoArgsConstructor
 @Builder
 public class CustomMemberDetails implements UserDetails, Principal {
-
-    // private final Member member;
+    // 사용자 정보 보관
     private Long id;
     private String email;
     private String password;
     private String nickname;
     private Set<MemberRole> roles;
 
+    // 권한 정보 반환
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         // return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
@@ -55,21 +55,25 @@ public class CustomMemberDetails implements UserDetails, Principal {
     // ** Spring Security의 "username" → email 사용 **
 
     // 계정 상태 관련 (필요 시 수정 가능)
+    // 계정 만료여부
     @Override
     public boolean isAccountNonExpired() {
         return true;
     }
 
+    // 계정 잠김 여부
     @Override
     public boolean isAccountNonLocked() {
         return true;
     }
 
+    // 비밀번호 만료여부
     @Override
     public boolean isCredentialsNonExpired() {
         return true;
     }
 
+    // 활성화여부
     @Override
     public boolean isEnabled() {
         return true;

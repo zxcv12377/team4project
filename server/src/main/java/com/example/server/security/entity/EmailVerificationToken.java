@@ -26,6 +26,7 @@ public class EmailVerificationToken {
     private String token;
 
     private LocalDateTime expirationDate;
+
     private boolean verified;
 
     // @Builder

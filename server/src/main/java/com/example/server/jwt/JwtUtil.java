@@ -43,7 +43,7 @@ public class JwtUtil {
 
     @PostConstruct
     public void init() {
-        log.info("✅ JwtUtil 초기화 시작: secretKey length = {}", secretKey.length());
+        log.info(" JwtUtil 초기화 시작: secretKey length = {}", secretKey.length());
         // byte[] keyBytes = Base64.getDecoder().decode(secretKey);
         // this.key = Keys.hmacShaKeyFor(keyBytes);
         byte[] keyBytes = secretKey.getBytes(StandardCharsets.UTF_8);
@@ -61,7 +61,7 @@ public class JwtUtil {
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
 
-        log.info("🔐 RefreshToken 생성 - username: {}, 만료: {}, token: {}",
+        log.info(" RefreshToken 생성 - username: {}, 만료: {}, token: {}",
                 username, expiry, refreshToken);
 
         return refreshToken;
@@ -151,6 +151,7 @@ public class JwtUtil {
         return isTokenValid(refreshToken); // 내부적으로 유효성 검증
     }
 
+    // refresh토큰 기반으로 새로은 access 토큰 생성
     public String generateAccessTokenFromRefresh(String refreshToken) {
         String username = getEmail(refreshToken);
         return generateToken(username,
