@@ -26,6 +26,11 @@ export default function BoardModify() {
       }
     };
     getData();
+
+    //-----------------------------------------------------------
+    console.log("🔍 토큰:", token); // localStorage 토큰 확인
+    console.log("🔍 headers:", headers); // Authorization 헤더 포함 여부
+    //-----------------------------------------------------------
   }, [bno]);
 
   const handleSubmit = async (e) => {

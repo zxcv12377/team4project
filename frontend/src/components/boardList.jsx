@@ -64,22 +64,34 @@ export default function BoardList() {
             <li
               key={post.bno}
               onClick={() => navigate(`/boards/${post.bno}`)}
-              className="cursor-pointer p-4 bg-white border border-gray-200 shadow-sm rounded-xl hover:shadow-md transition-shadow"
+              className="flex justify-between items-start p-4 bg-white border border-gray-200 shadow-sm rounded-xl hover:shadow-md transition-shadow"
             >
-              <div className="text-blue-600 font-semibold text-lg">
-                <span className="text-gray-600 font-bold mr-2">[{post.bno}]</span>
-                {post.title}
+              {/* 텍스트 영역 */}
+              <div className="flex-1 pr-4">
+                <div className="text-blue-600 font-semibold text-lg">
+                  <span className="text-gray-600 font-bold mr-2">[{post.bno}]</span>
+                  {post.title}
+                </div>
+
+                <div className="text-sm text-gray-600 mt-1">
+                  작성자: {post.nickname || "익명"} | 작성일:{" "}
+                  {post.createdDate
+                    ? new Date(post.createdDate).toLocaleString("ko-KR", {
+                        year: "numeric",
+                        month: "numeric",
+                        day: "numeric",
+                        hour: "numeric",
+                        minute: "2-digit",
+                        hour12: true,
+                      })
+                    : "날짜 없음"}{" "}
+                  | 댓글 {typeof post.replyCount === "number" ? post.replyCount : 0}
+                </div>
               </div>
 
-              <div className="text-sm text-gray-600 mt-1">
-                작성자: {post.nickname || "익명"} |{" "}
-                {post.createdDate ? new Date(post.createdDate).toLocaleString() : "날짜 없음"} | 댓글{" "}
-                {typeof post.replyCount === "number" ? post.replyCount : 0}
-              </div>
-
-              {/* ✅ 썸네일 이미지 (1장만) */}
+              {/* 썸네일 */}
               {Array.isArray(post.attachments) && post.attachments.length > 0 && (
-                <img src={post.attachments[0]} alt="thumbnail" className="w-32 h-20 object-cover mt-2 rounded" />
+                <img src={post.attachments[0]} alt="thumbnail" className="w-32 h-20 object-cover rounded" />
               )}
             </li>
           ))}

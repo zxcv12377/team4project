@@ -60,13 +60,16 @@ public class SecurityConfig {
                                                                 "/api/members/login",
                                                                 "/error")
                                                 .permitAll()
+
                                                 // WebSocket/STOMP endpoints
                                                 .requestMatchers("/ws-chat/**", "/ws-voice/**", "/app/**", "/topic/**",
                                                                 "/auth/refresh")
                                                 .permitAll()
+
                                                 .requestMatchers(HttpMethod.PUT, "/api/members/password/reset",
                                                                 "/api/members/password")
                                                 .permitAll()
+
                                                 .requestMatchers(HttpMethod.GET, "/api/boards/**", "/api/replies/**",
                                                                 "/api/members/check-nickname", "/api/members/find-id")
                                                 .permitAll()
@@ -76,15 +79,12 @@ public class SecurityConfig {
 
                                                 .requestMatchers(HttpMethod.POST, "/api/boards", "/api/replies/**")
                                                 .authenticated()
+
                                                 .requestMatchers(HttpMethod.PUT, "/api/boards/**", "/api/replies/**",
                                                                 "/api/members/comment",
                                                                 "/api/members/nickname")
                                                 .authenticated()
 
-                                                .requestMatchers(HttpMethod.PUT, "/api/boards/**", "/api/replies/**",
-                                                                "/api/members/mypage",
-                                                                "/api/members/nickname")
-                                                .authenticated()
                                                 .requestMatchers("/img/**").permitAll()
                                                 .requestMatchers(HttpMethod.DELETE, "/api/boards/**", "/api/replies/**",
                                                                 "/api/members/mypage")

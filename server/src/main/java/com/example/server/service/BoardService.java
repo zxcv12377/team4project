@@ -40,6 +40,7 @@ public class BoardService {
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
+    // 이미지 첨부 → JSON 문자열로 변환
     private String toJson(List<String> list) {
         try {
             return list == null ? null : objectMapper.writeValueAsString(list);
@@ -48,6 +49,7 @@ public class BoardService {
         }
     }
 
+    // JSON 문자열 → 이미지 첨부 리스트
     private List<String> fromJson(String json) {
         try {
             return (json == null || json.isBlank()) ? List.of()
@@ -58,36 +60,44 @@ public class BoardService {
         }
     }
 
-    // create
+    // 게시글 등록
     public Long create(BoardDTO dto) {
-        // dto => entity(board) 변경
-        log.info("디티오 : {}", dto);
+        // 로그인한 사용자의 ID 가져오기(Spring Security에서 현재 사용자 정보 획득)
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         CustomMemberDetails userDetails = (CustomMemberDetails) auth.getPrincipal();
-        Member loginMember = memberRepository.findById(userDetails.getId()).get();
-        Board board = dtoToEntity(dto, loginMember);
+        // DB에서 Member 엔티티 가져오기
+        Member loginMember = memberRepository.findById(userDetails.getId()).orElseThrow();
+
+        Board board = Board.builder()
+                .title(dto.getTitle())
+                .content(dto.getContent())
+                .attachmentsJson(toJson(dto.getAttachments()))
+                .member(loginMember)
+                .build();
+
         return boardRepository.save(board).getBno();
     }
 
-    // Delete
+    // 게시글 삭제
     @Transactional
     public void delete(Long bno) {
         replyRepository.deleteByBoardBno(bno);
         boardRepository.deleteById(bno);
     }
 
-    // Update
+    // 게시글 수정
     @Transactional
     public Long update(BoardDTO dto) {
         Board board = boardRepository.findById(dto.getBno()).orElseThrow();
 
         board.changeTitle(dto.getTitle());
         board.changeContent(dto.getContent());
+        board.changeAttachments(toJson(dto.getAttachments()));
 
         return board.getBno();
     }
 
-    // 4. 게시글 페이징 목록
+    // 게시글 목록
     public PageResultDTO<BoardDTO> getList(PageRequestDTO pageRequestDTO) {
 
         Pageable pageable = PageRequest.of(
@@ -98,19 +108,14 @@ public class BoardService {
         Page<Object[]> result = boardRepository.getBoardList(
                 pageRequestDTO.getType(),
                 pageRequestDTO.getKeyword(), pageable);
-        System.out.println(result);
 
         Function<Object[], BoardDTO> function = (en -> BoardDTO.builder()
-                .bno((Long) en[0]) // 게시글 번호
-                .title((String) en[1]) // 제목
-                .content((String) en[2]) // 본문
-                .createdDate((LocalDateTime) en[3]) // 생성일
-                .updatedDate((LocalDateTime) en[4]) // 수정일
-                .memberid((Long) en[5]) // 작성자 ID
-                .nickname((String) en[6]) // 닉네임
-                .email((String) en[7]) // 이메일
-                .replyCount((Long) en[8]) // 댓글 수
-                // .attachments(fromJson((String) en[9])) // 첨부 이미지 리스트
+                .bno((Long) en[0])
+                .title((String) en[1])
+                .createdDate((LocalDateTime) en[2])
+                .nickname((String) en[3])
+                .replyCount((Long) en[4])
+                .attachments(fromJson((String) en[5]))
                 .build());
 
         return PageResultDTO.<BoardDTO>withAll()
@@ -120,43 +125,25 @@ public class BoardService {
                 .build();
     }
 
-    // 5. 게시글 상세 조회
+    // 게시글 상세조회
     public BoardDTO getRow(Long bno) {
         Object[] result = boardRepository.getBoardRow(bno);
         return entityToDto((Board) result[0], (Member) result[1], (Long) result[2]);
     }
 
-    // ====== DTO 변환 메서드 ======
     private BoardDTO entityToDto(Board board, Member member, Long replyCount) {
-
         List<String> attachments = fromJson(board.getAttachmentsJson());
 
         return BoardDTO.builder()
                 .bno(board.getBno())
                 .title(board.getTitle())
-                .content(board.getContent()) // 상세 보기용
+                .content(board.getContent())
                 .createdDate(board.getCreatedDate())
                 .updatedDate(board.getUpdatedDate())
                 .memberid(member != null ? member.getId() : null)
                 .nickname(member != null ? member.getNickname() : null)
-                .email(member != null ? member.getEmail() : null)
                 .replyCount(replyCount != null ? replyCount : 0L)
                 .attachments(attachments)
                 .build();
     }
-
-    private Board dtoToEntity(BoardDTO dto, Member member) {
-        log.info("디튀오 {} ", dto);
-        // Member member = memberRepository.findById(dto.getMemberid())
-        // .orElseThrow(() -> new IllegalArgumentException("No member found with id: " +
-        // dto.getMemberid()));
-        Board board = Board.builder()
-                .title(dto.getTitle())
-                .content(dto.getContent())
-                // .attachmentsJson(toJson(dto.getAttachments()))
-                .member(member)
-                .build();
-        return board;
-    }
-
 }
