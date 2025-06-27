@@ -58,3 +58,6 @@ volumes:
 networks:
   app-network:
     driver: bridge
+# docker-compose down -v
+
+# docker-compose up --build

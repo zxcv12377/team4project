@@ -4,7 +4,6 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import MyProfile from "./components/myProfile";
 
-import ProtectedRoute from "./components/protectedRoute";
 import Navbar from "./components/navbar";
 import UpdateMyProfile from "./components/updateMyProfile";
 import ReplyList from "./components/replyList";
@@ -19,14 +18,9 @@ import { RealtimeProvider } from "./context/RealtimeContext";
 import Layout from "./layoutscopy/Layout";
 import LoginForm from "./components/loginForm";
 import RegisterForm from "./components/registerForm";
-import LoginPage from "./pages/LoginPage";
-import PostDetailPage from "./pages/PostDetailPage";
-import PostListPage from "./pages/PostListPage";
-import PostFormPage from "./pages/PostFormPage";
-
 import BoardList from "./components/boardList";
-import BoardDetail from "./components/boardDetail";
 import BoardCreate from "./components/boardCreate";
+import BoardDetail from "./components/boardDetail";
 import BoardModify from "./components/boardModify";
 
 function App() {
@@ -73,7 +67,7 @@ function App() {
     localStorage.clear();
     setToken(null);
     setUser(null);
-    window.location.href = "/login";
+    window.location.href = "/boards";
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -99,16 +93,7 @@ function App() {
                     <Route path="/boards/create" element={<BoardCreate />} />
                     <Route path="/boards/:bno" element={<BoardDetail />} />
                     <Route path="/boards/update/:bno" element={<BoardModify />} />
-
-                    {/* 보호된 라우트(로그인 인증 후 접근 가능한 경로 지정) */}
-                    <Route
-                      path="/profile"
-                      element={
-                        <ProtectedRoute>
-                          <MyProfile />
-                        </ProtectedRoute>
-                      }
-                    />
+                    <Route path="/profile" element={<MyProfile />} />
                   </Route>
                 </Routes>
               </BrowserRouter>

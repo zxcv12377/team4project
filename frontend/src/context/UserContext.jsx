@@ -17,7 +17,7 @@ export const UserProvider = ({ children }) => {
 
   const fetchUser = async () => {
     try {
-      const res = await axiosInstance.get("/members/me");
+      const res = await axiosInstance.get("members/me");
       const token = localStorage.getItem("token");
       setUser({ ...res.data, token });
       console.log("UserContext data : ", { ...res.data, token });
@@ -30,7 +30,9 @@ export const UserProvider = ({ children }) => {
   };
 
   useEffect(() => {
-    fetchUser();
+    const token = localStorage.getItem("token");
+    if (token) fetchUser();
+    else setLoading(false);
   }, []);
 
   return <UserContext.Provider value={{ user, setUser, loading }}>{children}</UserContext.Provider>;

@@ -53,7 +53,6 @@ public class SecurityConfig {
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/", "/assets/**", "/css/**", "/js/**", "/upload/**")
                                                 .permitAll()
-                                                .requestMatchers("/movie/list", "/movie/read").permitAll()
                                                 .requestMatchers("/reviews/**", "/upload/display/**").permitAll()
 
                                                 .requestMatchers(HttpMethod.POST, "/api/members/register",
