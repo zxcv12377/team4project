@@ -51,13 +51,8 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 board.bno,
                                                 board.title,
                                                 board.content,
-<<<<<<< HEAD
                                                 board.createDate,
                                                 board.updateDate,
-=======
-                                                board.createdDate,
-                                                board.updatedDate,
->>>>>>> 4a97cb3f0ef09f16677f02c3bcd7a684761649eb
                                                 member.id,
                                                 member.nickname,
                                                 member.email,
