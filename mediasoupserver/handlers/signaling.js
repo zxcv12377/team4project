@@ -28,7 +28,13 @@ function leaveVoiceRoom(io, socket) {
           voiceRooms.delete(roomId);
         }
       }
-
+      // ✅ producer 제거
+      if (producers.has(socket.id)) {
+        for (const producer of producers.get(socket.id).values()) {
+          producer.close();
+        }
+        producers.delete(socket.id);
+      }
       // ✅ 유저 수 갱신 (voiceRooms 기준)
       const size = socketSet?.size || 0;
       io.to(roomId).emit("userCount", size);
@@ -121,6 +127,10 @@ function setupSignaling(io, router) {
     // 송신용 트랜스 포트 연결 요청
     socket.on("connectTransport", async ({ dtlsParameters }, callback) => {
       const transport = transports.get(socket.id);
+      // if (transport._connected) {
+      //   console.warn("이미 연결된 Transport입니다");
+      //   return;
+      // }
       if (transport) await transport.connect({ dtlsParameters });
       if (typeof callback === "function") {
         callback("ok");
@@ -152,7 +162,7 @@ function setupSignaling(io, router) {
         for (const [peerId, peer] of peers.entries()) {
           console.log("★★★★★★★ 새 유저 도착 시 한번 더 실행");
           if (peerId !== socket.id) {
-            // ① 나 빼고 다른 사람에게 알려줌
+            // 나 빼고 다른 사람에게 알려줌
             peer.socket.emit("newProducer", {
               producerId: producer.id,
               socketId: socket.id,
@@ -161,7 +171,7 @@ function setupSignaling(io, router) {
         }
         for (const [peerId, producerMap] of producers.entries()) {
           if (peerId === socket.id) continue;
-          // ② 나한테 다른 사람들의 기존 producer 알려줌
+          // 나한테 다른 사람들의 기존 producer 알려줌
           for (const [existingProducerId] of producerMap.entries()) {
             socket.emit("newProducer", {
               producerId: existingProducerId,
@@ -199,11 +209,17 @@ function setupSignaling(io, router) {
     socket.on("connectRecvTransport", async ({ dtlsParameters, transportId }) => {
       // const transport = transports.find((t) => t.id === transportId);
       const transport = [...consumerTransports.values()].find((t) => t.id === transportId);
-      if (transport) {
-        await transport.connect({ dtlsParameters });
-        socket.emit("connectRecvTransportDone", "ok"); // ✅ 클라이언트에게 완료 신호
-      } else {
-        socket.emit("connectRecvTransportDone", "fail");
+      try {
+        if (transport) {
+          await transport.connect({ dtlsParameters });
+          socket.emit("connectRecvTransportDone", "ok"); // ✅ 클라이언트에게 완료 신호
+        } else {
+          socket.emit("connectRecvTransportDone", "fail");
+        }
+      } catch (err) {
+        console.error("❌ transport.connect 에러:", err.message);
+        callback({ error: err.message });
+        return;
       }
     });
     // consumer 생성 요청
@@ -257,8 +273,14 @@ function setupSignaling(io, router) {
       leaveVoiceRoom(io, socket);
     });
 
+    process.on("uncaughtException", (err) => {
+      console.error("Uncaught Exception:", err);
+      // 서버 죽이지 않고 로깅만
+    });
+
     // 연결 종료 처리
     socket.on("disconnect", () => {
+      console.log("❌ 소켓 연결 종료됨");
       leaveVoiceRoom(io, socket);
       const consumer = consumers.get(socket.id);
       const producerMap = producers.get(socket.id);
@@ -272,7 +294,10 @@ function setupSignaling(io, router) {
       }
 
       // if (producer) producer.close();
-      if (transport) transport.close();
+      if (transport) {
+        transport.close();
+        console.warn("transport 닫음 : ", socket.id);
+      }
       if (consumer) consumer.close();
 
       peers.delete(socket.id);

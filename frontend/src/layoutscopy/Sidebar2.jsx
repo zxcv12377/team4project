@@ -1,12 +1,13 @@
 import axios from "@/lib/axiosInstance";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useUserContext } from "@/context/UserContext";
 import { useVoiceChat } from "./../hooks/useVoiceChat";
+import VoiceChannelOuter from "../components/voice/VoiceChannelOuter";
 
 
 export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSelectDMRoom, onSelectChannel }) {
   const { user } = useUserContext();
-  const currentUserId = user?.id;  // ✅ 수정됨
+  const currentUserId = user?.id; // ✅ 수정됨
 
   const [friends, setFriends] = useState([]);
   const [channels, setChannels] = useState([]);
@@ -20,18 +21,26 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
 
   const [currentVoiceRoomId, setCurrentVoiceRoomId] = useState(null);
   const [speakingUsers, setSpeakingUsers] = useState([]);
+  const [roomId, setRoomId] = useState(0);
 
-  const { startSpeaking, stopSpeaking } = useVoiceChat({
-    roomId: currentVoiceRoomId,
-    member: {
+  // const { joined } = useVoiceChat(currentVoiceRoomId, {
+  //   memberId: user?.id,
+  //   name: user?.name,
+  //   profile: user?.profile,
+  // });
+
+  // useVoiceChat(currentVoiceRoomId, user);
+
+  const memoizedMember = useMemo(
+    () => ({
       memberId: user?.id,
       name: user?.name,
       profile: user?.profile,
-    },
-    onSpeakingUsersChange: setSpeakingUsers,
-  });
+    }),
+    [user?.id, user?.name, user?.profile]
+  );
 
-  useVoiceChat(currentVoiceRoomId, user);
+  const { joined } = useVoiceChat(currentVoiceRoomId, memoizedMember);
 
   useEffect(() => {
     if (dmMode) {
@@ -101,6 +110,9 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
         console.log("채널 ID 없음. joinRoom 생략");
         return;
       }
+      setRoomId(channelId);
+      console.log(joined);
+      console.log(channelId + "번 방에 입장하셨습니당");
       setCurrentVoiceRoomId(channelId);
     } catch (err) {
       console.error("마이크 접근 실패:", err);
@@ -276,7 +288,19 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
           </div>
         </div>
       )}
-
+      <VoiceChannelOuter
+        roomId={roomId}
+        member={{
+          name: user?.name,
+          memberId: user?.id,
+          profile: user?.profile,
+        }}
+        joined={joined}
+        onLeave={() => {
+          setRoomId(null);
+          setCurrentVoiceRoomId(null);
+        }}
+      />
       {/* 초대코드 모달 */}
       {inviteCode && (
         <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
@@ -291,7 +315,7 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
             >
               코드 복사
             </button>
-            <button onClick={closeInviteModal} className="bg-zinc-700 text-white rounded px-3 py-1">
+            <button onClick={closeInviteModal} className="bg-zinc-700 text-white rounded px-3 py-1 text-xs">
               닫기
             </button>
           </div>

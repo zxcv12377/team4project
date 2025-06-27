@@ -5,8 +5,6 @@ import useMultiPeerConnection from "../../hooks/useMultiPeerConnection";
 import useVoiceChannelSpeaking from "@/hooks/useVoiceChannelSpeaking";
 import { useEffect } from "react";
 
-let stompClient = null;
-
 export default function VoiceChatRoom({ room }) {
   const { user } = useUserContext();
   const { startConnection, stopConnection } = useMultiPeerConnection();

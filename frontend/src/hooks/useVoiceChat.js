@@ -1,10 +1,12 @@
 import * as mediasoupClient from "mediasoup-client";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { io } from "socket.io-client";
 import { socket } from "../lib/socket";
 
 export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
+  const [joined, setJoined] = useState(false);
   // const [volume, setVolume] = useState(0);
+
   const analyserRef = useRef(null);
   const dataArrayRef = useRef(null);
   const speakingRef = useRef(false);
@@ -19,11 +21,13 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
 
   useEffect(() => {
     if (!roomId || !member) return;
+
+    let cancelled = false;
     // 8. 소비자 수신 처리
     const handleNewProducer = async ({ producerId, socketId }) => {
       console.log("새로운 producer 수신:", producerId, socketId);
       const device = deviceRef.current;
-      if (!device) return;
+      if (!device || cancelled) return;
       // 수신용 트랜스포트 요청
       socket.emit("createRecvTransport", (params) => {
         const recvTransport = device.createRecvTransport(params);
@@ -68,31 +72,17 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
               rtpParameters,
             });
             console.log("[A] 🎧 consumer 생성 성공");
-
+            const intervalId = setInterval(() => {
+              console.log(`[${producerId}] currentTime: ${audio.currentTime}, readyState: ${audio.readyState}`);
+            }, 1000);
             const audio = new Audio();
             const stream = new MediaStream([consumer.track]);
             audio.autoplay = true;
             audio.srcObject = stream;
             document.body.appendChild(audio);
             audio.volume = 1.0;
-            audioElementsRef.current[producerId] = audio;
+            audioElementsRef.current[producerId] = { audio, intervalId };
             audio.muted = false; // 오디오 뮤트 자동 해제
-            // console.log("audio volume", audio.volume);
-            // console.log("🔊 consumer 생성됨", consumer);
-            // console.log("🔈 stream 생성됨", stream);
-            // console.log("🔎 audio element state → muted:", audio.muted, "volume:", audio.volume);
-
-            // console.log("[🔍 디버깅 상태]", {
-            //   producerSocketId: socketId,
-            //   consumerId: data.id,
-            //   producerId: data.producerId,
-            //   trackReadyState: consumer.track.readyState,
-            //   recvTransportState: recvTransport.connectionState,
-            //   currentTime: audio.currentTime,
-            //   audioMuted: audio.muted,
-            //   audioReadyState: audio.readyState,
-            // });
-
             audio
               .play()
               .then(() => {
@@ -111,12 +101,13 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
 
             // 오디오 재생 보장용 디버깅 코드
             setTimeout(() => {
-              const storedAudio = audioElementsRef.current[producerId];
+              const storedAudioObj = audioElementsRef.current[producerId];
+              const storedAudio = storedAudioObj?.audio;
               if (storedAudio) {
                 // 오디오가 실제로 재생 가능한 상태인지 검사
                 // 모바일이나 엣지, iOS Safari는 자동 재생 정책 때문에 audio.play()가 초기에 실패할 수 있음
-                console.log("🧪 audio currentTime:", storedAudio.currentTime);
-                console.log("🧪 audio.readyState:", storedAudio.readyState);
+                // console.log("🧪 audio currentTime:", storedAudio.currentTime);
+                // console.log("🧪 audio.readyState:", storedAudio.readyState);
                 storedAudio.play().catch((e) => console.error("🔇 강제재생 실패:", e));
               }
             }, 1000);
@@ -129,10 +120,9 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
     socket.on("newProducer", handleNewProducer);
 
     socketRef.current = socket;
-
     const start = async () => {
       if (!member) return;
-
+      // 1. 채널 입장 서버에 socket 등록
       socket.emit(
         "joinRoom",
         {
@@ -144,6 +134,7 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
           },
         },
         () => {
+          setJoined(true);
           proceedAfterJoin();
         }
       );
@@ -173,7 +164,10 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
             console.log("✅ rtpCapabilities 수신:", rtpCapabilities);
             deviceRef.current = device;
             // 5. 송신 Transport 생성
-            if (sendTransportRef.current) return;
+            if (sendTransportRef.current) {
+              console.warn("🚧 이미 sendTransport 존재함. 중복 방지로 skip");
+              return;
+            }
             socket.emit("createTransport", async (params) => {
               const sendTransport = device.createSendTransport(params);
               sendTransportRef.current = sendTransport;
@@ -218,6 +212,7 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
 
           // 8. 말하기 감지 및 emit
           const checkSpeaking = () => {
+            if (cancelled) return;
             analyser.getByteFrequencyData(dataArray);
             const avg = dataArray.reduce((a, b) => a + b) / dataArray.length;
             const isSpeaking = avg > 15; // 현재 최대 인원수
@@ -243,30 +238,49 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
           console.error("🚫 VoiceChat 오류 발생:", err);
         }
       };
-
-      // 1. 채널 입장 서버에 socket 등록
     };
 
     start();
 
     return () => {
+      console.log("🧹 클린업 실행됨");
+      if (sendTransportRef.current) {
+        sendTransportRef.current.close();
+        console.log("✅ sendTransport.closed:", sendTransportRef.current.closed);
+      }
+      cancelled = true;
+      setJoined(false);
       socket.emit("leaveRoom", roomId);
       socket.off("newProducer", handleNewProducer);
       socket.off("speaking-users");
 
       streamRef.current?.getTracks().forEach((t) => t.stop());
+      streamRef.current = null;
       sendTransportRef.current?.close();
+      sendTransportRef.current = null;
       recvTransportsRef.current.forEach((t) => t.close());
-      Object.values(audioElementsRef.current).forEach((a) => {
-        a.srcObject?.getTracks().forEach((t) => t.stop());
-        a.remove();
-      });
+      recvTransportsRef.current = [];
+      Object.values(audioElementsRef.current).forEach((entry) => {
+        if (!entry) return;
 
-      if (animationIdRef.current) cancelAnimationFrame(animationIdRef.current);
+        const audio = entry.audio || entry;
+        const intervalId = entry.intervalId;
+
+        if (intervalId) clearInterval(intervalId);
+        audio.srcObject?.getTracks().forEach((t) => t.stop());
+        audio.remove?.();
+      });
+      audioElementsRef.current = {};
+
+      if (animationIdRef.current) {
+        cancelAnimationFrame(animationIdRef.current);
+        animationIdRef.current = null;
+      }
+      deviceRef.current = null;
     };
   }, [roomId, member]);
   // return { volume };
-  return {};
+  return { joined };
   // return {
   //   // 수동 사용시 이걸로 바꾸면 됨
   //   startSpeaking: () => socket.emit("speaking", { roomId, memberId: member.memberId, speaking: true }),
