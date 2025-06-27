@@ -93,7 +93,7 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
             <div className="font-bold text-white mb-2">서버 개설</div>
             <input
               type="text"
-              className="p-2 rounded w-56"
+              className="p-2 rounded w-56 text-black"
               placeholder="서버 이름"
               value={serverName}
               onChange={(e) => setServerName(e.target.value)}

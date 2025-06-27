@@ -37,7 +37,7 @@ export default function BoardList() {
   }
 
   if (posts.length === 0) {
-    return <div className="text-center mt-6 text-gray-600">📭 게시글이 없습니다.</div>;
+    return <div className="text-center mt-6 text-gray-600 max-w-3xl mx-auto p-6 pt-10">📭 게시글이 없습니다.</div>;
   }
 
   return (

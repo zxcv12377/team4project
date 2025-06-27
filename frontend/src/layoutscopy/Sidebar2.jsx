@@ -4,7 +4,6 @@ import { useUserContext } from "@/context/UserContext";
 import { useVoiceChat } from "./../hooks/useVoiceChat";
 import VoiceChannelOuter from "../components/voice/VoiceChannelOuter";
 
-
 export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSelectDMRoom, onSelectChannel }) {
   const { user } = useUserContext();
   const currentUserId = user?.id; // ✅ 수정됨
@@ -272,7 +271,7 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
           <div className="bg-zinc-900 p-4 rounded w-80 flex flex-col gap-2">
             <div className="text-white font-bold mb-2">채널 개설</div>
             <input
-              className="p-2 rounded"
+              className="p-2 rounded text-black"
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
               placeholder="채널명"
