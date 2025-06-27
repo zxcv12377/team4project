@@ -152,6 +152,7 @@ function setupSignaling(io, router) {
         for (const [peerId, peer] of peers.entries()) {
           console.log("★★★★★★★ 새 유저 도착 시 한번 더 실행");
           if (peerId !== socket.id) {
+            // ① 나 빼고 다른 사람에게 알려줌
             peer.socket.emit("newProducer", {
               producerId: producer.id,
               socketId: socket.id,
@@ -160,6 +161,7 @@ function setupSignaling(io, router) {
         }
         for (const [peerId, producerMap] of producers.entries()) {
           if (peerId === socket.id) continue;
+          // ② 나한테 다른 사람들의 기존 producer 알려줌
           for (const [existingProducerId] of producerMap.entries()) {
             socket.emit("newProducer", {
               producerId: existingProducerId,
