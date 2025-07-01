@@ -6,11 +6,43 @@ import { useUserContext } from "@/context/UserContext";
 export default function BoardCreate() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const navigate = useNavigate();
+  const [files, setFiles] = useState([]);
+  const [attachments, setAttachments] = useState([]); // 🔥 ImageDTO 배열 저장
 
+  const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
 
+  // 🔁 이미지 선택 시 → 서버 업로드 → 응답 저장
+  const handleFileChange = async (e) => {
+    const selectedFiles = [...e.target.files];
+    setFiles(selectedFiles);
+
+    const uploadedImages = [];
+
+    for (const file of selectedFiles) {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      try {
+        const res = await axios.post("http://localhost:8080/api/images/upload", formData, {
+          headers: {
+            ...headers,
+            "Content-Type": "multipart/form-data",
+          },
+        });
+
+        uploadedImages.push(res.data); // ✅ ImageDTO { originalUrl, thumbnailUrl }
+      } catch (err) {
+        console.error("이미지 업로드 실패:", err);
+        alert("이미지 업로드 중 문제가 발생했습니다.");
+      }
+    }
+
+    setAttachments(uploadedImages); // ✅ BoardDTO.attachmentsJson 용도
+  };
+
+  // 📤 게시글 등록
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -20,7 +52,19 @@ export default function BoardCreate() {
     }
 
     try {
-      await axios.post("http://localhost:8080/api/boards/", { title, content }, { headers });
+      const body = {
+        title,
+        content,
+        attachments: attachments, // ✅ 그대로 보내면 됨 (List<ImageDTO>)
+      };
+
+      await axios.post("http://localhost:8080/api/boards/", body, {
+        headers: {
+          ...headers,
+          "Content-Type": "application/json",
+        },
+      });
+
       alert("게시글이 등록되었습니다.");
       navigate("/boards");
     } catch (error) {
@@ -30,7 +74,7 @@ export default function BoardCreate() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-24 p-6  rounded-lg">
+    <div className="max-w-3xl mx-auto mt-24 p-6 rounded-lg">
       <h2 className="text-2xl font-bold text-blue-700 mb-6">📝 게시글 작성</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
@@ -43,6 +87,7 @@ export default function BoardCreate() {
             placeholder="제목을 입력하세요"
           />
         </div>
+
         <div>
           <label className="block mb-1 text-gray-700 font-medium">내용</label>
           <textarea
@@ -52,6 +97,36 @@ export default function BoardCreate() {
             placeholder="내용을 입력하세요"
           />
         </div>
+
+        <div>
+          <label className="block mb-1 text-gray-700 font-medium">이미지 첨부</label>
+          <input
+            type="file"
+            accept="image/*"
+            multiple
+            onChange={handleFileChange}
+            className="block w-full text-sm text-gray-600"
+          />
+
+          {attachments.length > 0 && (
+            <div className="mt-2 grid grid-cols-3 gap-2">
+              {attachments.map((img, idx) => {
+                const src = img.thumbnailUrl || img.originalUrl || "";
+                const finalSrc = src.startsWith("http") ? src : `http://localhost:8080${src}`;
+
+                return (
+                  <img
+                    key={idx}
+                    src={finalSrc}
+                    alt={`첨부 이미지 ${idx + 1}`}
+                    className="w-full h-24 object-cover rounded"
+                  />
+                );
+              })}
+            </div>
+          )}
+        </div>
+
         <div className="flex justify-end gap-2">
           <button
             type="button"

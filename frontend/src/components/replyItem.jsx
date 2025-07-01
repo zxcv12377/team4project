@@ -5,16 +5,23 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editedText, setEditedText] = useState(reply.text);
-  const currentUser = localStorage.getItem("username");
 
   const handleDelete = async () => {
     if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
+
     try {
       const token = localStorage.getItem("token");
-      await fetch(`/api/replies/${reply.rno}`, {
+      const res = await fetch(`/api/replies/${reply.rno}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
       });
+
+      if (!res.ok) {
+        const msg = await res.text();
+        alert("삭제 실패: " + msg);
+        return;
+      }
+
       refresh();
     } catch {
       alert("서버 오류");
@@ -24,7 +31,7 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
   const handleEditSubmit = async () => {
     try {
       const token = localStorage.getItem("token");
-      await fetch(`/api/replies/${reply.rno}`, {
+      const res = await fetch(`/api/replies/${reply.rno}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -32,6 +39,13 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
         },
         body: JSON.stringify({ text: editedText }),
       });
+
+      if (!res.ok) {
+        const msg = await res.text();
+        alert("수정 실패: " + msg);
+        return;
+      }
+
       setEditing(false);
       refresh();
     } catch {
@@ -76,11 +90,16 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
           </div>
           <div className="mt-1 text-gray-800" dangerouslySetInnerHTML={{ __html: reply.text }} />
           <div className="flex justify-between items-center mt-2">
-            <button onClick={() => setShowReplyForm(!showReplyForm)} className="text-xs text-indigo-500 hover:underline">
+            <button
+              onClick={() => setShowReplyForm(!showReplyForm)}
+              className="text-xs text-indigo-500 hover:underline"
+            >
               답글 달기
             </button>
-            {reply.nickname === currentUser && !editing && (
-              <div className="flex gap-2 text-xs">
+
+            {!editing && (
+              <div className="flex gap-2 text-xs mt-2">
+                {/* ✅ 항상 표시됨 */}
                 <button onClick={() => setEditing(true)} className="text-green-600 hover:underline">
                   수정
                 </button>
@@ -90,10 +109,22 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
               </div>
             )}
           </div>
-          {showReplyForm && <ReplyForm bno={bno} parentRno={reply.rno} onSubmit={refresh} />}
-          {reply.children && reply.children.map((child) => (
-            <ReplyItem key={child.rno} reply={child} bno={bno} refresh={refresh} depth={depth + 1} />
-          ))}
+
+          {showReplyForm && (
+            <ReplyForm
+              bno={bno}
+              parentRno={reply.rno}
+              onSubmit={() => {
+                refresh();
+                setShowReplyForm(false);
+              }}
+            />
+          )}
+
+          {reply.children &&
+            reply.children.map((child) => (
+              <ReplyItem key={child.rno} reply={child} bno={bno} refresh={refresh} depth={depth + 1} />
+            ))}
         </>
       )}
     </div>

@@ -21,7 +21,7 @@ public class Base {
     private LocalDateTime createdDate;
 
     @LastModifiedDate
-    @Column(name = "updatedDate")
+    @Column(name = "updatedDate", insertable = false)
     private LocalDateTime updatedDate;
 
 }

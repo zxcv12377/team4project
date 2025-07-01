@@ -25,8 +25,8 @@ import lombok.ToString;
 @Table(name = "BOARD")
 @Builder
 @NoArgsConstructor
-@ToString(exclude = { "member", "replies" })
 @AllArgsConstructor
+@ToString(exclude = { "member", "replies" })
 @Entity
 public class Board extends Base {
 
@@ -34,9 +34,9 @@ public class Board extends Base {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bno;
 
-    private String title; // 게시글 제목
+    @Column(nullable = false)
+    private String title;
 
-    // 게시글 내용(최대 2000자 저장 가능)
     @Column(length = 2000)
     private String content;
 
@@ -47,10 +47,10 @@ public class Board extends Base {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    // 선택: 양방향 설정
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Reply> replies;
 
+    // 수정 메서드
     public void changeTitle(String title) {
         this.title = title;
     }
@@ -59,12 +59,7 @@ public class Board extends Base {
         this.content = content;
     }
 
-    public String getWriterName() {
-        return member != null ? member.getNickname() : null;
+    public void changeAttachments(String attachmentsJson) {
+        this.attachmentsJson = attachmentsJson;
     }
-
-    public String getWriterUsername() {
-        return member != null ? member.getEmail() : null;
-    }
-
 }
