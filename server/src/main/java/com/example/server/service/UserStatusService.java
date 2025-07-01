@@ -1,5 +1,6 @@
 package com.example.server.service;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,7 +11,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
+import com.example.server.dto.StatusChangeEvent;
 import com.example.server.entity.FriendStatus;
+import com.example.server.entity.enums.UserStatus;
 import com.example.server.messaging.EventPublisher;
 import com.example.server.repository.FriendRepository;
 import com.example.server.repository.MemberRepository;
@@ -33,36 +36,33 @@ public class UserStatusService {
     public void markOnline(String email, String sessionId) {
         String sessionKey = "user:" + email + ":sessions";
 
-        Set<String> oldSessions = redisTemplate.opsForSet().members(sessionKey);
-        if (oldSessions != null) {
-            for (String oldSession : oldSessions) {
-                redisTemplate.opsForSet().remove(sessionKey, oldSession);
-                log.info("♻️ 재연결: 이전 세션 {} 제거됨", oldSession);
-            }
+        // ✅ 기존 세션 정리
+        Set<String> existingSessions = redisTemplate.opsForSet().members(sessionKey);
+        if (existingSessions != null && !existingSessions.isEmpty()) {
+            redisTemplate.opsForSet().remove(sessionKey, existingSessions.toArray());
+            log.info("♻️ 기존 세션 제거: user={}, removedSessions={}", email, existingSessions);
         }
 
+        // ✅ 새로운 세션 등록
         redisTemplate.opsForSet().add(sessionKey, sessionId);
         redisTemplate.opsForSet().add("online_users", email);
-        log.info("✅ 최종 세션 등록: user={}, sessionId={}", email, sessionId);
+        log.info("✅ 세션 등록 완료: user={}, sessionId={}", email, sessionId);
 
-        if (oldSessions == null || oldSessions.isEmpty()) {
-            eventPublisher.publishOnline(email);
+        // ✅ Redis PubSub 브로드캐스트
+        eventPublisher.publishOnline(email);
 
-            List<String> friends = getFriendemails(email);
-            for (String friend : friends) {
-                log.info("📡 친구 [{}] 에게 ONLINE 알림 전송", friend);
-                messagingTemplate.convertAndSendToUser(friend, "/queue/status",
-                        Map.of("email", email, "status", "ONLINE"));
-            }
+        // ✅ 전체 구독자용 브로드캐스트 (필요 시)
+        messagingTemplate.convertAndSend("/topic/online-users",
+                new StatusChangeEvent(email, UserStatus.ONLINE));
 
-            // ✅ 친구들한테 알릴 뿐만 아니라, **내가 친구들에게도** 그들의 현재 온라인상태 알려주기
-            for (String friend : friends) {
-                Boolean isFriendOnline = redisTemplate.opsForSet().isMember("online_users", friend);
-                if (Boolean.TRUE.equals(isFriendOnline)) {
-                    messagingTemplate.convertAndSendToUser(email, "/queue/status",
-                            Map.of("email", friend, "status", "ONLINE"));
-                }
-            }
+        // ✅ 친구 목록 (내가 친구 추가한 사람 + 나를 친구로 추가한 사람 = 양방향 모두 포함)
+        List<String> notifyTargets = friendRepository.findAllFriendEmailsForNotify(email);
+
+        // ✅ 친구들에게 실시간 알림 전송
+        for (String friendEmail : notifyTargets) {
+            log.info("📡 ONLINE 상태 전송 → 대상: {}, 변경된 유저: {}", friendEmail, email);
+            messagingTemplate.convertAndSendToUser(friendEmail, "/queue/status",
+                    Map.of("email", email, "status", "ONLINE"));
         }
     }
 
@@ -77,7 +77,8 @@ public class UserStatusService {
             redisTemplate.delete(sessionsKey);
             redisTemplate.opsForSet().remove("online_users", email);
             eventPublisher.publishOffline(email);
-
+            messagingTemplate.convertAndSend("/topic/online-users",
+                    new StatusChangeEvent(email, UserStatus.OFFLINE));
             List<String> friends = getFriendemails(email);
             for (String friend : friends) {
                 log.info("📡 친구 [{}] 에게 OFFLINE 알림 전송", friend);
@@ -96,9 +97,6 @@ public class UserStatusService {
         Set<String> online = redisTemplate.opsForSet().members("online_users");
         log.info("✅ 현재 Redis online_users 값: {}", online);
 
-        if (online == null || online.isEmpty()) {
-            return List.of();
-        }
         return allFriends.stream().filter(online::contains).collect(Collectors.toList());
     }
 

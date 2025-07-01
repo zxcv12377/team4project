@@ -44,6 +44,6 @@ public class BoardDTO {
     private Long replyCount;
 
     // 프론트에 넘겨줄 이미지 리스트
-    private List<String> attachments;
+    private List<ImageDTO> attachments;
 
 }
