@@ -1,7 +1,7 @@
 package com.example.server.dto;
 
 import com.example.server.entity.ChatRoom;
-import com.example.server.entity.ChatRoomType;
+import com.example.server.entity.enums.ChatRoomType;
 
 import lombok.Builder;
 import lombok.Data;

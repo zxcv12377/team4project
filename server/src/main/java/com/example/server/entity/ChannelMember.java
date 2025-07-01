@@ -1,5 +1,7 @@
 package com.example.server.entity;
 
+import com.example.server.entity.enums.ChannelRole;
+
 import jakarta.persistence.*;
 import lombok.*;
 

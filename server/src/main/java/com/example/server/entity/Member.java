@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Set;
 
 import com.example.server.base.Base;
+import com.example.server.entity.enums.MemberRole;
+
 import jakarta.persistence.CollectionTable;
 import jakarta.persistence.Column;
 import jakarta.persistence.ElementCollection;
@@ -18,6 +20,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -33,6 +36,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @ToString
 @Entity
+@Table(name = "member")
 public class Member extends Base {
 
     @Id

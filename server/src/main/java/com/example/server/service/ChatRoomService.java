@@ -2,11 +2,11 @@ package com.example.server.service;
 
 import com.example.server.dto.ChatRoomResponseDTO;
 import com.example.server.entity.ChannelMember;
-import com.example.server.entity.ChannelRole;
-import com.example.server.entity.ChannelType;
 import com.example.server.entity.ChatRoom;
-import com.example.server.entity.ChatRoomType;
 import com.example.server.entity.Server;
+import com.example.server.entity.enums.ChannelRole;
+import com.example.server.entity.enums.ChannelType;
+import com.example.server.entity.enums.ChatRoomType;
 import com.example.server.repository.ChannelMemberRepository;
 import com.example.server.repository.ChatMessageRepository;
 import com.example.server.repository.ChatRoomRepository;

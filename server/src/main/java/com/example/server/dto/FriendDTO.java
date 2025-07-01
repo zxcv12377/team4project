@@ -3,8 +3,8 @@ package com.example.server.dto;
 import java.time.LocalDateTime;
 
 import com.example.server.entity.Friend;
-import com.example.server.entity.FriendStatus;
 import com.example.server.entity.Member;
+import com.example.server.entity.enums.FriendStatus;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+import com.example.server.entity.enums.FriendStatus;
+
 @Entity
 @Getter
 @Setter

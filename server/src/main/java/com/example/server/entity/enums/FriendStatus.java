@@ -1,4 +1,4 @@
-package com.example.server.entity;
+package com.example.server.entity.enums;
 
 public enum FriendStatus {
 

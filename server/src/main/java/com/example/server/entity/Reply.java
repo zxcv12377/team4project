@@ -1,5 +1,8 @@
 package com.example.server.entity;
 
+import jakarta.annotation.PostConstruct;
+import jakarta.persistence.*;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +30,7 @@ import lombok.ToString;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-@Table(name = "reply")
+@Table(name = "REPLY")
 @ToString(exclude = { "board", "parent", "member" })
 
 public class Reply extends Base {
@@ -36,17 +39,18 @@ public class Reply extends Base {
     private Long rno;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "board_bno")
+    @JoinColumn(name = "board_bno", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Board board;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "parent_rno")
+    @JoinColumn(name = "parent_rno", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Reply parent;
 
     @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Member member;
 
-    @Column(nullable = false, columnDefinition = "TEXT")
+    @Column(nullable = false)
     private String text;
 
     @Column(nullable = true)
@@ -69,4 +73,10 @@ public class Reply extends Base {
     public void updateText(String newText) {
         this.text = newText;
     }
+
+    @PostConstruct
+    public void init() {
+        System.out.println("✅ Reply entity loaded");
+    }
+
 }

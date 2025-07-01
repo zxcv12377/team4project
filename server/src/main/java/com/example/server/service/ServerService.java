@@ -7,7 +7,7 @@ import com.example.server.entity.Server;
 import com.example.server.entity.ChatRoom;
 import com.example.server.entity.Member;
 import com.example.server.entity.ServerMember;
-import com.example.server.entity.ServerRole;
+import com.example.server.entity.enums.ServerRole;
 import com.example.server.repository.ServerRepository;
 import com.example.server.repository.ServerMemberRepository;
 import com.example.server.repository.ChatRoomRepository;

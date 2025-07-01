@@ -1,6 +1,6 @@
 package com.example.server.dto;
 
-import com.example.server.entity.ChannelType;
+import com.example.server.entity.enums.ChannelType;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
