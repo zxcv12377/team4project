@@ -44,11 +44,18 @@ public class BoardService {
     // 이미지 첨부 → JSON 문자열로 변환 (ImageDTO)
     private String toJson(List<ImageDTO> list) {
         try {
-            return list == null ? null : objectMapper.writeValueAsString(list);
-        } catch (JsonProcessingException e) {
+            return objectMapper.writeValueAsString(list);
+        } catch (Exception e) {
             throw new RuntimeException("JSON 직렬화 실패", e);
         }
     }
+    // private String toJson(List<ImageDTO> list) {
+    // try {
+    // return list == null ? null : objectMapper.writeValueAsString(list);
+    // } catch (JsonProcessingException e) {
+    // throw new RuntimeException("JSON 직렬화 실패", e);
+    // }
+    // }
 
     // JSON 문자열 → 이미지 첨부 리스트 (ImageDTO)
     private List<ImageDTO> fromJson(String json) {
