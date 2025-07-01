@@ -7,12 +7,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import com.example.server.entity.enums.ChannelType;
+import com.example.server.entity.enums.ChatRoomType;
+
 @Entity
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Table(name = "chat_room")
 public class ChatRoom {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "chatroom_seq_gen")

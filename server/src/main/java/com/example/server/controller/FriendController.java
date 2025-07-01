@@ -1,7 +1,7 @@
 package com.example.server.controller;
 
 import com.example.server.entity.Friend;
-import com.example.server.entity.FriendStatus;
+import com.example.server.entity.enums.FriendStatus;
 import com.example.server.security.CustomMemberDetails;
 import com.example.server.service.FriendService;
 import com.example.server.service.UserStatusService;

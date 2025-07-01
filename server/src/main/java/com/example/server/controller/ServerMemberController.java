@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.server.dto.ServerMemberResponseDTO;
-import com.example.server.entity.ServerRole;
+import com.example.server.entity.enums.ServerRole;
 import com.example.server.service.ServerMemberService;
 
 import lombok.RequiredArgsConstructor;

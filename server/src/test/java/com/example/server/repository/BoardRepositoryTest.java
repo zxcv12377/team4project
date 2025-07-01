@@ -15,9 +15,9 @@ import org.springframework.test.annotation.Commit;
 
 import com.example.server.entity.Board;
 import com.example.server.entity.Member;
-import com.example.server.entity.MemberRole;
 import com.example.server.entity.Reply;
 import com.example.server.entity.ReplyLike;
+import com.example.server.entity.enums.MemberRole;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

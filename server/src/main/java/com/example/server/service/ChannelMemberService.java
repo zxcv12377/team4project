@@ -6,9 +6,9 @@ import org.springframework.stereotype.Service;
 
 import com.example.server.dto.ChannelMemberResponseDTO;
 import com.example.server.entity.ChannelMember;
-import com.example.server.entity.ChannelRole;
 import com.example.server.entity.ChatRoom;
 import com.example.server.entity.Member;
+import com.example.server.entity.enums.ChannelRole;
 import com.example.server.repository.ChannelMemberRepository;
 import com.example.server.repository.ChatRoomRepository;
 import com.example.server.repository.MemberRepository;

@@ -2,7 +2,7 @@ package com.example.server.repository;
 
 import com.example.server.entity.Server;
 import com.example.server.entity.ServerMember;
-import com.example.server.entity.ServerRole;
+import com.example.server.entity.enums.ServerRole;
 
 import java.util.List;
 import java.util.Optional;

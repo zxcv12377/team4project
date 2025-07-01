@@ -9,7 +9,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.example.server.entity.Member;
-import com.example.server.entity.MemberRole;
+import com.example.server.entity.enums.MemberRole;
 
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 

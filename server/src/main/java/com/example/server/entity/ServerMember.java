@@ -1,5 +1,7 @@
 package com.example.server.entity;
 
+import com.example.server.entity.enums.ServerRole;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

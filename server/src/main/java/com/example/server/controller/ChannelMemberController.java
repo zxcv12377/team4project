@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.server.dto.ChannelMemberResponseDTO;
 import com.example.server.entity.ChannelMember;
-import com.example.server.entity.ChannelRole;
 import com.example.server.entity.ChatRoom;
 import com.example.server.entity.Member;
+import com.example.server.entity.enums.ChannelRole;
 import com.example.server.security.CustomMemberDetails;
 import com.example.server.service.ChannelMemberService;
 import com.example.server.service.VoiceChatLogService;
