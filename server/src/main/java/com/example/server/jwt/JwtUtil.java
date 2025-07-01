@@ -1,7 +1,6 @@
 package com.example.server.jwt;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -20,7 +19,6 @@ import com.example.server.security.CustomMemberDetailsService;
 import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.time.Duration;
-import java.util.Base64;
 import java.util.Date;
 
 @Log4j2
