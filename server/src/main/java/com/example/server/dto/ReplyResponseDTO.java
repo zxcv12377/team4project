@@ -28,4 +28,6 @@ public class ReplyResponseDTO {
 
     private String badge; // 작성자, 관리자, null
 
+    private Long writerId;
+
 }

@@ -183,6 +183,7 @@ public class ReplyService {
                                 .rno(reply.getRno())
                                 .text(reply.getText())
                                 .nickname(reply.getMember().getNickname())
+                                .writerId(reply.getMember().getId())
                                 .badge(badge)
                                 .createdDate(reply.getCreatedDate())
                                 .deleted(reply.isDeleted())
