@@ -1,29 +1,27 @@
 import * as mediasoupClient from "mediasoup-client";
 import { useEffect, useRef, useState } from "react";
-import { io } from "socket.io-client";
 import { socket } from "../lib/socket";
 
 export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
   const [joined, setJoined] = useState(false);
-  // const [volume, setVolume] = useState(0);
 
   const analyserRef = useRef(null);
   const dataArrayRef = useRef(null);
   const speakingRef = useRef(false);
   const animationIdRef = useRef(null);
   const streamRef = useRef(null);
-  const socketRef = useRef(null);
   const deviceRef = useRef(null);
   const sendTransportRef = useRef(null);
   const recvTransportsRef = useRef([]);
   const audioElementsRef = useRef({});
-  // const audioContextRef = useRef(null);
+
+  const TRANSPORT_TIMEOUT = import.meta.env?.VITE_TRANSPORT_TIMEOUT ?? 3000; // fallback 시간
 
   useEffect(() => {
     if (!roomId || !member) return;
 
     let cancelled = false;
-    // 8. 소비자 수신 처리
+    // 8. 다른 사람의 오디오 수신 준비
     const handleNewProducer = async ({ producerId, socketId }) => {
       console.log("새로운 producer 수신:", producerId, socketId);
       const device = deviceRef.current;
@@ -33,13 +31,18 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
         const recvTransport = device.createRecvTransport(params);
 
         recvTransport.on("connect", ({ dtlsParameters }, callback, errback) => {
+          let settled = false; // 중복 호출 방지용
+
           console.log("[A] 🟢 recvTransport connect 시작");
           socket.emit("connectRecvTransport", {
             dtlsParameters,
             transportId: recvTransport.id,
           });
-          // ack 응답 기다리고 처리
+          // ack 응답 콜백(callback acknowledgment) 기다리고 처리
           socket.once("connectRecvTransportDone", (status) => {
+            if (settled) return;
+            settled = true;
+
             console.log("[A] ✅ connectRecvTransportDone:", status);
             if (status === "ok") {
               callback();
@@ -48,6 +51,13 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
               errback();
             }
           });
+          // 응답 타임아웃 처리 (3초)
+          setTimeout(() => {
+            if (settled) return;
+            settled = true;
+            console.warn("connectRecvTransport 응답 없음 - fallback errback 실행");
+            errback(new Error("connectRecvTransport timeout"));
+          }, TRANSPORT_TIMEOUT);
         });
 
         // consume 요청
@@ -72,31 +82,33 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
               rtpParameters,
             });
             console.log("[A] 🎧 consumer 생성 성공");
-            const intervalId = setInterval(() => {
-              console.log(`[${producerId}] currentTime: ${audio.currentTime}, readyState: ${audio.readyState}`);
-            }, 1000);
+
             const audio = new Audio();
             const stream = new MediaStream([consumer.track]);
             audio.autoplay = true;
             audio.srcObject = stream;
-            document.body.appendChild(audio);
             audio.volume = 1.0;
-            audioElementsRef.current[producerId] = { audio, intervalId };
             audio.muted = false; // 오디오 뮤트 자동 해제
+            document.body.appendChild(audio);
+            audioElementsRef.current[producerId] = {
+              audio,
+              intervalId: setInterval(() => {
+                console.log(`[${producerId}] currentTime: ${audio.currentTime}, readyState: ${audio.readyState}`);
+              }, 1000),
+            };
             audio
               .play()
               .then(() => {
                 console.log("✅ 오디오 재생 시작됨");
-                setTimeout(() => {
-                  // audio.muted = true; // 오디오 뮤트 자동 해제
-                }, 1000);
-                // ✅ 디버깅용 readyState / currentTime 체크
-                setInterval(() => {
-                  console.log(`[${producerId}] currentTime: ${audio.currentTime}, readyState: ${audio.readyState}`);
-                }, 1000);
               })
               .catch((err) => {
-                console.error("🔇 오디오 재생 실패", err);
+                console.warn("🔇 오디오 재생 실패 -> 재시도 ", err);
+                setTimeout(() => {
+                  audio
+                    .play()
+                    .then(() => console.log("✅ 강제 재생 성공"))
+                    .catch((e) => console.log("🔇 오디오 강제 재생 실패", e));
+                }, 500);
               });
 
             // 오디오 재생 보장용 디버깅 코드
@@ -119,10 +131,10 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
 
     socket.on("newProducer", handleNewProducer);
 
-    socketRef.current = socket;
+    // socketRef.current = socket;
     const start = async () => {
       if (!member) return;
-      // 1. 채널 입장 서버에 socket 등록
+      // 1. 채널 입장 / 서버에 socket 등록
       socket.emit(
         "joinRoom",
         {
@@ -157,7 +169,7 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
           analyserRef.current = analyser;
           dataArrayRef.current = dataArray;
 
-          // 4. RTP Capabilities 요청 → device 생성
+          // 4. RTP Capabilities 요청 -> device 생성
           socket.emit("getRtpCapabilities", null, async (rtpCapabilities) => {
             const device = new mediasoupClient.Device();
             await device.load({ routerRtpCapabilities: rtpCapabilities });

@@ -2,13 +2,13 @@ import { Client } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 
 let voiceStompClient = null;
-
-export const connectStomp = (onMessage, onConnectCallback) => {
+// 현재는 사용되지 않고 있음
+export const connectStomp = (onConnectCallback) => {
   const token = localStorage.getItem("token");
   const socket = new SockJS(`http://localhost:8080/ws-voice?token=${token}`);
   voiceStompClient = new Client({
     webSocketFactory: () => socket,
-    // reconnectDelay: 5000,
+    reconnectDelay: 5000,
     onConnect: () => {
       voiceStompClient.publish({
         destination: "/app/auth",
@@ -63,9 +63,9 @@ export const sendSignaling = (type, roomId, payload) => {
   });
 };
 
-export const disconnectStomp = () => {
+export const disconnectStomp = async () => {
   if (voiceStompClient) {
-    voiceStompClient.deactivate();
+    await voiceStompClient.deactivate();
     voiceStompClient = null;
   }
 };

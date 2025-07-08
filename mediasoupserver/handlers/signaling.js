@@ -11,7 +11,7 @@ const consumers = new Map(); // socketId -> consumer
 const consumerTransports = new Map(); // socketId -> recvTransport
 const speakingState = new Map(); // roomId -> Map<memberId, { memberId, speaking }>
 
-// 사용자가 방을 나갈 시 호출
+// 사용자가 방을 나갈 시 호출 (인원 카운트시에도 필요)
 function leaveVoiceRoom(io, socket) {
   for (const [roomId, userMap] of voiceRoomParticipants.entries()) {
     if (userMap.has(socket.id)) {
@@ -48,7 +48,7 @@ function setupSignaling(io, router) {
   io.on("connection", (socket) => {
     peers.set(socket.id, { socket });
 
-    // 말하기 상태 전송
+    // 말하기 상태 전송 (후에 말할때마다 포인트를 주는 기능을 할 때 사용)
     socket.on("speaking", ({ roomId, memberId, speaking }) => {
       if (!roomId || !memberId) return;
 
@@ -82,7 +82,7 @@ function setupSignaling(io, router) {
       console.log("� 현재 producers 목록:");
       for (const [peerId, producerMap] of producers.entries()) {
         if (peerId === socket.id) continue;
-        for (const [producerId, producer] of producerMap.entries()) {
+        for (const [producerId] of producerMap.entries()) {
           console.log(`→ producerId: ${producerId}, peerId: ${peerId}`);
           socket.emit("newProducer", {
             producerId,
@@ -127,10 +127,6 @@ function setupSignaling(io, router) {
     // 송신용 트랜스 포트 연결 요청
     socket.on("connectTransport", async ({ dtlsParameters }, callback) => {
       const transport = transports.get(socket.id);
-      // if (transport._connected) {
-      //   console.warn("이미 연결된 Transport입니다");
-      //   return;
-      // }
       if (transport) await transport.connect({ dtlsParameters });
       if (typeof callback === "function") {
         callback("ok");
@@ -169,6 +165,8 @@ function setupSignaling(io, router) {
             });
           }
         }
+        // 실시간 환경에서는 비동기 순서가 꼬이는 경우도 있어 그것을 방지하기 위해 joinroom 과 같은
+        // 코드를 만들어 놓음
         for (const [peerId, producerMap] of producers.entries()) {
           if (peerId === socket.id) continue;
           // 나한테 다른 사람들의 기존 producer 알려줌
@@ -227,7 +225,7 @@ function setupSignaling(io, router) {
       const consumerTransport = consumerTransports.get(socket.id);
       const producerMap = producers.get(producerSocketId);
       const producer = producerMap?.get(producerId);
-      // const transport = transports.get(socket.id);
+
       if (!producerMap) {
         console.warn(`[consume] ❌ producerMap 없음: socketId=${producerSocketId}`);
         return callback({ error: "❌ producerMap not found" });
@@ -237,7 +235,6 @@ function setupSignaling(io, router) {
       }
       if (!consumerTransport) return callback({ error: "❌ Transport를 찾을 수 없음" });
 
-      // const roomId = findUserRoom(socket.id);
       let roomId = null;
 
       for (const [rid, socketMap] of voiceRoomParticipants.entries()) {
@@ -276,6 +273,7 @@ function setupSignaling(io, router) {
     process.on("uncaughtException", (err) => {
       console.error("Uncaught Exception:", err);
       // 서버 죽이지 않고 로깅만
+      // 새로고침 시 서버가 죽는 현상 때문에 작성한 코드
     });
 
     // 연결 종료 처리
