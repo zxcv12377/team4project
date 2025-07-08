@@ -76,7 +76,7 @@ export default function LoginForm({ onSwitchToRegister }) {
           </a>
           <span className="mx-2">|</span>
           <a
-            href="#"
+            href="/register"
             onClick={(e) => {
               e.preventDefault();
               onSwitchToRegister?.();

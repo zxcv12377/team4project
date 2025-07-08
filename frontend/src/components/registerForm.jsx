@@ -121,7 +121,7 @@ function RegisterForm({ onSwitchToLogin }) {
           </a>
           <span className="mx-2">|</span>
           <a
-            href="#"
+            href="/login"
             onClick={(e) => {
               e.preventDefault();
               onSwitchToLogin?.();

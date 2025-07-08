@@ -20,7 +20,7 @@ CustomMemberDetailsService : 사용자 조회 로직 담당
     JWT 검증 후 사용자 인증을 위해 loadUserByUsername()
     DB에서 해당 사용자(Member) 정보를 찾아 CustomMemberDetails 객체로 포장해서 반환
 
-AuthenticationManager : spring의 사용자 인증 기능 인증이 맞으면 authenticate()반환,
+AuthenticationManager : spring의 사용자 인증 기능. 인증이 맞으면 authenticate()반환,
                         틀리면 authenticationexception() 반환
 
 <로그인 흐름>
