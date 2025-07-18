@@ -6,7 +6,7 @@ export default function ReplyForm({ bno, parentRno = null, onSubmit }) {
   const [content, setContent] = useState("");
   const [isFocused, setIsFocused] = useState(false);
   const fileInputRef = useRef();
-
+  const textareaRef = useRef(); // 커서 위치 추적용 ref
   const token = localStorage.getItem("token");
   const showButton = isFocused || content.length > 0;
 
@@ -51,12 +51,19 @@ export default function ReplyForm({ bno, parentRno = null, onSubmit }) {
   };
 
   const insertAtCursor = (text) => {
-    const textarea = document.querySelector("textarea");
+    const textarea = textareaRef.current;
     if (!textarea) return;
+
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
+
     const newText = content.slice(0, start) + text + content.slice(end);
     setContent(newText);
+    //이모지 삽입 후 커서 이동
+    setTimeout(() => {
+      textarea.focus();
+      textarea.selectionStart = textarea.selectionEnd = start + text.length;
+    }, 0);
   };
 
   const handleImageUpload = async (e) => {
@@ -80,6 +87,7 @@ export default function ReplyForm({ bno, parentRno = null, onSubmit }) {
 
       <div className="relative mb-4">
         <textarea
+          ref={textareaRef} // ref 연결
           value={content}
           onChange={(e) => setContent(e.target.value)}
           placeholder="댓글을 입력하세요"
