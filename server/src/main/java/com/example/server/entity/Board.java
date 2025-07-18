@@ -12,6 +12,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
+import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -37,10 +38,10 @@ public class Board extends Base {
     @Column(nullable = false)
     private String title;
 
-    @Column(length = 2000)
+    @Column(length = 32767)
     private String content;
 
-    @Column(name = "attachments_json")
+    @Column(name = "attachments_json", length = 3000)
     private String attachmentsJson;
 
     @ManyToOne(fetch = FetchType.LAZY)

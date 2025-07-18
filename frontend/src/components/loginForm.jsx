@@ -17,11 +17,17 @@ export default function LoginForm({ onSwitchToRegister }) {
         password,
       });
       const token = response.data.token;
+
       localStorage.setItem("token", token);
       console.log("LoginForm Token : ", token);
 
       const userRes = await axiosInstance.get("members/me");
+
+      //사용자 정보 localStorage에도 저장
+      localStorage.setItem("user", JSON.stringify(userRes.data));
+
       setUser({ ...userRes.data, token });
+
       window.location.reload();
       navigate("/boards");
     } catch (err) {
@@ -39,7 +45,7 @@ export default function LoginForm({ onSwitchToRegister }) {
         className="absolute inset-0 w-full h-full z-0 pointer-events-none"
       />
 
-      {/* 2. 폼은 고정 너비로 가운데 배치 */}
+      {/* 2. 로그인 폼 / 폼은 고정 너비로 가운데 배치 */}
       <form
         onSubmit={handleSubmit}
         className="absolute left-1/2 top-1/2 z-10 flex flex-col items-center space-y-4 px-6"

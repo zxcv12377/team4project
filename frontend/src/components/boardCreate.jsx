@@ -39,10 +39,22 @@ export default function BoardCreate() {
       }
     }
 
-    setAttachments(uploadedImages); // ✅ BoardDTO.attachmentsJson 용도
+    // ✅ 기존 이미지에 새 이미지 추가
+    setAttachments((prev) => [...prev, ...uploadedImages]);
+    e.target.value = null; // 💡 같은 이미지 다시 선택 가능하게 초기화
   };
 
-  // 📤 게시글 등록
+  // 💡 개별 이미지 삭제
+  const handleRemoveImage = (indexToRemove) => {
+    setAttachments((prev) => prev.filter((_, idx) => idx !== indexToRemove));
+  };
+
+  // 💡 전체 이미지 삭제
+  const handleClearImages = () => {
+    setAttachments([]);
+  };
+
+  //  게시글 등록
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -97,7 +109,7 @@ export default function BoardCreate() {
             placeholder="내용을 입력하세요"
           />
         </div>
-
+        {/* ✅ 이미지 업로드 영역 */}
         <div>
           <label className="block mb-1 text-gray-700 font-medium">이미지 첨부</label>
           <input
@@ -108,22 +120,34 @@ export default function BoardCreate() {
             className="block w-full text-sm text-gray-600"
           />
 
+          {/* ✅ 이미지 미리보기 + 삭제 버튼 */}
           {attachments.length > 0 && (
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {attachments.map((img, idx) => {
-                const src = img.thumbnailUrl || img.originalUrl || "";
-                const finalSrc = src.startsWith("http") ? src : `http://localhost:8080${src}`;
+            <>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {attachments.map((img, idx) => {
+                  const src = img.thumbnailUrl || img.originalUrl || "";
+                  const finalSrc = src.startsWith("http") ? src : `http://localhost:8080${src}`;
 
-                return (
-                  <img
-                    key={idx}
-                    src={finalSrc}
-                    alt={`첨부 이미지 ${idx + 1}`}
-                    className="w-full h-24 object-cover rounded"
-                  />
-                );
-              })}
-            </div>
+                  return (
+                    <div key={idx} className="relative group">
+                      <img src={finalSrc} alt={`첨부 이미지 ${idx + 1}`} className="w-full h-24 object-cover rounded" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(idx)} // 💡 삭제 핸들러
+                        className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded opacity-80 hover:opacity-100"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 💡 전체 삭제 버튼 */}
+              <button type="button" onClick={handleClearImages} className="mt-2 text-sm text-red-500 underline">
+                전체 이미지 삭제
+              </button>
+            </>
           )}
         </div>
 
