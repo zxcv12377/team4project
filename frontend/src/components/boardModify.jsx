@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import ImageUploader from "@/components/ImageUploader";
 
 export default function BoardModify() {
   const [title, setTitle] = useState("");
