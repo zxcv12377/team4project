@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useUserContext } from "@/context/UserContext";
+import ImageUploader from "@/components/ImageUploader"; // ✅ 추가
 
 export default function BoardCreate() {
   const [title, setTitle] = useState("");
@@ -12,37 +13,6 @@ export default function BoardCreate() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
-
-  // 🔁 이미지 선택 시 → 서버 업로드 → 응답 저장
-  const handleFileChange = async (e) => {
-    const selectedFiles = [...e.target.files];
-    setFiles(selectedFiles);
-
-    const uploadedImages = [];
-
-    for (const file of selectedFiles) {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      try {
-        const res = await axios.post("http://localhost:8080/api/images/upload", formData, {
-          headers: {
-            ...headers,
-            "Content-Type": "multipart/form-data",
-          },
-        });
-
-        uploadedImages.push(res.data); // ✅ ImageDTO { originalUrl, thumbnailUrl }
-      } catch (err) {
-        console.error("이미지 업로드 실패:", err);
-        alert("이미지 업로드 중 문제가 발생했습니다.");
-      }
-    }
-
-    // ✅ 기존 이미지에 새 이미지 추가
-    setAttachments((prev) => [...prev, ...uploadedImages]);
-    e.target.value = null; // 💡 같은 이미지 다시 선택 가능하게 초기화
-  };
 
   // 💡 개별 이미지 삭제
   const handleRemoveImage = (indexToRemove) => {
@@ -67,7 +37,7 @@ export default function BoardCreate() {
       const body = {
         title,
         content,
-        attachments: attachments, // ✅ 그대로 보내면 됨 (List<ImageDTO>)
+        attachments: attachments, // 그대로 보내면 됨 (List<ImageDTO>)
       };
 
       await axios.post("http://localhost:8080/api/boards/", body, {
@@ -112,13 +82,7 @@ export default function BoardCreate() {
         {/* ✅ 이미지 업로드 영역 */}
         <div>
           <label className="block mb-1 text-gray-700 font-medium">이미지 첨부</label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileChange}
-            className="block w-full text-sm text-gray-600"
-          />
+          <ImageUploader onImagesUploaded={(images) => setAttachments((prev) => [...prev, ...images])} />
 
           {/* ✅ 이미지 미리보기 + 삭제 버튼 */}
           {attachments.length > 0 && (

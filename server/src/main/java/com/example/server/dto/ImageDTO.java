@@ -5,8 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
-@AllArgsConstructor
-@NoArgsConstructor
+@AllArgsConstructor // 원본 + 썸네일이 분리된 경우에 사용
+@NoArgsConstructor // Jackson 직렬화/역직렬화에 필요 (JSON ↔ DTO 자동 매핑용)
 public class ImageDTO {
     private String originalUrl;
     private String thumbnailUrl;
