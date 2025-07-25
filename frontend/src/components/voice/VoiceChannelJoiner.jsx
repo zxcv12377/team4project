@@ -2,7 +2,8 @@ import * as mediasoupClient from "mediasoup-client";
 import { io } from "socket.io-client";
 
 const VoiceChannelJoiner = async ({ channelId }) => {
-  const socket = io("http://localhost:3001");
+  const socketURL = import.meta.env.VITE_SOCKET_URL;
+  const socket = io(`${socketURL}3001`);
 
   try {
     // 1. 채널 입장

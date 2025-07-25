@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import axiosInstance from "../lib/axiosInstance";
 
 export default function BoardList() {
   const [posts, setPosts] = useState([]);
@@ -12,6 +13,8 @@ export default function BoardList() {
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
 
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
+
   useEffect(() => {
     console.log("📡 useEffect 실행됨");
     boardList();
@@ -19,7 +22,7 @@ export default function BoardList() {
 
   const boardList = async () => {
     try {
-      const res = await axios.get(`http://localhost:8080/api/boards/list?page=${page}&size=10`, { headers });
+      const res = await axiosInstance.get(`/boards/list?page=${page}&size=10`, { headers });
       console.log("📦 받은 데이터:", res.data);
       const data = res.data;
       setPosts(data.dtoList || []);
@@ -95,11 +98,11 @@ export default function BoardList() {
 
                       // 🔒 안전: fallback 처리
                       if (typeof img === "string") {
-                        return img.startsWith("http") ? img : `http://localhost:8080${img}`;
+                        return img.startsWith("http") ? img : `${baseURL}${img}`;
                       }
 
                       const src = img.thumbnailUrl || img.originalUrl || "";
-                      return src.startsWith("http") ? src : `http://localhost:8080${src}`;
+                      return src.startsWith("http") ? src : `${baseURL}${src}`;
                     })()}
                     alt="썸네일"
                     className="w-32 h-20 object-cover rounded"

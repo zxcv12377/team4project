@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import axios from "@/lib/axiosInstance";
+import axiosInstance from "../../lib/axiosInstance";
 
 export default function FriendDropdown({ userId, userName, x, y, onClose }) {
   const [status, setStatus] = useState("LOADING");
@@ -28,7 +29,7 @@ export default function FriendDropdown({ userId, userName, x, y, onClose }) {
     setLoading(true);
     setErr(null);
     try {
-      await axios.post("/friends", { targetMemberId: userId });
+      await axiosInstance.post("/friends", { targetMemberId: userId });
       setStatus("REQUESTED");
     } catch (e) {
       setErr("신청 실패");
@@ -55,14 +56,10 @@ export default function FriendDropdown({ userId, userName, x, y, onClose }) {
       {status === "REQUESTED" && <div className="px-4 py-2 text-yellow-400 cursor-not-allowed">신청 보냄</div>}
       {status === "ACCEPTED" && <div className="px-4 py-2 text-green-400 cursor-not-allowed">이미 친구임</div>}
       {status === "REJECTED" && (
-  <button
-    className="w-full text-left px-4 py-2 hover:bg-indigo-600"
-    onClick={handleAddFriend}
-    disabled={loading}
-  >
-    {loading ? "신청 중..." : "친구 추가"}
-  </button>
-)}
+        <button className="w-full text-left px-4 py-2 hover:bg-indigo-600" onClick={handleAddFriend} disabled={loading}>
+          {loading ? "신청 중..." : "친구 추가"}
+        </button>
+      )}
       {err && <div className="px-4 py-2 text-red-500">{err}</div>}
     </div>
   );

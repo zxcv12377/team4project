@@ -6,7 +6,7 @@ const { setupSignaling, voiceRoomParticipants } = require("./handlers/signaling"
 const app = express();
 const server = http.createServer(app);
 const io = socketIO(server, {
-  cors: { origin: "http://localhost:5173", credentials: true },
+  cors: { origin: "https://strongberry.p-e.kr:5173", credentials: true },
 });
 
 app.use(express.json());
@@ -28,5 +28,5 @@ app.get("/api/voice-rooms/:roomId/participants", (req, res) => {
 })();
 
 server.listen(3001, () => {
-  console.log("🎤 mediasoup signaling 서버 실행 중 → http://localhost:3001");
+  console.log("🎤 mediasoup signaling 서버 실행 중 → https://strongberry.p-e.kr:3001");
 });

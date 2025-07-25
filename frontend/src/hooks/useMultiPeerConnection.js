@@ -2,8 +2,16 @@ import { useEffect, useRef } from "react";
 import { sendSignaling, subscribe } from "@/stomp/stompClient";
 
 // ICE 서버 설정: 구글의 공개 STUN 서버를 사용
+// STUN에서 TURN 서버로 교체
 const ICE_CONFIG = {
-  iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+  iceServers: [
+    { urls: "stun:stun.l.google.com:19302" },
+    {
+      urls: ["turn:strongberry.p-e.kr/:3478?transport=udp", "turn:strongberry.p-e.kr/:3478?transport=tcp"],
+      username: "testuser",
+      credential: "testpass",
+    },
+  ],
 };
 
 export default function useMultiPeerConnection({ roomId, userId, onTrack }) {
@@ -33,11 +41,14 @@ export default function useMultiPeerConnection({ roomId, userId, onTrack }) {
     // ICE 후보 수집 시 STOMP로 전송
     peer.onicecandidate = (e) => {
       if (e.candidate) {
+        console.log("🔍 ICE candidate 생성됨:", e.candidate); // ✅ 이 줄 추가
         sendSignaling("candidate", roomId, {
           sender: userId,
           target: remoteUserId,
           candidate: e.candidate,
         });
+      } else {
+        console.log("✅ ICE Gathering 완료"); // ✅ 이것도 있으면 좋음
       }
     };
 

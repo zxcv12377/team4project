@@ -16,49 +16,6 @@ function ChattingModule() {
 
   if (!user) return <div>Loading...</div>;
 
-  // const ws = useWebSocket(token); // ✅ 단일 생성
-  // useEffect(() => {
-  //   const savedToken = localStorage.getItem("token");
-  //   const savedUserRaw = localStorage.getItem("user");
-
-  //   if (savedToken && savedUserRaw) {
-  //     try {
-  //       const parsedUser = JSON.parse(savedUserRaw);
-  //       setToken(savedToken);
-  //       setUser(parsedUser);
-  //     } catch (err) {
-  //       console.error("❌ Failed to parse savedUser:", err);
-  //       localStorage.removeItem("token");
-  //       localStorage.removeItem("user");
-  //     }
-  //   }
-  //   setIsLoading(false);
-  // }, []);
-
-  // const handleLogin = async (token) => {
-  //   try {
-  //     localStorage.setItem("token", token);
-  //     setToken(token);
-
-  //     const res = await axiosInstance.get("/members/me");
-  //     const full = { ...res.data, token };
-  //     localStorage.setItem("user", JSON.stringify(full));
-  //     setUser(full);
-
-  //     window.location.href = "/";
-  //   } catch (e) {
-  //     console.error("로그인 처리 중 오류", e);
-  //   }
-  // };
-
-  const handleLogout = () => {
-    ws.disconnect(); // ✅ 위에서 생성한 ws 활용
-    localStorage.clear();
-    setUser(null);
-    alert("로그아웃");
-    window.location.href = "/boards";
-  };
-
   return (
     <div className="bg-[#313338] text-white min-h-screen">
       {/* ✅ 반드시 WebSocketContext에서 꺼낸 ws로 RealtimeProvider 감싸기 */}

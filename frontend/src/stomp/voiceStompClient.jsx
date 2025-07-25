@@ -4,8 +4,9 @@ import SockJS from "sockjs-client";
 let voiceStompClient = null;
 // 현재는 사용되지 않고 있음
 export const connectStomp = (onConnectCallback) => {
+  const socketJsURL = import.meta.env.VITE_SOCKET_URL;
   const token = localStorage.getItem("token");
-  const socket = new SockJS(`http://localhost:8080/ws-voice?token=${token}`);
+  const socket = new SockJS(`${socketJsURL}3000/ws-voice?token=${token}`);
   voiceStompClient = new Client({
     webSocketFactory: () => socket,
     reconnectDelay: 5000,

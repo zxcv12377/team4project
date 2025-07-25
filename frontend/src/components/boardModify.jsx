@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+import axiosInstance from "../lib/axiosInstance";
 
 export default function BoardModify() {
   const [title, setTitle] = useState("");
@@ -12,10 +13,12 @@ export default function BoardModify() {
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
 
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
+
   useEffect(() => {
     const getData = async () => {
       try {
-        const res = await axios.get(`http://localhost:8080/api/boards/read/${bno}`, { headers });
+        const res = await axiosInstance.get(`/boards/read/${bno}`, { headers });
         const { title, content, attachments } = res.data;
         setTitle(title);
         setContent(content);
@@ -41,12 +44,7 @@ export default function BoardModify() {
       formData.append("file", file);
 
       try {
-        const res = await axios.post("http://localhost:8080/api/images/upload", formData, {
-          headers: {
-            ...headers,
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        const res = await axiosInstance.post("/images/upload", formData);
         uploadedImages.push(res.data);
       } catch (err) {
         console.error("이미지 업로드 실패:", err);
@@ -65,7 +63,7 @@ export default function BoardModify() {
     }
 
     try {
-      await axios.put(`http://localhost:8080/api/boards/update/${bno}`, { title, content, attachments }, { headers });
+      await axiosInstance.put(`/boards/update/${bno}`, { title, content, attachments }, { headers });
       alert("게시글이 성공적으로 수정되었습니다.");
       navigate(`/boards/${bno}`);
     } catch (error) {
@@ -118,7 +116,7 @@ export default function BoardModify() {
                 } else {
                   src = img.thumbnailUrl || img.originalUrl || "";
                 }
-                const finalSrc = src.startsWith("http") ? src : `http://localhost:8080${src}`;
+                const finalSrc = src.startsWith("http") ? src : `${baseURL}${src}`;
                 return (
                   <img
                     key={idx}

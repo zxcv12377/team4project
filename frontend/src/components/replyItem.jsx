@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import ReplyForm from "./replyForm";
+import axiosInstance from "../lib/axiosInstance";
 
 export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
@@ -10,46 +11,21 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
     if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
 
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`/api/replies/${reply.rno}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-
-      if (!res.ok) {
-        const msg = await res.text();
-        alert("삭제 실패: " + msg);
-        return;
-      }
-
+      await axiosInstance.delete(`/replies/${reply.rno}`);
       refresh();
-    } catch {
-      alert("서버 오류");
+    } catch (err) {
+      alert("서버 오류", err);
     }
   };
 
   const handleEditSubmit = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`/api/replies/${reply.rno}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ text: editedText }),
-      });
-
-      if (!res.ok) {
-        const msg = await res.text();
-        alert("수정 실패: " + msg);
-        return;
-      }
+      await axiosInstance.put(`/replies/${reply.rno}`, { text: editedText });
 
       setEditing(false);
       refresh();
-    } catch {
-      alert("서버 오류");
+    } catch (err) {
+      alert("서버 오류", err);
     }
   };
 

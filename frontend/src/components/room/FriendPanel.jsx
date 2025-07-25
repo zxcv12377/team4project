@@ -1,6 +1,6 @@
 // FriendPanel.jsx
 import { useEffect, useState } from "react";
-import axios from "@/lib/axiosInstance";
+import axiosInstance from "../../lib/axiosInstance";
 import UserItemWithDropdown from "@/components/common/UserItemWithDropdown";
 import { useRealtime } from "@/context/RealtimeContext";
 
@@ -20,7 +20,7 @@ export default function FriendPanel() {
   useEffect(() => {
     const fetchFriends = async () => {
       try {
-        const res = await axios.get("/friends");
+        const res = await axiosInstance.get("/friends");
         dispatch({ type: "SET_FRIENDS", payload: res.data || [] });
       } catch (err) {
         console.error("❌ 친구 목록 불러오기 실패", err);
@@ -29,7 +29,7 @@ export default function FriendPanel() {
 
     const fetchReceived = async () => {
       try {
-        const res = await axios.get("/friends/requests/received");
+        const res = await axiosInstance.get("/friends/requests/received");
         dispatch({ type: "SET_RECEIVED", payload: res.data || [] });
       } catch (err) {
         console.error("❌ 받은 친구 요청 불러오기 실패", err);
@@ -38,7 +38,7 @@ export default function FriendPanel() {
 
     const fetchSent = async () => {
       try {
-        const res = await axios.get("/friends/requests/sent");
+        const res = await axiosInstance.get("/friends/requests/sent");
         dispatch({ type: "SET_SENT", payload: res.data || [] });
       } catch (err) {
         console.error("❌ 보낸 친구 요청 불러오기 실패", err);
@@ -51,23 +51,23 @@ export default function FriendPanel() {
   }, [dispatch]);
 
   useEffect(() => {
-  const fetchOnlineUsers = async () => {
-    try {
-      const res = await axios.get("/friends/online");
-      dispatch({ type: "SET_ONLINE_USERS", payload: res.data || [] });
-    } catch (err) {
-      console.error("❌ 온라인 유저 불러오기 실패", err);
-    }
-  };
+    const fetchOnlineUsers = async () => {
+      try {
+        const res = await axiosInstance.get("/friends/online");
+        dispatch({ type: "SET_ONLINE_USERS", payload: res.data || [] });
+      } catch (err) {
+        console.error("❌ 온라인 유저 불러오기 실패", err);
+      }
+    };
 
-  fetchOnlineUsers();
-}, [dispatch]);
+    fetchOnlineUsers();
+  }, [dispatch]);
 
   const handleSearch = () => {
     if (!search.trim()) return;
     setResult([]);
     setAdding(true);
-    axios
+    axiosInstance
       .get(`/members/search?name=${encodeURIComponent(search)}`)
       .then((res) => {
         setResult(res.data || []);
@@ -77,8 +77,8 @@ export default function FriendPanel() {
 
   const handleAdd = (id) => {
     if (!id) return;
-    axios.post("/friends", { targetMemberId: id }).then(() => {
-      const newFriend = result.find((r) =>r.id === id);
+    axiosInstance.post("/api/friends", { targetMemberId: id }).then(() => {
+      const newFriend = result.find((r) => r.id === id);
       if (newFriend) {
         dispatch({
           type: "SET_SENT",
@@ -100,7 +100,7 @@ export default function FriendPanel() {
   const handleDelete = async (friendId) => {
     if (!window.confirm("정말 이 친구를 삭제하시겠습니까?")) return;
     try {
-      await axios.delete(`/friends/${friendId}`);
+      await axiosInstance.delete(`/friends/${friendId}`);
       dispatch({
         type: "SET_FRIENDS",
         payload: state.friends.filter((f) => f.friendId !== friendId),
@@ -113,7 +113,7 @@ export default function FriendPanel() {
 
   const handleAccept = async (friendId) => {
     try {
-      await axios.post(`/friends/${friendId}/accept`);
+      await axiosInstance.post(`/api/friends/${friendId}/accept`);
       dispatch({
         type: "SET_RECEIVED",
         payload: state.receivedRequests.filter((req) => req.requestId !== friendId),
@@ -124,7 +124,7 @@ export default function FriendPanel() {
   };
 
   const handleReject = (friendId) => {
-    axios.post(`/friends/${friendId}/reject`).then(() => {
+    axiosInstance.post(`/api/friends/${friendId}/reject`).then(() => {
       dispatch({
         type: "SET_RECEIVED",
         payload: state.receivedRequests.filter((req) => req.requestId !== friendId),
@@ -133,7 +133,7 @@ export default function FriendPanel() {
   };
 
   const handleCancel = (friendId) => {
-    axios.delete(`/friends/${friendId}`).then(() => {
+    axiosInstance.delete(`/friends/${friendId}`).then(() => {
       dispatch({
         type: "SET_SENT",
         payload: state.sentRequests.filter((req) => req.requestId !== friendId),
@@ -268,7 +268,7 @@ export default function FriendPanel() {
             {adding && <div className="text-zinc-400 text-sm">검색중...</div>}
             <div>
               {result.map((user) => {
-                const userId = user.id 
+                const userId = user.id;
                 if (!userId) return null;
                 return (
                   <UserItemWithDropdown

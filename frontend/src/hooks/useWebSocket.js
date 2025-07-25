@@ -10,6 +10,8 @@ export const useWebSocket = (token, onConnect) => {
   const reconnectAttempt = useRef(0);
   const reconnectTimer = useRef(null);
 
+  const webSocketURL = import.meta.env.VITE_WEB_WOCKET_URL;
+
   useEffect(() => {
     tokenRef.current = token;
   }, [token]);
@@ -67,7 +69,7 @@ export const useWebSocket = (token, onConnect) => {
         stompRef.current = null;
       }
 
-      const socket = new WebSocket("ws://localhost:8080/ws-chat");
+      const socket = new WebSocket(`${webSocketURL}/ws-chat`);
       const client = Stomp.over(socket);
       client.heartbeat.outgoing = 10000;
       client.heartbeat.incoming = 10000;
@@ -87,10 +89,11 @@ export const useWebSocket = (token, onConnect) => {
       };
 
       client.connect(
-        { Authorization: "Bearer " + authToken },
+        { Authorization: `Bearer ${authToken}` },
         () => {
-          console.log("✅ WebSocket connected");
-          client.send("/app/auth", {}, JSON.stringify({ token: "Bearer " + authToken }));
+          console.log("✅ STOMP CONNECTED");
+          setConnected(true);
+          client.send("/app/auth", {}, JSON.stringify({ token: `Bearer ${authToken}` }));
           setConnected(true);
           reconnectAttempt.current = 0;
           reconnectTimer.current = null;

@@ -1,4 +1,5 @@
 import React, { useState, useRef } from "react";
+import axiosInstance from "../lib/axiosInstance";
 
 const emojis = ["😀", "😂", "😍", "🔥", "😢", "👍", "👎", "💯"];
 
@@ -32,16 +33,12 @@ export default function ReplyForm({ bno, parentRno = null, onSubmit }) {
     if (!trimmedContent) return alert("댓글 내용을 입력하세요.");
 
     try {
-      const response = await fetch("/api/replies", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({ bno, text: content, parentRno }),
+      await axiosInstance.post("/replies", {
+        bno,
+        text: content.trim(),
+        parentRno: parentRno ?? null,
       });
 
-      if (!response.ok) return alert(`댓글 등록 실패: ${response.status}`);
       setContent("");
       onSubmit();
     } catch (err) {

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import axiosInstance from "../lib/axiosInstance";
 
 const UpdateMyProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -15,6 +16,8 @@ const UpdateMyProfile = () => {
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
 
+  const uploadURL = import.meta.env.VITE_FILE_UPLOAD_URL;
+
   useEffect(() => {
     fetchProfile();
   }, []);
@@ -23,7 +26,7 @@ const UpdateMyProfile = () => {
     const token = localStorage.getItem("token");
     if (!token) return;
     try {
-      const res = await axios.get("http://localhost:8080/api/members/me", { headers });
+      const res = await axiosInstance.get("/members/me", { headers });
       if (!res.data || !res.data.nickname) {
         throw new Error("프로필 응답 데이터가 올바르지 않습니다.");
       }
@@ -59,9 +62,7 @@ const UpdateMyProfile = () => {
     formData.append("file", file);
 
     try {
-      await axios.post("http://localhost:8080/api/members/profile-image", formData, {
-        headers: { ...headers, "Content-Type": "multipart/form-data" },
-      });
+      await axiosInstance.post("/members/profile-image", formData);
       setMessage(" 이미지 업로드 성공");
       setTimeout(() => {
         navigate("/UpdateProfile");
@@ -87,7 +88,7 @@ const UpdateMyProfile = () => {
     }
 
     try {
-      await axios.put("http://localhost:8080/api/members/update", { nickname }, { headers });
+      await axiosInstance.put("/members/update", { nickname }, { headers });
       setMessage(" 닉네임 변경 성공");
       setTimeout(() => {
         navigate("/UpdateProfile");
@@ -118,7 +119,7 @@ const UpdateMyProfile = () => {
     }
 
     try {
-      await axios.put("http://localhost:8080/api/members/password", { currentPassword, newPassword }, { headers });
+      await axiosInstance.put("/members/password", { currentPassword, newPassword }, { headers });
       setMessage(" 비밀번호 변경 성공");
       setError("");
       setCurrentPassword("");
@@ -137,7 +138,7 @@ const UpdateMyProfile = () => {
   const deleteMember = async () => {
     if (!window.confirm("정말 탈퇴하시겠습니까?")) return;
     try {
-      await axios.delete("http://localhost:8080/api/members/delete", { headers });
+      await axiosInstance.delete("/members/delete", { headers });
       localStorage.removeItem("token");
       alert("회원 탈퇴가 완료되었습니다.");
       navigate("/boards");
@@ -160,7 +161,7 @@ const UpdateMyProfile = () => {
       </Link>
 
       <img
-        src={`http://localhost:8080/uploads/${profile.profileimg}`}
+        src={`${uploadURL}/${profile.profileimg}`}
         alt="프로필 이미지"
         className="w-36 h-36 object-cover rounded-full mx-auto"
       />
