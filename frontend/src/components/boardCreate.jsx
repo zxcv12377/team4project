@@ -84,10 +84,11 @@ export default function BoardCreate() {
 
           {/* ✅ 이미지 미리보기 + 삭제 버튼 */}
           {attachments.length > 0 && (
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {attachments.map((img, idx) => {
-                const src = img.thumbnailUrl || img.originalUrl || "";
-                const finalSrc = src.startsWith("https") ? src : `${baseURL}${src}`;
+            <>
+              <div className="mt-2 grid grid-cols-3 gap-2">
+                {attachments.map((img, idx) => {
+                  const src = img.thumbnailUrl || img.originalUrl || "";
+                  const finalSrc = src.startsWith("https") ? src : `${baseURL}${src}`;
 
                   return (
                     <div key={idx} className="relative group">

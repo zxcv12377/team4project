@@ -25,6 +25,8 @@ import ResetPasswordPage from "./components/resetPasswordPage";
 import MyBoard from "./components/myBoard";
 import MyReply from "./components/myReply";
 import MainPage from "./components/mainPage";
+import MemberMaintenance from "./components/admin/memberMaintenance";
+import AdminPage from "./components/admin/adminPage";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -100,6 +102,8 @@ function App() {
                     <Route path="/profile" element={<MyProfile />} />
                     <Route path="/myboard" element={<MyBoard />} />
                     <Route path="/myreply" element={<MyReply />} />
+                    <Route path="/admin" element={<AdminPage />} />
+                    <Route path="/admin/members" element={<MemberMaintenance />} />
                   </Route>
                   <Route path="/passwordreset" element={<ForgotPasswordPage />} />
                   <Route path="/passwordreset/confirm" element={<ResetPasswordPage />} />
