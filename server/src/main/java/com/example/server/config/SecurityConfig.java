@@ -1,5 +1,7 @@
 package com.example.server.config;
 
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -19,6 +21,9 @@ import org.springframework.security.web.authentication.RememberMeServices;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices;
 import org.springframework.security.web.authentication.rememberme.TokenBasedRememberMeServices.RememberMeTokenAlgorithm;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
@@ -142,18 +147,35 @@ public class SecurityConfig {
                 return builder.build();
         }
 
+        // @Bean
+        // public WebMvcConfigurer corsConfigurer() {
+        // return new WebMvcConfigurer() {
+        // @Override
+        // public void addCorsMappings(CorsRegistry registry) {
+        // registry.addMapping("/**")
+        // .allowedOrigins("https://strongberry.p-e.kr", // 배포된 프론트 주소
+        // "https://strongberry.p-e.kr:5173") // React 개발 서버 주소
+        // .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+        // .allowedHeaders("*")
+        // .allowCredentials(true);
+
+        // }
+        // };
+        // }
+
         @Bean
-        public WebMvcConfigurer corsConfigurer() {
-                return new WebMvcConfigurer() {
-                        @Override
-                        public void addCorsMappings(CorsRegistry registry) {
-                                registry.addMapping("/**")
-                                                .allowedOrigins("http://localhost:5173") // React 개발 서버 주소
-                                                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
-                                                .allowedHeaders("*")
-                                                .allowCredentials(true);
-                        }
-                };
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration config = new CorsConfiguration();
+                config.setAllowedOrigins(List.of(
+                                "http://localhost:5173",
+                                "https://strongberry.p-e.kr"));
+                config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                config.setAllowedHeaders(List.of("*"));
+                config.setAllowCredentials(true);
+
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/**", config);
+                return source;
         }
 
         @Bean

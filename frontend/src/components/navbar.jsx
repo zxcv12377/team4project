@@ -4,6 +4,7 @@ import { Link, Outlet, useNavigate } from "react-router-dom";
 import LoginForm from "./loginForm";
 import RegisterForm from "./registerForm";
 import SlidePopup from "./slidePopup";
+import axiosInstance from "../lib/axiosInstance";
 
 export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -14,13 +15,15 @@ export default function Navbar() {
   const [showRegister, setShowRegister] = useState(false);
   const navigate = useNavigate();
 
+  const uploadURL = import.meta.env.VITE_FILE_UPLOAD_URL;
+
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
 
     if (token) {
-      axios
-        .get("http://localhost:8080/api/members/me", {
+      axiosInstance
+        .get("/members/me", {
           headers: { Authorization: `Bearer ${token}` },
         })
         .then((res) => {
@@ -80,7 +83,7 @@ export default function Navbar() {
                   >
                     {profileImage && (
                       <img
-                        src={`http://localhost:8080/uploads/${profileImage}`}
+                        src={`${uploadURL}/${profileImage}`}
                         alt="프로필"
                         className="w-8 h-8 rounded-full object-cover"
                       />
@@ -127,7 +130,7 @@ export default function Navbar() {
                   >
                     {profileImage && (
                       <img
-                        src={`http://localhost:8080/uploads/${profileImage}`}
+                        src={`${uploadURL}/${profileImage}`}
                         alt="프로필"
                         className="w-8 h-8 rounded-full object-cover"
                       />

@@ -1,10 +1,13 @@
+# 빌드파일 무시
+deploy.sh
+# AWS 키 무시
+*.pem
 # 의존성 폴더 무시
 node_modules/
-
 # 빌드 결과물 무시 (Vite, Webpack 등 사용 시)
 dist/
 build/
-
+.env.production
 # 환경 변수 파일 무시
 .env
 .env.local

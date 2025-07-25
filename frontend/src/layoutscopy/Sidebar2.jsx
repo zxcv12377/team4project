@@ -1,9 +1,8 @@
-import axios from "@/lib/axiosInstance";
 import { useEffect, useMemo, useState } from "react";
 import { useUserContext } from "@/context/UserContext";
 import { useVoiceChat } from "./../hooks/useVoiceChat";
 import VoiceChannelOuter from "../components/voice/VoiceChannelOuter";
-
+import axiosInstance from "../lib/axiosInstance";
 
 export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSelectDMRoom, onSelectChannel }) {
   const { user } = useUserContext();
@@ -44,7 +43,7 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
 
   useEffect(() => {
     if (dmMode) {
-      axios
+      axiosInstance
         .get("/friends")
         .then((res) => setFriends(Array.isArray(res.data) ? res.data : []))
         .catch(() => setFriends([]));
@@ -57,7 +56,7 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
   }, [dmMode, serverId]);
 
   function fetchChannels() {
-    axios
+    axiosInstance
       .get(`/servers/${serverId}/channels`)
       .then((res) => setChannels(Array.isArray(res.data) ? res.data : []))
       .catch(() => setChannels([]));
@@ -70,7 +69,7 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
       return;
     }
     if (!dmMode) {
-      axios
+      axiosInstance
         .post(`/chatrooms`, {
           name: newName,
           type: newType,
@@ -89,11 +88,11 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
 
   function handleDeleteChannel(channelId) {
     if (!window.confirm("정말 삭제할까요?")) return;
-    axios.delete(`/chatrooms/${channelId}`).then(fetchChannels);
+    axiosInstance.delete(`/chatrooms/${channelId}`).then(fetchChannels);
   }
 
   function handleInviteCode(channelId) {
-    axios.post(`/chatrooms/${channelId}/invite`).then((res) => {
+    axiosInstance.post(`/chatrooms/${channelId}/invite`).then((res) => {
       setInviteCode(res.data.code || res.data.inviteCode || "");
       setInviteChannelId(channelId);
     });
@@ -146,7 +145,7 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
                   friendId: f.memberId,
                 });
                 try {
-                  const res = await axios.post("/dm/room", {
+                  const res = await axiosInstance.post("/dm/room", {
                     myId: currentUserId,
                     friendId: f.memberId,
                   });

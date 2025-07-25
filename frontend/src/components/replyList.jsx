@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import ReplyItem from "./replyItem";
 import ReplyForm from "./replyForm";
+import axiosInstance from "../lib/axiosInstance";
 
 export default function ReplyList({ bno }) {
   const [bestReplies, setBestReplies] = useState([]);
@@ -10,10 +11,8 @@ export default function ReplyList({ bno }) {
   const fetchReplies = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`/api/replies/board/${bno}?sort=best`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
+      const res = await axiosInstance.get(`/replies/board/${bno}?sort=best`);
+      const data = await res.data;
       setBestReplies(data.best || []);
       setGeneralReplies(data.general || []);
       const liked = localStorage.getItem("likedReplies");
@@ -31,10 +30,7 @@ export default function ReplyList({ bno }) {
     if (likedReplies.has(rno)) return;
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch(`/api/replies/${rno}/like`, {
-        method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axiosInstance.post(`/replies/${rno}/like`);
       if (res.ok) {
         const updated = new Set(likedReplies);
         updated.add(rno);

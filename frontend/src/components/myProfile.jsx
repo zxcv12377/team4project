@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../lib/axiosInstance";
 
 const MyProfile = () => {
   const [profile, setProfile] = useState(null);
@@ -12,13 +13,15 @@ const MyProfile = () => {
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
 
+  const uploadURL = import.meta.env.VITE_FILE_UPLOAD_URL;
+
   useEffect(() => {
     fetchProfile();
   }, []);
 
   const fetchProfile = async () => {
     try {
-      const res = await axios.get("http://localhost:8080/api/members/me", { headers });
+      const res = await axiosInstance.get("/members/me", { headers });
       setProfile(res.data);
       setComment(res.data.comment || "");
     } catch (err) {
@@ -34,7 +37,7 @@ const MyProfile = () => {
 
   const updateComment = async () => {
     try {
-      await axios.put("http://localhost:8080/api/members/comment", { comment }, { headers });
+      await axiosInstance.put("/members/comment", { comment }, { headers });
       setMessage(" 코멘트가 저장되었습니다.");
       setError("");
       fetchProfile();
@@ -51,7 +54,7 @@ const MyProfile = () => {
       <h2 className="text-4xl font-extrabold text-center text-red-500">내 프로필</h2>
 
       <img
-        src={`http://localhost:8080/uploads/${profile.profileimg}`}
+        src={`uploadURL/${profile.profileimg}`}
         alt="프로필 이미지"
         className="w-36 h-36 object-cover rounded-full mx-auto"
       />

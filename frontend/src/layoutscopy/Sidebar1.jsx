@@ -1,6 +1,6 @@
 // src/components/layout/Sidebar1.jsx
 import { useEffect, useState } from "react";
-import axios from "@/lib/axiosInstance";
+import axiosInstance from "../lib/axiosInstance";
 
 export default function Sidebar1({ onSelectDM, onSelectServer }) {
   const [servers, setServers] = useState([]);
@@ -9,7 +9,7 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
   const [serverName, setServerName] = useState("");
   const [joinCode, setJoinCode] = useState("");
 
-  const fetchServers = () => axios.get("/servers").then((res) => setServers(res.data));
+  const fetchServers = () => axiosInstance.get("/servers").then((res) => setServers(res.data));
 
   useEffect(() => {
     fetchServers();
@@ -18,7 +18,7 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
   // 서버 개설
   const handleCreate = async () => {
     if (!serverName.trim()) return;
-    await axios.post("/servers", { name: serverName });
+    await axiosInstance.post("/servers", { name: serverName });
     setServerName("");
     setShowCreate(false);
     fetchServers();
@@ -27,7 +27,7 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
   // 서버 참여
   const handleJoin = async () => {
     if (!joinCode.trim()) return;
-    await axios.post("/servers/join", { code: joinCode });
+    await axiosInstance.post("/servers/join", { code: joinCode });
     setJoinCode("");
     setShowJoin(false);
     fetchServers();
@@ -36,7 +36,7 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
   // 서버 탈퇴/삭제
   const handleLeave = async (id) => {
     if (!window.confirm("정말 탈퇴/삭제하시겠습니까?")) return;
-    await axios.delete(`/servers/${id}`);
+    await axiosInstance.delete(`/servers/${id}`);
     fetchServers();
   };
 

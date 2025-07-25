@@ -1,6 +1,7 @@
 // src/components/ChannelList.jsx
 import { useEffect, useState } from "react";
 import axios from "@/lib/axiosInstance";
+import axiosInstance from "../lib/axiosInstance";
 
 export default function ChannelList({ serverId }) {
   const [channels, setChannels] = useState([]);
@@ -10,7 +11,9 @@ export default function ChannelList({ serverId }) {
       setChannels([]);
       return;
     }
-    axios.get(`/servers/${serverId}/channels`).then((res) => setChannels(Array.isArray(res.data) ? res.data : []));
+    axiosInstance
+      .get(`/servers/${serverId}/channels`)
+      .then((res) => setChannels(Array.isArray(res.data) ? res.data : []));
   }, [serverId]);
 
   return (

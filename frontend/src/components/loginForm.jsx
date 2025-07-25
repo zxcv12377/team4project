@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axiosInstance from "@/lib/axiosInstance";
 import { useUserContext } from "../context/UserContext";
+import axiosInstance from "../lib/axiosInstance";
 
 export default function LoginForm({ onSwitchToRegister }) {
   const [email, setEmail] = useState("");
@@ -12,7 +12,7 @@ export default function LoginForm({ onSwitchToRegister }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const response = await axiosInstance.post("members/login", {
+      const response = await axiosInstance.post("/members/login", {
         email,
         password,
       });
@@ -20,7 +20,7 @@ export default function LoginForm({ onSwitchToRegister }) {
       localStorage.setItem("token", token);
       console.log("LoginForm Token : ", token);
 
-      const userRes = await axiosInstance.get("members/me");
+      const userRes = await axiosInstance.get("/members/me");
       setUser({ ...userRes.data, token });
       window.location.reload();
       navigate("/boards");

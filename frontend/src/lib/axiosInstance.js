@@ -3,7 +3,7 @@ import axios from "axios";
 
 // 🔧 기본 인스턴스
 const axiosInstance = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
@@ -11,7 +11,7 @@ const axiosInstance = axios.create({
 
 // 🔧 리프레시 전용 인스턴스 (인터셉터 없이 순수 POST 요청만)
 const refreshAxios = axios.create({
-  baseURL: "/api",
+  baseURL: import.meta.env.VITE_API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },

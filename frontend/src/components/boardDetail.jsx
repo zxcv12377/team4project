@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "axios";
 import ReplyList from "./replyList";
+import axiosInstance from "../lib/axiosInstance";
 
 const BoardDetail = () => {
   const { bno } = useParams();
@@ -9,9 +10,11 @@ const BoardDetail = () => {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
+
   useEffect(() => {
-    axios
-      .get(`/api/boards/read/${bno}`)
+    axiosInstance
+      .get(`/boards/read/${bno}`)
       .then((res) => {
         setPost(res.data);
         setLoading(false);
@@ -66,7 +69,7 @@ const BoardDetail = () => {
         <div className="grid grid-cols-3 gap-2 mb-6">
           {post.attachments.map((img, index) => {
             const src = img.thumbnailUrl || img.originalUrl || "";
-            const finalSrc = src.startsWith("http") ? src : `http://localhost:8080${src}`;
+            const finalSrc = src.startsWith("https") ? src : `${baseURL}${src}`;
             return (
               <img
                 key={index}
@@ -92,8 +95,8 @@ const BoardDetail = () => {
         <button
           onClick={() => {
             if (window.confirm("정말 삭제하시겠습니까?")) {
-              axios
-                .delete(`/api/boards/delete/${post.bno}`)
+              axiosInstance
+                .delete(`/boards/delete/${post.bno}`)
                 .then(() => navigate("/"))
                 .catch((err) => console.error("삭제 실패:", err));
             }

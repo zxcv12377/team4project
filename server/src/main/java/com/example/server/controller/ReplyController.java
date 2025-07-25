@@ -9,6 +9,7 @@ import com.example.server.repository.MemberRepository;
 import com.example.server.service.ReplyService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
@@ -30,7 +31,7 @@ public class ReplyController {
 
     // 댓글 등록
     @PostMapping
-    public ResponseEntity<?> createReply(@RequestBody ReplyRequestDTO dto,
+    public ResponseEntity<?> createReply(@RequestBody @Valid ReplyRequestDTO dto,
             HttpServletRequest request) {
         Member member = getMemberFromRequest(request);
         if (member == null) {

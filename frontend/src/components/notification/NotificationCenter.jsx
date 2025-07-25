@@ -3,6 +3,7 @@ import { useRealtime } from "../../context/RealtimeContext";
 import { useWebSocket } from "../../hooks/useWebSocket";
 import axios from "@/lib/axiosInstance";
 import { Bell, Check } from "lucide-react";
+import axiosInstance from "../../lib/axiosInstance";
 
 export default function NotificationCenter() {
   const [notifications, setNotifications] = useState([]);
@@ -13,7 +14,7 @@ export default function NotificationCenter() {
 
   const fetchNotifications = async () => {
     try {
-      const response = await axios.get("/notifications");
+      const response = await axiosInstance.get("/notifications");
       setNotifications(response.data);
     } catch (error) {
       console.error("알림 조회 실패:", error);
@@ -22,7 +23,7 @@ export default function NotificationCenter() {
 
   const fetchUnreadCount = async () => {
     try {
-      const response = await axios.get("/notifications/unread/count");
+      const response = await axiosInstance.get("/notifications/unread/count");
       setUnreadCount(response.data.count);
     } catch (error) {
       console.error("읽지 않은 알림 개수 조회 실패:", error);
@@ -31,7 +32,7 @@ export default function NotificationCenter() {
 
   const markAsRead = async (notificationId) => {
     try {
-      await axios.put(`/notifications/${notificationId}/read`);
+      await axiosInstance.put(`/notifications/${notificationId}/read`);
       setNotifications((prev) => prev.map((n) => (n.id === notificationId ? { ...n, isRead: true } : n)));
       setUnreadCount((prev) => Math.max(0, prev - 1));
     } catch (error) {
@@ -41,7 +42,7 @@ export default function NotificationCenter() {
 
   const markAllAsRead = async () => {
     try {
-      await axios.put("/notifications/read-all");
+      await axiosInstance.put("/notifications/read-all");
       setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
       setUnreadCount(0);
     } catch (error) {

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useUserContext } from "@/context/UserContext";
+import axiosInstance from "../lib/axiosInstance";
 
 export default function BoardCreate() {
   const [title, setTitle] = useState("");
@@ -12,6 +13,8 @@ export default function BoardCreate() {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
+
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
 
   // 🔁 이미지 선택 시 → 서버 업로드 → 응답 저장
   const handleFileChange = async (e) => {
@@ -25,12 +28,7 @@ export default function BoardCreate() {
       formData.append("file", file);
 
       try {
-        const res = await axios.post("http://localhost:8080/api/images/upload", formData, {
-          headers: {
-            ...headers,
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        const res = await axiosInstance.post("/images/upload", formData);
 
         uploadedImages.push(res.data); // ✅ ImageDTO { originalUrl, thumbnailUrl }
       } catch (err) {
@@ -58,12 +56,7 @@ export default function BoardCreate() {
         attachments: attachments, // ✅ 그대로 보내면 됨 (List<ImageDTO>)
       };
 
-      await axios.post("http://localhost:8080/api/boards/", body, {
-        headers: {
-          ...headers,
-          "Content-Type": "application/json",
-        },
-      });
+      await axiosInstance.post("/boards/", body);
 
       alert("게시글이 등록되었습니다.");
       navigate("/boards");
@@ -112,7 +105,7 @@ export default function BoardCreate() {
             <div className="mt-2 grid grid-cols-3 gap-2">
               {attachments.map((img, idx) => {
                 const src = img.thumbnailUrl || img.originalUrl || "";
-                const finalSrc = src.startsWith("http") ? src : `http://localhost:8080${src}`;
+                const finalSrc = src.startsWith("https") ? src : `${baseURL}${src}`;
 
                 return (
                   <img
