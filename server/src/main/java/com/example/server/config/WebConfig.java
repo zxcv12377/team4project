@@ -23,13 +23,17 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        String path = "file:" + System.getProperty("user.dir") + "/uploads/";
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:" + System.getProperty("user.dir") + "/uploads/");
+                .addResourceLocations(path);
+
+        registry.addResourceHandler("/api/uploads/**")
+                .addResourceLocations(path);
     }
 
     @PostConstruct
     public void init() {
         System.out.println("✅ allowedOrigins = " + allowedOrigins);
+        System.out.println("📁 현재 작업 디렉토리 (user.dir): " + System.getProperty("user.dir"));
     }
-
 }

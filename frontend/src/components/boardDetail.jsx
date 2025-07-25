@@ -72,7 +72,7 @@ const BoardDetail = () => {
         <div className="grid grid-cols-3 gap-2 mb-6">
           {post.attachments.map((img, index) => {
             const src = img.thumbnailUrl || img.originalUrl || "";
-            const finalSrc = src.startsWith("https") ? src : `${baseURL}${src}`;
+            const finalSrc = src.startsWith(import.meta.env.VITE_HTTP_URL) ? src : `${baseURL}${src}`;
             return (
               <img
                 key={index}
@@ -92,25 +92,6 @@ const BoardDetail = () => {
         >
           목록
         </button>
-        <button
-          onClick={() => navigate(`/boards/update/${post.bno}`)}
-          className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-        >
-          수정
-        </button>
-        <button
-          onClick={() => {
-            if (window.confirm("정말 삭제하시겠습니까?")) {
-              axiosInstance
-                .delete(`/boards/delete/${post.bno}`)
-                .then(() => navigate("/"))
-                .catch((err) => console.error("삭제 실패:", err));
-            }
-          }}
-          className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-        >
-          삭제
-        </button>
         {/* ✅ 작성자 본인일 때만 수정/삭제 버튼 노출 */}
         {currentUser?.id === post.memberid && (
           <>
@@ -124,8 +105,8 @@ const BoardDetail = () => {
             <button
               onClick={() => {
                 if (window.confirm("정말 삭제하시겠습니까?")) {
-                  axios
-                    .delete(`/api/boards/delete/${post.bno}`)
+                  axiosInstance
+                    .delete(`/boards/delete/${post.bno}`)
                     .then(() => navigate("/"))
                     .catch((err) => console.error("삭제 실패:", err));
                 }

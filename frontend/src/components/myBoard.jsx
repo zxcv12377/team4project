@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import axiosInstance from "../lib/axiosInstance";
 
 const fmt = (iso) => iso?.replace("T", " ").slice(0, 19) || "";
 
@@ -11,23 +11,15 @@ export default function MyBoard() {
   useEffect(() => loadPosts(), []);
 
   const loadPosts = () => {
-    const token = localStorage.getItem("token");
-    axios
-      .get("http://localhost:8080/api/boards/my", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => setPosts(res.data));
+    axiosInstance.get("/boards/my").then((res) => setPosts(res.data));
   };
 
   const handleDelete = async (e, bno) => {
     e.stopPropagation();
     if (!window.confirm("정말로 게시글을 삭제하시겠습니까?")) return;
 
-    const token = localStorage.getItem("token");
     try {
-      await axios.delete(`http://localhost:8080/api/boards/delete/${bno}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axiosInstance.delete(`/boards/delete/${bno}`);
       setPosts((prev) => prev.filter((p) => p.bno !== bno));
     } catch {
       alert("삭제에 실패했습니다.");

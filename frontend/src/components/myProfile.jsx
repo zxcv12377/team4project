@@ -12,19 +12,18 @@ const MyProfile = () => {
   const [replyCount, setReplyCount] = useState(0);
 
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
-  const headers = { Authorization: `Bearer ${token}` };
 
   const uploadURL = import.meta.env.VITE_FILE_UPLOAD_URL;
 
   useEffect(() => {
     fetchProfile();
     fetchCounts();
+    console.log(uploadURL);
   }, []);
 
   const fetchProfile = async () => {
     try {
-      const res = await axiosInstance.get("/members/me", { headers });
+      const res = await axiosInstance.get("/members/me");
       setProfile(res.data);
       setComment(res.data.comment || "");
     } catch (err) {
@@ -41,8 +40,8 @@ const MyProfile = () => {
   const fetchCounts = async () => {
     try {
       const [postsRes, repliesRes] = await Promise.all([
-        axios.get("http://localhost:8080/api/boards/my", { headers }),
-        axios.get("http://localhost:8080/api/replies/my", { headers }),
+        axiosInstance.get("/boards/my"),
+        axiosInstance.get("/replies/my"),
       ]);
       setBoardCount(postsRes.data.length);
       setReplyCount(repliesRes.data.length);
@@ -53,12 +52,12 @@ const MyProfile = () => {
 
   const updateComment = async () => {
     try {
-      await axiosInstance.put("/members/comment", { comment }, { headers });
+      await axiosInstance.put("/members/comment", { comment });
       setMessage(" 코멘트가 저장되었습니다.");
       setError("");
       fetchProfile();
     } catch (err) {
-      setMessage("");
+      setMessage(err);
       setError("❌ 코멘트 저장 실패");
     }
   };
@@ -70,7 +69,7 @@ const MyProfile = () => {
       <h2 className="text-4xl font-extrabold text-center text-red-500"> MY PROFILE</h2>
 
       <img
-        src={`uploadURL/${profile.profileimg}`}
+        src={`${uploadURL}/${profile.profileimg}`}
         alt="프로필 이미지"
         className="w-36 h-36 object-cover border-4 border-dashed border-black bg-white rounded-xl mx-auto shadow-sm"
       />
