@@ -41,6 +41,7 @@ public class MemberController {
     // POST: 로그인
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody MemberRequestDTO dto) {
+        // 인증시도
         try {
             authenticationManager.authenticate(
                     new UsernamePasswordAuthenticationToken(dto.getEmail(), dto.getPassword()));
@@ -49,6 +50,7 @@ public class MemberController {
                     .body(Map.of("success", false, "message", "아이디 또는 비밀번호가 올바르지 않습니다."));
         }
 
+        // 인증 성공시 토큰 발급
         String token = jwtUtil.generateToken(dto.getEmail(), dto.getNickname());
         log.info(" 토큰값 : {}", token);
         MemberResponseDTO user = memberService.getUserInfo(dto.getEmail());

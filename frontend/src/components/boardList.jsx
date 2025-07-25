@@ -18,7 +18,7 @@ export default function BoardList() {
   useEffect(() => {
     console.log("📡 useEffect 실행됨");
     boardList();
-  }, [page]);
+  }, []);
 
   const boardList = async () => {
     try {

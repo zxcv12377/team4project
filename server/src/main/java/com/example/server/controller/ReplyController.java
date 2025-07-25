@@ -14,10 +14,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RequiredArgsConstructor
 @Log4j2
@@ -135,6 +137,17 @@ public class ReplyController {
             return authHeader.substring(7); // "Bearer " 제거
         }
         return null;
+    }
+
+    @GetMapping("/my")
+    public ResponseEntity<?> getMyReplies(HttpServletRequest request) {
+        Member member = getMemberFromRequest(request);
+        if (member == null) {
+            return ResponseEntity.status(401).body("로그인이 필요합니다.");
+        }
+
+        List<ReplyResponseDTO> replies = replyService.getRepliesByWriter(member);
+        return ResponseEntity.ok(replies);
     }
 
 }

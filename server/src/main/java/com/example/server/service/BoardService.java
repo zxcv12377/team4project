@@ -3,6 +3,7 @@ package com.example.server.service;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -135,6 +136,16 @@ public class BoardService {
     public BoardDTO getRow(Long bno) {
         Object[] result = boardRepository.getBoardRow(bno);
         return entityToDto((Board) result[0], (Member) result[1], (Long) result[2]);
+    }
+
+    public List<BoardDTO> getBoardsByWriterEmail(String email) {
+        Member member = memberRepository.findByEmail(email).orElseThrow();
+        List<Board> boards = boardRepository.findAllByMember(member);
+
+        return boards.stream()
+                // replycount는 기존 entitytodto재활용할거라 null로 지정했습니다
+                .map(board -> entityToDto(board, member, null))
+                .toList();
     }
 
     private BoardDTO entityToDto(Board board, Member member, Long replyCount) {

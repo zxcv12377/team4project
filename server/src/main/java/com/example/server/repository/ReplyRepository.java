@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.example.server.entity.Member;
 import com.example.server.entity.Reply;
 
 public interface ReplyRepository extends JpaRepository<Reply, Long> {
@@ -16,6 +17,8 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
     void deleteByBoardBno(@Param("bno") Long bno);
 
     List<Reply> findByBoardBnoAndParentIsNullOrderByCreatedDateAsc(Long bno);
+
+    List<Reply> findAllByMember(Member member);
 
     // List<Reply> findByBnoAndLikeCountGreaterThanOrderByLikeCountDesc(Long bno,
     // int count);

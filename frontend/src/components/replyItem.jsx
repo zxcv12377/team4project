@@ -7,6 +7,9 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
   const [editing, setEditing] = useState(false);
   const [editedText, setEditedText] = useState(reply.text);
 
+  // 로그인한 사용자 정보 가져오기
+  const currentUser = JSON.parse(localStorage.getItem("user")); // user = { id, nickname, ... }
+
   const handleDelete = async () => {
     if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
 
@@ -64,7 +67,9 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
             </div>
             <time className="text-xs">{new Date(reply.createdDate).toLocaleString()}</time>
           </div>
+
           <div className="mt-1 text-gray-800" dangerouslySetInnerHTML={{ __html: reply.text }} />
+
           <div className="flex justify-between items-center mt-2">
             <button
               onClick={() => setShowReplyForm(!showReplyForm)}
@@ -73,9 +78,9 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
               답글 달기
             </button>
 
-            {!editing && (
+            {/* ✅ [수정] 자신의 댓글일 때만 수정/삭제 버튼 표시 */}
+            {currentUser?.id === reply.writerId && !editing && (
               <div className="flex gap-2 text-xs mt-2">
-                {/* ✅ 항상 표시됨 */}
                 <button onClick={() => setEditing(true)} className="text-green-600 hover:underline">
                   수정
                 </button>

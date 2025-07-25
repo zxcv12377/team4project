@@ -1,9 +1,6 @@
 import { useEffect, useState } from "react";
-// import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-
 import MyProfile from "./components/myProfile";
-
 import Navbar from "./components/navbar";
 import UpdateMyProfile from "./components/updateMyProfile";
 import ReplyList from "./components/replyList";
@@ -23,8 +20,11 @@ import BoardList from "./components/boardList";
 import BoardCreate from "./components/boardCreate";
 import BoardDetail from "./components/boardDetail";
 import BoardModify from "./components/boardModify";
-
-
+import ForgotPasswordPage from "./components/forgotPasswordPage";
+import ResetPasswordPage from "./components/resetPasswordPage";
+import MyBoard from "./components/myBoard";
+import MyReply from "./components/myReply";
+import MainPage from "./components/mainPage";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -85,8 +85,9 @@ function App() {
                   <Route path="/chatting/*" element={<ChattingModule />}>
                     <Route index element={<Layout />} />
                   </Route>
-                  <Route path="/" element={<Navigate to="/boards" replace />} />
+                  <Route path="/" element={<Navigate to="/MainPage" replace />} />
                   <Route element={<Navbar />}>
+                    <Route path="/MainPage" element={<MainPage />} />
                     <Route path="/login" element={<LoginForm />} />
                     <Route path="/register" element={<RegisterForm />} />
                     <Route path="/reply" element={<ReplyList />} />
@@ -97,7 +98,11 @@ function App() {
                     <Route path="/boards/:bno" element={<BoardDetail />} />
                     <Route path="/boards/update/:bno" element={<BoardModify />} />
                     <Route path="/profile" element={<MyProfile />} />
+                    <Route path="/myboard" element={<MyBoard />} />
+                    <Route path="/myreply" element={<MyReply />} />
                   </Route>
+                  <Route path="/passwordreset" element={<ForgotPasswordPage />} />
+                  <Route path="/passwordreset/confirm" element={<ResetPasswordPage />} />
                 </Routes>
               </BrowserRouter>
             </RealtimeProvider>
