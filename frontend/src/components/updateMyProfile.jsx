@@ -58,7 +58,11 @@ const UpdateMyProfile = () => {
     const formData = new FormData();
     formData.append("file", file);
     try {
-      await axiosInstance.post("/members/profile-image", formData);
+      await axiosInstance.post("/members/profile-image", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      });
       setMessage(" 이미지 업로드 성공");
       setError("");
       fetchProfile();

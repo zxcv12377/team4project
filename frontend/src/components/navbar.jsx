@@ -5,6 +5,7 @@ import LoginForm from "./loginForm";
 import RegisterForm from "./registerForm";
 import SlidePopup from "./slidePopup";
 import axiosInstance from "../lib/axiosInstance";
+import { useUserContext } from "../context/UserContext";
 
 export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -13,7 +14,9 @@ export default function Navbar() {
   const [nickname, setNickname] = useState("");
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const { user } = useUserContext();
   const navigate = useNavigate();
+  const isAdmin = user?.roles?.includes("ADMIN");
 
   const uploadURL = import.meta.env.VITE_FILE_UPLOAD_URL;
 
@@ -40,7 +43,7 @@ export default function Navbar() {
   const handleLogout = () => {
     localStorage.removeItem("token");
     setIsLoggedIn(false);
-    navigate("/boards");
+    window.location.reload();
   };
 
   return (
@@ -78,6 +81,11 @@ export default function Navbar() {
               <Link to="/chatting" className="text-gray-700 hover:text-blue-500">
                 Chatting
               </Link>
+              {isAdmin && (
+                <Link to="/admin" className="text-red-700 " onClick={() => setMenuOpen(false)}>
+                  ADMIN
+                </Link>
+              )}
               {isLoggedIn ? (
                 <>
                   <Link
