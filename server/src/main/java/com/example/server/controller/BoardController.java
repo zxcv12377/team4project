@@ -1,6 +1,10 @@
 package com.example.server.controller;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -69,6 +73,14 @@ public class BoardController {
         boardService.delete(bno);
 
         return ResponseEntity.ok().build();
+    }
+
+    // myprofile 이메일 걸어야되서 새로 추가함
+    @GetMapping("/my")
+    public ResponseEntity<?> getMyBoards(Authentication authentication) {
+        String email = authentication.getName();
+        List<BoardDTO> myBoards = boardService.getBoardsByWriterEmail(email);
+        return ResponseEntity.ok(myBoards);
     }
 
     // 왜 두개씩 만듬? (진짜 모름)

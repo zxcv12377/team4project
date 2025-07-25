@@ -69,6 +69,9 @@ export default function Navbar() {
 
             {/* 메뉴 (PC) */}
             <div className="hidden lg:flex space-x-6 items-center">
+              <Link to="/boards" className="text-gray-700 hover:text-blue-500">
+                게시판
+              </Link>
               <Link to="/chatting" className="text-gray-700 hover:text-blue-500">
                 Chatting
               </Link>
@@ -123,6 +126,7 @@ export default function Navbar() {
                 <>
                   <Link
                     to="/profile"
+                    onClick={() => setMenuOpen(false)}
                     className="flex items-center gap-2 px-3 py-1 text-sm border border-gray-400 rounded text-gray-700 hover:bg-gray-100"
                   >
                     {profileImage && (

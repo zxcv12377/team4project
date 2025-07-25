@@ -9,7 +9,6 @@ import com.example.server.entity.Reply;
 import com.example.server.entity.ReplyLike;
 import com.example.server.entity.enums.MemberRole;
 import com.example.server.repository.BoardRepository;
-import com.example.server.repository.MemberRepository;
 import com.example.server.repository.ReplyLikeRepository;
 import com.example.server.repository.ReplyRepository;
 
@@ -167,6 +166,14 @@ public class ReplyService {
                 return replyLikeRepository.countByReply(reply);
         }
 
+        public List<ReplyResponseDTO> getRepliesByWriter(Member member) {
+                List<Reply> replies = replyRepository.findAllByMember(member);
+
+                return replies.stream()
+                                .map(this::toResponseDTOWithChildren) // 기존 내부변환 메서드 재활용
+                                .toList();
+        }
+
         // 내부 변환 메서드
         private ReplyResponseDTO toResponseDTOWithChildren(Reply reply) {
                 Long likeCount = replyLikeRepository.countByReply(reply);
@@ -185,6 +192,7 @@ public class ReplyService {
                                 .nickname(reply.getMember().getNickname())
                                 .writerId(reply.getMember().getId())
                                 .badge(badge)
+                                .bno(reply.getBoard().getBno())
                                 .createdDate(reply.getCreatedDate())
                                 .deleted(reply.isDeleted())
                                 .likeCount(likeCount)

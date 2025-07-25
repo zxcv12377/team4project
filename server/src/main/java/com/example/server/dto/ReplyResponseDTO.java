@@ -21,6 +21,7 @@ public class ReplyResponseDTO {
     private String nickname;
     private LocalDateTime createdDate;
     private boolean deleted;
+    private Long bno;
 
     private List<ReplyResponseDTO> children; // 대댓글 리스트
 
