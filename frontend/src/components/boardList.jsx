@@ -98,11 +98,11 @@ export default function BoardList() {
 
                       // 🔒 안전: fallback 처리
                       if (typeof img === "string") {
-                        return img.startsWith("http") ? img : `${baseURL}${img}`;
+                        return img.startsWith(import.meta.env.VITE_HTTP_URL) ? img : `${baseURL}${img}`;
                       }
 
                       const src = img.thumbnailUrl || img.originalUrl || "";
-                      return src.startsWith("http") ? src : `${baseURL}${src}`;
+                      return src.startsWith(import.meta.env.VITE_HTTP_URL) ? src : `${baseURL}${src}`;
                     })()}
                     alt="썸네일"
                     className="w-32 h-20 object-cover rounded"

@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
+import axiosInstance from "../lib/axiosInstance";
 //onImagesUploaded props로 상위 컴포넌트(BoardCreate 등)와 상태를 주고받는 구조  => 재사용
 
 // | 기능
@@ -29,7 +30,7 @@ export default function ImageUploader({ onImagesUploaded }) {
       formData.append("file", file);
 
       try {
-        const res = await axios.post("http://localhost:8080/api/images/upload", formData, {
+        const res = await axiosInstance.post("/images/upload", formData, {
           headers: {
             ...headers,
             "Content-Type": "multipart/form-data",
