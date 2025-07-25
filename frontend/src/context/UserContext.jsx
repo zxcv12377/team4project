@@ -23,6 +23,10 @@ export const UserProvider = ({ children }) => {
       console.log("UserContext data : ", { ...res.data, token });
     } catch (err) {
       console.error("유저 정보 가져오기 실패" + err);
+      // 잘못된 토큰 제거
+      if (err.response?.status === 401) {
+        localStorage.removeItem("token");
+      }
       setUser(null);
     } finally {
       setLoading(false);

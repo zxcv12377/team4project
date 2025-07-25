@@ -10,8 +10,10 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
+import lombok.Setter;
 
 @Getter
+@Setter
 @MappedSuperclass // 테이블과 매핑되지 않고 자식 클래스에 엔티티의 매핑정보 상속
 @EntityListeners(value = AuditingEntityListener.class)
 public class Base {

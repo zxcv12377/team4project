@@ -10,6 +10,9 @@ const BoardDetail = () => {
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
 
+  // 현재 로그인한 사용자 정보 가져오기
+  const currentUser = JSON.parse(localStorage.getItem("user"));
+
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
   useEffect(() => {
@@ -83,7 +86,10 @@ const BoardDetail = () => {
       )}
 
       <div className="flex gap-2 mb-6">
-        <button onClick={() => navigate(-1)} className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+        <button
+          onClick={() => navigate("/boards")}
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+        >
           목록
         </button>
         <button
@@ -105,6 +111,31 @@ const BoardDetail = () => {
         >
           삭제
         </button>
+        {/* ✅ 작성자 본인일 때만 수정/삭제 버튼 노출 */}
+        {currentUser?.id === post.memberid && (
+          <>
+            <button
+              onClick={() => navigate(`/boards/update/${post.bno}`)}
+              className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+            >
+              수정
+            </button>
+
+            <button
+              onClick={() => {
+                if (window.confirm("정말 삭제하시겠습니까?")) {
+                  axios
+                    .delete(`/api/boards/delete/${post.bno}`)
+                    .then(() => navigate("/"))
+                    .catch((err) => console.error("삭제 실패:", err));
+                }
+              }}
+              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+            >
+              삭제
+            </button>
+          </>
+        )}
       </div>
 
       <ReplyList bno={post.bno} />

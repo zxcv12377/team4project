@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import { useUserContext } from "@/context/UserContext";
+import ImageUploader from "@/components/ImageUploader"; // ✅ 추가
 import axiosInstance from "../lib/axiosInstance";
 
 export default function BoardCreate() {
@@ -16,31 +17,17 @@ export default function BoardCreate() {
 
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
-  // 🔁 이미지 선택 시 → 서버 업로드 → 응답 저장
-  const handleFileChange = async (e) => {
-    const selectedFiles = [...e.target.files];
-    setFiles(selectedFiles);
-
-    const uploadedImages = [];
-
-    for (const file of selectedFiles) {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      try {
-        const res = await axiosInstance.post("/images/upload", formData);
-
-        uploadedImages.push(res.data); // ✅ ImageDTO { originalUrl, thumbnailUrl }
-      } catch (err) {
-        console.error("이미지 업로드 실패:", err);
-        alert("이미지 업로드 중 문제가 발생했습니다.");
-      }
-    }
-
-    setAttachments(uploadedImages); // ✅ BoardDTO.attachmentsJson 용도
+  // 💡 개별 이미지 삭제
+  const handleRemoveImage = (indexToRemove) => {
+    setAttachments((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
-  // 📤 게시글 등록
+  // 💡 전체 이미지 삭제
+  const handleClearImages = () => {
+    setAttachments([]);
+  };
+
+  //  게시글 등록
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -53,7 +40,7 @@ export default function BoardCreate() {
       const body = {
         title,
         content,
-        attachments: attachments, // ✅ 그대로 보내면 됨 (List<ImageDTO>)
+        attachments: attachments, // 그대로 보내면 됨 (List<ImageDTO>)
       };
 
       await axiosInstance.post("/boards/", body);
@@ -90,33 +77,38 @@ export default function BoardCreate() {
             placeholder="내용을 입력하세요"
           />
         </div>
-
+        {/* ✅ 이미지 업로드 영역 */}
         <div>
           <label className="block mb-1 text-gray-700 font-medium">이미지 첨부</label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileChange}
-            className="block w-full text-sm text-gray-600"
-          />
+          <ImageUploader onImagesUploaded={(images) => setAttachments((prev) => [...prev, ...images])} />
 
+          {/* ✅ 이미지 미리보기 + 삭제 버튼 */}
           {attachments.length > 0 && (
             <div className="mt-2 grid grid-cols-3 gap-2">
               {attachments.map((img, idx) => {
                 const src = img.thumbnailUrl || img.originalUrl || "";
                 const finalSrc = src.startsWith("https") ? src : `${baseURL}${src}`;
 
-                return (
-                  <img
-                    key={idx}
-                    src={finalSrc}
-                    alt={`첨부 이미지 ${idx + 1}`}
-                    className="w-full h-24 object-cover rounded"
-                  />
-                );
-              })}
-            </div>
+                  return (
+                    <div key={idx} className="relative group">
+                      <img src={finalSrc} alt={`첨부 이미지 ${idx + 1}`} className="w-full h-24 object-cover rounded" />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveImage(idx)} // 💡 삭제 핸들러
+                        className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded opacity-80 hover:opacity-100"
+                      >
+                        ✕
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {/* 💡 전체 삭제 버튼 */}
+              <button type="button" onClick={handleClearImages} className="mt-2 text-sm text-red-500 underline">
+                전체 이미지 삭제
+              </button>
+            </>
           )}
         </div>
 

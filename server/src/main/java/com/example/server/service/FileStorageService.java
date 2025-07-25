@@ -22,6 +22,7 @@ public class FileStorageService {
     // ✅ 팀 공용 로컬 저장소 경로
     private final String uploadDir = "C:/source/team4project/uploads/";
 
+    // ✅ 이미지 업로드 (파일)
     public ImageDTO saveImage(MultipartFile file) throws IOException {
         String uuid = UUID.randomUUID().toString();
         String ext = getExtension(file.getOriginalFilename());

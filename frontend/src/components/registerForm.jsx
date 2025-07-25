@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import axiosInstance from "../lib/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 function RegisterForm({ onSwitchToLogin }) {
   const [formData, setFormData] = useState({
@@ -10,6 +11,7 @@ function RegisterForm({ onSwitchToLogin }) {
   });
   const [step, setStep] = useState("input"); // "input" | "code"
   const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -39,6 +41,13 @@ function RegisterForm({ onSwitchToLogin }) {
     } finally {
       setLoading(false);
     }
+  };
+
+  /* ✔ 비밀번호 찾기 화면으로 이동 */
+  const goToPasswordReset = (e) => {
+    e.preventDefault();
+    navigate("/passwordreset");
+    window.location.reload();
   };
 
   return (
@@ -116,12 +125,13 @@ function RegisterForm({ onSwitchToLogin }) {
         )}
 
         <div className="text-sm text-gray-600 mt-2">
-          <a href="#" className="hover:underline">
+          {/* 여기서 navigate 사용 */}
+          <a href="/passwordreset" onClick={goToPasswordReset} className="hover:underline">
             비밀번호 찾기
           </a>
           <span className="mx-2">|</span>
           <a
-            href="#"
+            href="/login"
             onClick={(e) => {
               e.preventDefault();
               onSwitchToLogin?.();

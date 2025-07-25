@@ -13,7 +13,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -88,7 +87,6 @@ public class SecurityConfig {
                                                                 "/api/members/comment",
                                                                 "/api/members/nickname")
                                                 .authenticated()
-
                                                 .requestMatchers("/img/**").permitAll()
                                                 .requestMatchers(HttpMethod.DELETE, "/api/boards/**", "/api/replies/**",
                                                                 "/api/members/mypage")
@@ -183,8 +181,4 @@ public class SecurityConfig {
                 return new JwtAuthenticationFilter(jwtUtil);
         }
 
-        @Bean
-        public BCryptPasswordEncoder bcryptEncoder() {
-                return new BCryptPasswordEncoder();
-        }
 }
