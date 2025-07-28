@@ -39,4 +39,6 @@ public class ReplyLike {
     @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
+    // private LocalDateTime likedAt;
+
 }
