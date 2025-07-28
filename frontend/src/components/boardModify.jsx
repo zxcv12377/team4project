@@ -45,7 +45,11 @@ export default function BoardModify() {
       formData.append("file", file);
 
       try {
-        const res = await axiosInstance.post("/images/upload", formData);
+        const res = await axiosInstance.post("/images/upload", formData, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
         uploadedImages.push(res.data);
       } catch (err) {
         console.error("이미지 업로드 실패:", err);

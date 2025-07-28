@@ -28,11 +28,15 @@ public class UploadController {
     @PostMapping("/upload")
     public ResponseEntity<String> uploadFile(@RequestParam("file") MultipartFile file) throws IOException {
         if (file.isEmpty()) {
+            System.out.println("❌ 업로드된 파일 없음");
             return ResponseEntity.badRequest().body("파일이 없습니다.");
         }
 
         String originalFilename = file.getOriginalFilename();
         String filename = UUID.randomUUID() + "_" + originalFilename;
+
+        System.out.println("✅ 업로드 파일명: " + file.getOriginalFilename());
+        System.out.println("📁 저장 경로: " + uploadDir);
 
         Path filepath = Paths.get(uploadDir, filename);
         Files.createDirectories(filepath.getParent());

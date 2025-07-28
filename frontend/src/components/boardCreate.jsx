@@ -13,7 +13,6 @@ export default function BoardCreate() {
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  const headers = { Authorization: `Bearer ${token}` };
 
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
@@ -88,7 +87,7 @@ export default function BoardCreate() {
               <div className="mt-2 grid grid-cols-3 gap-2">
                 {attachments.map((img, idx) => {
                   const src = img.thumbnailUrl || img.originalUrl || "";
-                  const finalSrc = src.startsWith("https") ? src : `${baseURL}${src}`;
+                  const finalSrc = src.startsWith(import.meta.env.VITE_HTTP_URL) ? src : `${baseURL}${src}`;
 
                   return (
                     <div key={idx} className="relative group">

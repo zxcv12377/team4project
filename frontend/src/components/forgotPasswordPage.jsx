@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import axiosInstance from "../lib/axiosInstance";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -11,12 +12,12 @@ export default function ForgotPasswordPage() {
   const navigate = useNavigate();
 
   const sendCode = async () => {
-    await axios.post("/api/passwordreset/email", { email });
+    await axiosInstance.post("/passwordreset/email", { email });
     setCodeSent(true);
   };
 
   const verifyCode = async () => {
-    await axios.post("/api/passwordreset/verify", { email, code });
+    await axiosInstance.post("/passwordreset/verify", { email, code });
     navigate("/passwordreset/confirm", { state: { email } });
   };
 
