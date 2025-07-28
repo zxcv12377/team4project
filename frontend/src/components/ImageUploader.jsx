@@ -30,12 +30,7 @@ export default function ImageUploader({ onImagesUploaded }) {
       formData.append("file", file);
 
       try {
-        const res = await axiosInstance.post("/images/upload", formData, {
-          headers: {
-            ...headers,
-            "Content-Type": "multipart/form-data",
-          },
-        });
+        const res = await axiosInstance.post("/images/upload", formData);
 
         uploadedImages.push(res.data); // { originalUrl, thumbnailUrl }
       } catch (error) {

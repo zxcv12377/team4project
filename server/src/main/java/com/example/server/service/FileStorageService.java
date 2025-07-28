@@ -19,8 +19,10 @@ import net.coobird.thumbnailator.Thumbnails;
 @Service
 public class FileStorageService {
 
-    // ✅ 팀 공용 로컬 저장소 경로
-    private final String uploadDir = "C:/source/team4project/uploads/";
+    // ✅ 팀 공용 로컬 혹은 배포 저장소 경로 properties 확인
+    @Value("${file.upload-dir}")
+    private String uploadDir;
+    
 
     // ✅ 이미지 업로드 (파일)
     public ImageDTO saveImage(MultipartFile file) throws IOException {
