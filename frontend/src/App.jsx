@@ -88,7 +88,7 @@ function App() {
                   <Route path="/" element={<Navigate to="/MainPage" replace />} />
                   <Route element={<Navbar />}>
                     <Route path="/MainPage" element={<MainPage />} />
-                    <Route path="/login" element={<LoginForm />} />
+                    {/* <Route path="/login" element={<LoginForm />} /> */}
                     <Route path="/register" element={<RegisterForm />} />
                     <Route path="/reply" element={<ReplyList />} />
                     <Route path="/UpdateProfile" element={<UpdateMyProfile />} />

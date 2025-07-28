@@ -12,10 +12,8 @@ export default function MyReply() {
 
   const loadReplies = () => {
     const token = localStorage.getItem("token");
-    axios
-      .get("http://localhost:8080/api/replies/my", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+    axiosInstance
+      .get("/replies/my")
       .then((res) => {
         console.log(res.data[0]);
         setReplies(res.data);
@@ -29,9 +27,7 @@ export default function MyReply() {
 
     const token = localStorage.getItem("token");
     try {
-      await axios.delete(`http://localhost:8080/api/replies/${rno}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axiosInstance.delete(`/replies/${rno}`);
       setReplies((prev) => prev.filter((r) => r.rno !== rno));
     } catch {
       alert("삭제에 실패했습니다.");

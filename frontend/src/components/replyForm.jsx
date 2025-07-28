@@ -13,8 +13,8 @@ export default function ReplyForm({ bno, parentRno = null, onSubmit }) {
 
   // 🔒 로그인하지 않은 사용자 → 입력창 대신 안내 메시지
   if (!token) {
-    return (
-      <div className="bg-white border border-gray-200 rounded-2xl shadow-md w-full max-w-3xl mx-auto p-6 text-center">
+    return (// border border-gray-200 rounded-2xl shadow-md
+      <div className="bg-white w-full max-w-3xl mx-auto p-6 text-center">
         <h3 className="text-xl font-semibold text-gray-800 mb-4">댓글 작성</h3>
         <p className="text-gray-600">
           <span className="text-red-500 font-semibold">로그인</span> 후 댓글을 작성할 수 있습니다.
@@ -78,7 +78,7 @@ export default function ReplyForm({ bno, parentRno = null, onSubmit }) {
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-white border border-gray-200 rounded-2xl shadow-md w-full max-w-3xl mx-auto p-6"
+      className="bg-white w-full max-w-3xl mx-auto p-6"
     >
       <h3 className="text-xl font-semibold text-gray-800 mb-4">댓글 작성</h3>
 
