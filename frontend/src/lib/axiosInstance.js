@@ -4,9 +4,9 @@ import axios from "axios";
 // 🔧 기본 인스턴스
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
+  // headers: {
+  //   "Content-Type": "application/json",
+  // },
 });
 
 // 🔧 리프레시 전용 인스턴스 (인터셉터 없이 순수 POST 요청만)
@@ -128,8 +128,8 @@ function clearSession() {
 
 // ✅ 로그인 페이지 이동 함수 (중복 이동 방지)
 function redirectToLogin() {
-  if (window.location.pathname !== "/boards") {
-    window.location.replace("/boards"); // replace → 히스토리 안 쌓임
+  if (window.location.pathname !== "/") {
+    window.location.replace("/"); // replace → 히스토리 안 쌓임
   }
 }
 

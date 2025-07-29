@@ -9,7 +9,7 @@ import org.springframework.stereotype.Component;
 public class FileCleanupScheduler {
 
     // 실제 업로드 폴더 경로 (환경에 맞게 설정)
-    private final String uploadBasePath = "C:/javadb/spring/upload";
+    private final String uploadBasePath = "C:/source/team4project/uploads";
 
     @Scheduled(cron = "* * 3 * * *") // 매일 새벽 3시에 실행 예시
     public void cleanupAllFiles() {

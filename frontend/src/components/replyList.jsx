@@ -10,9 +10,8 @@ export default function ReplyList({ bno }) {
 
   const fetchReplies = useCallback(async () => {
     try {
-      const token = localStorage.getItem("token");
       const res = await axiosInstance.get(`/replies/board/${bno}?sort=best`);
-      const data = await res.data;
+      const data = res.data;
       setBestReplies(data.best || []);
       setGeneralReplies(data.general || []);
       const liked = localStorage.getItem("likedReplies");
@@ -29,20 +28,15 @@ export default function ReplyList({ bno }) {
   const handleLike = async (rno) => {
     if (likedReplies.has(rno)) return;
     try {
-      const token = localStorage.getItem("token");
-      const res = await axiosInstance.post(`/replies/${rno}/like`);
-      if (res.ok) {
-        const updated = new Set(likedReplies);
-        updated.add(rno);
-        setLikedReplies(updated);
-        localStorage.setItem("likedReplies", JSON.stringify([...updated]));
-        fetchReplies();
-      } else {
-        const msg = await res.text();
-        alert("추천 실패: " + msg);
-      }
+      await axiosInstance.post(`/replies/${rno}/like`);
+      const updated = new Set(likedReplies);
+      updated.add(rno);
+      setLikedReplies(updated);
+      localStorage.setItem("likedReplies", JSON.stringify([...updated]));
+      fetchReplies();
     } catch (err) {
-      alert("네트워크 오류로 추천 실패");
+      alert("추천 실패: " + err);
+      // alert("네트워크 오류로 추천 실패");
     }
   };
 
@@ -69,7 +63,6 @@ export default function ReplyList({ bno }) {
   return (
     <section className="w-full max-w-3xl mx-auto bg-white border rounded-2xl shadow p-6">
       <h3 className="text-xl font-semibold text-gray-800 mb-6">댓글 {bestReplies.length + generalReplies.length}개</h3>
-      <ReplyForm bno={bno} onSubmit={fetchReplies} />
       <div className="mt-8 space-y-6">
         {bestReplies.map((r) => (
           <div key={r.rno} className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
@@ -81,6 +74,7 @@ export default function ReplyList({ bno }) {
           <div key={r.rno}>{renderReply(r)}</div>
         ))}
       </div>
+      <ReplyForm bno={bno} onSubmit={fetchReplies} />
     </section>
   );
 }
