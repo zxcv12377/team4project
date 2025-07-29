@@ -173,11 +173,6 @@ export default function Navbar() {
                 </button>
               </form>
 
-              {isAdmin && (
-                <Link to="/admin" className="text-red-700 " onClick={() => setMenuOpen(false)}>
-                  ADMIN
-                </Link>
-              )}
               {isLoggedIn ? (
                 <>
                   <Link
