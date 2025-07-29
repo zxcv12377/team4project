@@ -41,7 +41,6 @@ logs/
 *.log
 *.gz
 *.zip
-server.log.2025-07-28.0.gz
 
 # BlueJ files
 *.ctxt
