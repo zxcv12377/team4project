@@ -67,50 +67,6 @@ public class ReplyService {
                                 .collect(Collectors.toList());
         }
 
-        // // 추천/작성 기준 분리 목록
-        // public Map<String, List<ReplyResponseDTO>> getRepliesSeparated(Long bno,
-        // Member member) {
-        // List<Reply> allTopLevel =
-        // replyRepository.findByBoardBnoAndParentIsNullOrderByCreatedDateAsc(bno);
-
-        // // 2. 댓글별 추천 수 매핑
-        // Map<Reply, Long> likeCounts = allTopLevel.stream()
-        // .collect(Collectors.toMap(
-        // reply -> reply,
-        // reply -> replyLikeRepository.countByReply(reply)));
-
-        // // 3. 추천 수가 1 이상인 댓글만 필터링
-        // List<Map.Entry<Reply, Long>> sortedReplies = likeCounts.entrySet().stream()
-        // .filter(entry -> entry.getValue() > 0)
-        // .sorted((a, b) -> Long.compare(b.getValue(), a.getValue())) // 내림차순
-        // .toList();
-
-        // // 4. 최대 추천 수 확인
-        // long maxLike = sortedReplies.isEmpty() ? 0 : sortedReplies.get(0).getValue();
-
-        // // 5. 최대 추천 수와 같은 댓글만 BEST 후보로 추출
-        // List<Reply> bestReplies = sortedReplies.stream()
-        // .filter(entry -> entry.getValue() == maxLike)
-        // .limit(3) // 최대 3개까지만 BEST
-        // .map(Map.Entry::getKey)
-        // .toList();
-
-        // // 6. 나머지는 일반 댓글로 분류
-        // List<Reply> generalReplies = allTopLevel.stream()
-        // .filter(reply -> !bestReplies.contains(reply))
-        // .toList();
-
-        // // 7. 변환 후 결과 반환
-        // Map<String, List<ReplyResponseDTO>> result = new HashMap<>();
-        // result.put("best", bestReplies.stream().map(r -> toResponseDTOWithChildren(r,
-        // member)).toList());
-        // result.put("general",
-        // generalReplies.stream().map(r -> toResponseDTOWithChildren(r,
-        // member)).toList());
-
-        // return result;
-        // }
-
         public Map<String, List<ReplyResponseDTO>> getRepliesWithBest(Long boardId, Member member) {
                 // 1) 최상위 댓글 조회
                 List<Reply> topLevel = replyRepository
