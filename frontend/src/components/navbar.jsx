@@ -15,6 +15,7 @@ export default function Navbar() {
   const [showRegister, setShowRegister] = useState(false);
   const { user } = useUserContext();
   const navigate = useNavigate();
+  const [keyword, setKeyword] = useState("");
   const isAdmin = user?.roles?.includes("ADMIN");
 
   const uploadURL = import.meta.env.VITE_FILE_UPLOAD_URL;
@@ -38,6 +39,13 @@ export default function Navbar() {
         });
     }
   }, []);
+
+  const onSearch = (e) => {
+    e.preventDefault();
+    if (!keyword.trim()) return;
+    // type=tc → 제목+내용 검색
+    navigate(`/boards/search?type=tc&keyword=${encodeURIComponent(keyword.trim())}`);
+  };
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -74,8 +82,8 @@ export default function Navbar() {
 
             {/* 메뉴 (PC) */}
             <div className="hidden lg:flex space-x-6 items-center">
-              <Link to="/boards" className="text-gray-700 hover:text-blue-500">
-                게시판
+              <Link to="/boardChannels" className="text-gray-700 hover:text-blue-500">
+                채널목록
               </Link>
               <Link to="/chatting" className="text-gray-700 hover:text-blue-500">
                 Chatting
@@ -85,6 +93,18 @@ export default function Navbar() {
                   ADMIN
                 </Link>
               )}
+              <form onSubmit={onSearch} className="ml-auto flex">
+                <input
+                  type="text"
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  placeholder="게시글 검색..."
+                  className="rounded-l border px-2 py-1 border-green-500"
+                />
+                <button type="submit" className="rounded-r bg-green-500 px-3 text-white">
+                  검색
+                </button>
+              </form>
               {isLoggedIn ? (
                 <>
                   <Link
@@ -129,9 +149,35 @@ export default function Navbar() {
           {/* 모바일 메뉴 */}
           {menuOpen && (
             <div className="flex flex-col gap-2 mt-4 lg:hidden">
+              <Link to="/boardChannels" className="text-gray-700 hover:text-blue-500">
+                채널목록
+              </Link>
               <Link to="/chatting" className="text-gray-700 hover:text-blue-500">
                 Chatting
               </Link>
+              {isAdmin && (
+                <Link to="/admin" className="text-red-700 " onClick={() => setMenuOpen(false)}>
+                  ADMIN
+                </Link>
+              )}
+              <form onSubmit={onSearch} className="w-full flex">
+                <input
+                  type="text"
+                  value={keyword}
+                  onChange={(e) => setKeyword(e.target.value)}
+                  placeholder="게시글 검색..."
+                  className="flex-1 rounded-l border px-2 py-1"
+                />
+                <button type="submit" className="rounded-r bg-green-500 px-3 text-white">
+                  검색
+                </button>
+              </form>
+
+              {isAdmin && (
+                <Link to="/admin" className="text-red-700 " onClick={() => setMenuOpen(false)}>
+                  ADMIN
+                </Link>
+              )}
               {isLoggedIn ? (
                 <>
                   <Link

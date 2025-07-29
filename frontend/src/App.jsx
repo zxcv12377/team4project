@@ -27,6 +27,9 @@ import MyReply from "./components/myReply";
 import MainPage from "./components/mainPage";
 import MemberMaintenance from "./components/admin/memberMaintenance";
 import AdminPage from "./components/admin/adminPage";
+import BoardChannelList from "./components/boardChannelList";
+import CreateBoardChannel from "./components/admin/createBoardChannel";
+import BoardSearch from "./components/boardSearch";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -72,7 +75,7 @@ function App() {
     localStorage.clear();
     setToken(null);
     setUser(null);
-    window.location.href = "/boards";
+    window.location.href = "/";
   };
 
   if (isLoading) return <div>Loading...</div>;
@@ -90,20 +93,22 @@ function App() {
                   <Route path="/" element={<Navigate to="/MainPage" replace />} />
                   <Route element={<Navbar />}>
                     <Route path="/MainPage" element={<MainPage />} />
-                    <Route path="/login" element={<LoginForm />} />
+                    <Route path="/boardChannels" element={<BoardChannelList />}></Route>
                     <Route path="/register" element={<RegisterForm />} />
                     <Route path="/reply" element={<ReplyList />} />
                     <Route path="/UpdateProfile" element={<UpdateMyProfile />} />
                     <Route path="/chatting/*" element={<ChattingModule />} />
-                    <Route path="/boards" element={<BoardList />} />
-                    <Route path="/boards/create" element={<BoardCreate />} />
-                    <Route path="/boards/:bno" element={<BoardDetail />} />
-                    <Route path="/boards/update/:bno" element={<BoardModify />} />
+                    <Route path="/channels/:channelId" element={<BoardList />} />
+                    <Route path="/channels/:channelId/create" element={<BoardCreate />} />
+                    <Route path="/channels/:channelId/:bno" element={<BoardDetail />} />
+                    <Route path="/channels/:channelId/update/:bno" element={<BoardModify />} />
                     <Route path="/profile" element={<MyProfile />} />
                     <Route path="/myboard" element={<MyBoard />} />
                     <Route path="/myreply" element={<MyReply />} />
                     <Route path="/admin" element={<AdminPage />} />
                     <Route path="/admin/members" element={<MemberMaintenance />} />
+                    <Route path="/admin/boardChannels/create" element={<CreateBoardChannel />} />
+                    <Route path="/boards/search" element={<BoardSearch />} />
                   </Route>
                   <Route path="/passwordreset" element={<ForgotPasswordPage />} />
                   <Route path="/passwordreset/confirm" element={<ResetPasswordPage />} />

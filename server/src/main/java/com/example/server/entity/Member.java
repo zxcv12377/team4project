@@ -114,6 +114,9 @@ public class Member extends Base {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<ServerMember> serverMembers;
 
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<BoardLike> boardLikes;
+
     // 기본 권한 부여 메서드(db 저장 전 호출)
     // 회원가입 시 기본적으로 USER 권한을 부여
     @PrePersist

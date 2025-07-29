@@ -43,7 +43,16 @@ public class BoardDTO {
     // 댓글 수
     private Long replyCount;
 
+    // 조회수
+    private Long viewCount;
+
+    // 게시글 좋아요 수
+    private Long boardLikeCount;
+
     // 프론트에 넘겨줄 이미지 리스트
     private List<ImageDTO> attachments;
+
+    // 게시판 채널 아이디
+    private Long channelId;
 
 }

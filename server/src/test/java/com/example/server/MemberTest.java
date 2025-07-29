@@ -39,13 +39,10 @@ class MemberTest {
                 .agree(true)
                 .build();
 
-        // when
         Member saved = memberRepository.save(admin);
 
-        // then
         assertNotNull(saved.getId(), "ID가 생성돼야 합니다");
         assertTrue(saved.getRoles().contains(MemberRole.ADMIN), "ADMIN 권한이 포함돼야 합니다");
-        // PrePersist 로직이 빈 roles 에만 USER를 추가하므로 여기서는 ADMIN만 존재
         assertEquals(1, saved.getRoles().size(), "불필요한 추가 권한이 없어야 합니다");
     }
 }

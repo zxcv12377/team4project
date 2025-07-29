@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import axiosInstance from "../lib/axiosInstance";
 import { useNavigate } from "react-router-dom";
 
 const fmt = (iso) => iso?.replace("T", " ").slice(0, 19) || "";
@@ -12,14 +12,10 @@ export default function MyReply() {
 
   const loadReplies = () => {
     const token = localStorage.getItem("token");
-    axios
-      .get("http://localhost:8080/api/replies/my", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-      .then((res) => {
-        console.log(res.data[0]);
-        setReplies(res.data);
-      });
+    axiosInstance.get("/replies/my").then((res) => {
+      console.log(res.data[0]);
+      setReplies(res.data);
+    });
   };
 
   /* 삭제 */
@@ -29,9 +25,7 @@ export default function MyReply() {
 
     const token = localStorage.getItem("token");
     try {
-      await axios.delete(`http://localhost:8080/api/replies/${rno}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      await axiosInstance.delete(`/replies/${rno}`);
       setReplies((prev) => prev.filter((r) => r.rno !== rno));
     } catch {
       alert("삭제에 실패했습니다.");
@@ -49,7 +43,7 @@ export default function MyReply() {
           {replies.map((reply) => (
             <li
               key={reply.rno}
-              onClick={() => navigate(`/boards/${reply.bno}`)}
+              onClick={() => navigate(`//${reply.bno}`)}
               className="p-3 bg-white rounded-lg shadow-sm hover:shadow-md flex justify-between items-center border border-pink-100 cursor-pointer transition"
             >
               {/* 왼쪽: 댓글 내용·날짜 */}

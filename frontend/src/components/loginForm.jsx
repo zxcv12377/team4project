@@ -12,10 +12,10 @@ export default function LoginForm({ onSwitchToRegister }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data } = await axiosInstance.post("members/login", { email, password });
+      const { data } = await axiosInstance.post("/members/login", { email, password });
       localStorage.setItem("token", data.token);
 
-      const userRes = await axiosInstance.get("members/me");
+      const userRes = await axiosInstance.get("/members/me");
       localStorage.setItem("user", JSON.stringify(userRes.data));
       setUser({ ...userRes.data, token: data.token });
 
