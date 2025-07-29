@@ -1,21 +1,29 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo } from "react";
 import ReplyItem from "./replyItem";
 import ReplyForm from "./replyForm";
 import axiosInstance from "../lib/axiosInstance";
 
+function countReplies(list) {
+  return list.reduce((sum, reply) => sum + 1 + countReplies(reply.children || []), 0);
+}
+
 export default function ReplyList({ bno }) {
   const [bestReplies, setBestReplies] = useState([]);
   const [generalReplies, setGeneralReplies] = useState([]);
-  const [likedReplies, setLikedReplies] = useState(new Set());
 
+  // 댓글 개수만 계산 → 의존성 변경 시에만 다시 계산
+  const totalCount = useMemo(
+    () => countReplies(bestReplies) + countReplies(generalReplies),
+    [bestReplies, generalReplies]
+  );
+
+  // 댓글 불러오기
   const fetchReplies = useCallback(async () => {
     try {
       const res = await axiosInstance.get(`/replies/board/${bno}?sort=best`);
-      const data = res.data;
-      setBestReplies(data.best || []);
-      setGeneralReplies(data.general || []);
-      const liked = localStorage.getItem("likedReplies");
-      setLikedReplies(new Set(liked ? JSON.parse(liked) : []));
+      const { bestReplies = [], replies = [] } = res.data;
+      setBestReplies(bestReplies);
+      setGeneralReplies(replies);
     } catch (err) {
       console.error("댓글 불러오기 실패", err);
     }
@@ -25,44 +33,12 @@ export default function ReplyList({ bno }) {
     fetchReplies();
   }, [fetchReplies]);
 
-  const handleLike = async (rno) => {
-    if (likedReplies.has(rno)) return;
-    try {
-      await axiosInstance.post(`/replies/${rno}/like`);
-      const updated = new Set(likedReplies);
-      updated.add(rno);
-      setLikedReplies(updated);
-      localStorage.setItem("likedReplies", JSON.stringify([...updated]));
-      fetchReplies();
-    } catch (err) {
-      alert("추천 실패: " + err);
-      // alert("네트워크 오류로 추천 실패");
-    }
-  };
-
-  const renderReply = (reply) => (
-    <div>
-      <ReplyItem reply={reply} bno={bno} refresh={fetchReplies} />
-      <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
-        <span className="text-orange-500 font-semibold">👍 추천 {reply.likeCount}</span>
-        <button
-          onClick={() => handleLike(reply.rno)}
-          disabled={likedReplies.has(reply.rno)}
-          className={`px-3 py-1 text-xs rounded border transition ${
-            likedReplies.has(reply.rno)
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-              : "border-gray-300 hover:bg-orange-100 hover:border-orange-400 hover:text-orange-600"
-          }`}
-        >
-          {likedReplies.has(reply.rno) ? "추천 완료" : "추천하기"}
-        </button>
-      </div>
-    </div>
-  );
+  // ReplyItem 만 렌더
+  const renderReply = (reply) => <ReplyItem key={reply.rno} reply={reply} bno={bno} refresh={fetchReplies} />;
 
   return (
     <section className="w-full max-w-3xl mx-auto bg-white border rounded-2xl shadow p-6">
-      <h3 className="text-xl font-semibold text-gray-800 mb-6">댓글 {bestReplies.length + generalReplies.length}개</h3>
+      <h3 className="text-xl font-semibold text-gray-800 mb-6">댓글 {totalCount}개</h3>
       <div className="mt-8 space-y-6">
         {bestReplies.map((r) => (
           <div key={r.rno} className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">
@@ -70,9 +46,7 @@ export default function ReplyList({ bno }) {
             {renderReply(r)}
           </div>
         ))}
-        {generalReplies.map((r) => (
-          <div key={r.rno}>{renderReply(r)}</div>
-        ))}
+        {generalReplies.map((r) => renderReply(r))}
       </div>
       <ReplyForm bno={bno} onSubmit={fetchReplies} />
     </section>

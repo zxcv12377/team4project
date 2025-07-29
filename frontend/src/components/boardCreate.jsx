@@ -10,6 +10,8 @@ export default function BoardCreate() {
   const [channelId, setChannelId] = useState(Number(paramChannelId) || "");
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const baseURL = import.meta.env.VITE_API_BASE_URL; // http://localhost:8080/api
+
   const [attachments, setAttachments] = useState([]); // ImageDTO 목록
 
   /* 1) 채널 목록 로딩 */
