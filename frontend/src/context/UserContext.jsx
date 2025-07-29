@@ -20,7 +20,6 @@ export const UserProvider = ({ children }) => {
       const res = await axiosInstance.get("/members/me");
       const token = localStorage.getItem("token");
       setUser({ ...res.data, token });
-      console.log("UserContext data : ", { ...res.data, token });
     } catch (err) {
       console.error("유저 정보 가져오기 실패" + err);
       // 잘못된 토큰 제거

@@ -2,13 +2,22 @@ import React, { useState } from "react";
 import ReplyForm from "./replyForm";
 import axiosInstance from "../lib/axiosInstance";
 
-export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
+export default function ReplyItem({ reply, bno, refresh, depth = 0, onToggleLike }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editedText, setEditedText] = useState(reply.text);
 
   // 로그인한 사용자 정보 가져오기
   const currentUser = JSON.parse(localStorage.getItem("user")); // user = { id, nickname, ... }
+
+  const handleLike = async () => {
+    try {
+      await axiosInstance.post(`/replies/${reply.rno}/like`);
+      refresh();
+    } catch (err) {
+      alert("추천 실패: " + err);
+    }
+  };
 
   const handleDelete = async () => {
     if (!window.confirm("댓글을 삭제하시겠습니까?")) return;
@@ -65,12 +74,25 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
                 </span>
               )}
             </div>
-            <time className="text-xs">{new Date(reply.createdDate).toLocaleString()}</time>
+            <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+              <button
+                onClick={() => handleLike(reply.rno)}
+                className={`px-2 py-1 text-xs rounded border transition ${
+                  reply.likedByCurrentMember
+                    ? "bg-gray-200 text-gray-400 hover:bg-red-100 hover:border-red-400 hover:text-red-600"
+                    : "border-gray-300 hover:bg-orange-100 hover:border-orange-400 hover:text-orange-600"
+                }`}
+              >
+                {reply.likedByCurrentMember ? "👎 취소" : "👍 추천"}
+                <span className="text-orange-500 font-semibold"> {reply.likeCount}</span>
+              </button>
+              <time className="text-xs">{new Date(reply.createdDate).toLocaleString()}</time>
+            </div>
           </div>
 
           <div className="mt-1 text-gray-800" dangerouslySetInnerHTML={{ __html: reply.text }} />
 
-          <div className="flex justify-between items-center mt-2">
+          <div className="flex justify-between items-center mt-2 mb-1">
             <button
               onClick={() => setShowReplyForm(!showReplyForm)}
               className="text-xs text-indigo-500 hover:underline"
@@ -80,7 +102,7 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
 
             {/* ✅ [수정] 자신의 댓글일 때만 수정/삭제 버튼 표시 */}
             {currentUser?.id === reply.writerId && !editing && (
-              <div className="flex gap-2 text-xs mt-2">
+              <div className="flex gap-2 text-xs">
                 <button onClick={() => setEditing(true)} className="text-green-600 hover:underline">
                   수정
                 </button>

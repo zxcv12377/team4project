@@ -11,7 +11,6 @@ export default function MyReply() {
   useEffect(() => loadReplies(), []);
 
   const loadReplies = () => {
-    const token = localStorage.getItem("token");
     axiosInstance.get("/replies/my").then((res) => {
       console.log(res.data[0]);
       setReplies(res.data);
@@ -23,7 +22,6 @@ export default function MyReply() {
     e.stopPropagation(); // ✅ 상세 이동 막기
     if (!window.confirm("정말로 댓글을 삭제하시겠습니까?")) return;
 
-    const token = localStorage.getItem("token");
     try {
       await axiosInstance.delete(`/replies/${rno}`);
       setReplies((prev) => prev.filter((r) => r.rno !== rno));

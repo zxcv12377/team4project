@@ -58,6 +58,9 @@ public class Reply extends Base {
     private boolean deleted = false;
 
     @Builder.Default
+    private boolean best = false;
+
+    @Builder.Default
     @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
     private List<Reply> children = new ArrayList<>();
 
