@@ -1,20 +1,16 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import { useUserContext } from "@/context/UserContext";
 import ImageUploader from "@/components/ImageUploader"; // ✅ 추가
 import axiosInstance from "../lib/axiosInstance";
 
 export default function BoardCreate() {
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
-  const [files, setFiles] = useState([]);
   const [attachments, setAttachments] = useState([]); // 🔥 ImageDTO 배열 저장
 
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
 
-  const baseURL = import.meta.env.VITE_API_BASE_URL;
+  const baseURL = import.meta.env.VITE_API_BASE_URL; // http://localhost:8080/api
 
   // 💡 개별 이미지 삭제
   const handleRemoveImage = (indexToRemove) => {

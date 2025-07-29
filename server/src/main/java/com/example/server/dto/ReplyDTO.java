@@ -37,7 +37,7 @@ public class ReplyDTO {
 
     private boolean deleted;
 
-    private boolean likedByCurrentUser;
+    private boolean likedByCurrentMember;
 
     @Builder.Default
     private List<ReplyDTO> children = new ArrayList<>();
