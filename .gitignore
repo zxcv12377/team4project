@@ -39,7 +39,10 @@ uploads/
 *.class
 
 # Log file
+logs/
 *.log
+*.gz
+*.zip
 
 # BlueJ files
 *.ctxt
