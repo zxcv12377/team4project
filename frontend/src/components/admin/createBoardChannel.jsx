@@ -8,7 +8,7 @@ export default function CreateBoardChannel() {
   const navigate = useNavigate();
   const { user } = useUserContext();
   const [name, setName] = useState("");
-  const [description, setDescription] = useState(""); // ✏️ description 상태 추가
+  const [description, setDescription] = useState("");
 
   // 비관리자 차단
   if (!user?.roles?.includes("ADMIN")) {

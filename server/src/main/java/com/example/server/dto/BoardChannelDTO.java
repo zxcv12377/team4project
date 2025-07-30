@@ -16,7 +16,7 @@ public class BoardChannelDTO {
     @Size(max = 15, message = "채널 이름은 15자 이하로 입력해주세요.")
     private String name;
 
-    @Size(max = 200, message = "설명은 200자 이하로 입력해주세요.")
+    @Size(max = 50, message = "설명은 50자 이하로 입력해주세요.")
     private String description;
 
     /* ---------- 변환 메서드 ---------- */
