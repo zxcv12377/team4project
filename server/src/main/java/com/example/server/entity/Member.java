@@ -90,9 +90,6 @@ public class Member extends Base {
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<ChatRoomMember> chatRoomMembers;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<DmMember> dmMembers;
-
     @OneToMany(mappedBy = "memberA", cascade = CascadeType.ALL)
     private List<Friend> friendsA;
 
