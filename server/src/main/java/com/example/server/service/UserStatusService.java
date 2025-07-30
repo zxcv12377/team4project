@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import com.example.server.dto.StatusChangeEvent;
 import com.example.server.entity.enums.FriendStatus;
 import com.example.server.entity.enums.UserStatus;
-import com.example.server.messaging.EventPublisher;
+import com.example.server.infra.EventPublisher;
 import com.example.server.repository.FriendRepository;
 import com.example.server.repository.MemberRepository;
 
@@ -29,94 +29,77 @@ public class UserStatusService {
 
     private final RedisTemplate<String, String> redisTemplate;
     private final EventPublisher eventPublisher;
-    private final SimpMessagingTemplate messagingTemplate;
     private final FriendRepository friendRepository;
     private final MemberRepository memberRepository;
 
-    public void markOnline(String email, String sessionId) {
-        String sessionKey = "user:" + email + ":sessions";
+    public void markOnline(String Email, String sessionId) {
+        String sessionKey = "user:" + Email + ":sessions";
 
-        // ✅ 기존 세션 정리
-        Set<String> existingSessions = redisTemplate.opsForSet().members(sessionKey);
-        if (existingSessions != null && !existingSessions.isEmpty()) {
-            redisTemplate.opsForSet().remove(sessionKey, existingSessions.toArray());
-            log.info("♻️ 기존 세션 제거: user={}, removedSessions={}", email, existingSessions);
+        Set<String> oldSessions = redisTemplate.opsForSet().members(sessionKey);
+        if (oldSessions != null) {
+            for (String oldSession : oldSessions) {
+                redisTemplate.opsForSet().remove(sessionKey, oldSession);
+                log.info("♻️ 재연결: 이전 세션 {} 제거됨", oldSession);
+            }
         }
 
-        // ✅ 새로운 세션 등록
         redisTemplate.opsForSet().add(sessionKey, sessionId);
-        redisTemplate.opsForSet().add("online_users", email);
-        log.info("✅ 세션 등록 완료: user={}, sessionId={}", email, sessionId);
+        redisTemplate.opsForSet().add("online_users", Email);
+        log.info("✅ 최종 세션 등록: user={}, sessionId={}", Email, sessionId);
 
-        // ✅ Redis PubSub 브로드캐스트
-        eventPublisher.publishOnline(email);
-
-        // ✅ 전체 구독자용 브로드캐스트 (필요 시)
-        messagingTemplate.convertAndSend("/topic/online-users",
-                new StatusChangeEvent(email, UserStatus.ONLINE));
-
-        // ✅ 친구 목록 (내가 친구 추가한 사람 + 나를 친구로 추가한 사람 = 양방향 모두 포함)
-        List<String> notifyTargets = friendRepository.findAllFriendEmailsForNotify(email);
-
-        // ✅ 친구들에게 실시간 알림 전송
-        for (String friendEmail : notifyTargets) {
-            log.info("📡 ONLINE 상태 전송 → 대상: {}, 변경된 유저: {}", friendEmail, email);
-            messagingTemplate.convertAndSendToUser(friendEmail, "/queue/status",
-                    Map.of("email", email, "status", "ONLINE"));
+        if (oldSessions == null || oldSessions.isEmpty()) {
+            List<String> friendUsernames = getFriendUsernames(Email);
+            eventPublisher.publishOnline(Email, friendUsernames);
         }
     }
 
-    public void markOffline(String email, String sessionId) {
-        String sessionsKey = "user:" + email + ":sessions";
+    public void markOffline(String Email, String sessionId) {
+        String sessionsKey = "user:" + Email + ":sessions";
         redisTemplate.opsForSet().remove(sessionsKey, sessionId);
         Long remaining = redisTemplate.opsForSet().size(sessionsKey);
 
-        log.info("❌ Disconnect: user={}, sessionId={}, remaining={}", email, sessionId, remaining);
+        log.info("❌ Disconnect: user={}, sessionId={}, remaining={}", Email, sessionId, remaining);
 
         if (remaining == null || remaining == 0) {
             redisTemplate.delete(sessionsKey);
-            redisTemplate.opsForSet().remove("online_users", email);
-            eventPublisher.publishOffline(email);
-            messagingTemplate.convertAndSend("/topic/online-users",
-                    new StatusChangeEvent(email, UserStatus.OFFLINE));
-            List<String> friends = getFriendemails(email);
-            for (String friend : friends) {
-                log.info("📡 친구 [{}] 에게 OFFLINE 알림 전송", friend);
-                messagingTemplate.convertAndSendToUser(friend, "/queue/status",
-                        Map.of("email", email, "status", "OFFLINE"));
-            }
+            redisTemplate.opsForSet().remove("online_users", Email);
+
+            List<String> friendUsernames = getFriendUsernames(Email);
+            eventPublisher.publishOffline(Email, friendUsernames);
         }
     }
 
-    public List<String> getOnlineFriendemails(String myemail) {
-        Long myId = memberRepository.findByEmail(myemail)
-                .orElseThrow(() -> new UsernameNotFoundException(myemail))
+    public List<String> getOnlineFriendEmails(String myEmail) {
+        Long myId = memberRepository.findByEmail(myEmail)
+                .orElseThrow(() -> new UsernameNotFoundException(myEmail))
                 .getId();
 
-        List<String> allFriends = friendRepository.findFriendEmailsByStatusAndMyId(FriendStatus.ACCEPTED, myId);
+        List<String> allFriends = friendRepository.findFriendEmailsByStatusAndMyId(FriendStatus.ACCEPTED,
+                myId);
         Set<String> online = redisTemplate.opsForSet().members("online_users");
-        log.info("✅ 현재 Redis online_users 값: {}", online);
-
         return allFriends.stream().filter(online::contains).collect(Collectors.toList());
     }
 
-    public List<String> getFriendemails(String myemail) {
-        Long myId = memberRepository.findByEmail(myemail)
-                .orElseThrow(() -> new UsernameNotFoundException(myemail))
+    public List<String> getFriendUsernames(String myEmail) {
+        Long myId = memberRepository.findByEmail(myEmail)
+                .orElseThrow(() -> new UsernameNotFoundException(myEmail))
                 .getId();
 
-        List<String> result = friendRepository.findFriendEmailsByStatusAndMyId(FriendStatus.ACCEPTED, myId);
-        log.info("✅ getFriendemails() - [{}] 의 친구목록: {}", myemail, result);
-        return result;
+        return friendRepository.findFriendEmailsByStatusAndMyId(FriendStatus.ACCEPTED, myId);
     }
+
+    // 서버 실행 시 online_users, session 초기화
 
     @PostConstruct
     public void clearOnlineUsersAtStartup() {
+
         redisTemplate.delete("online_users");
+        // 모든 세션 키 삭제
         Set<String> keys = redisTemplate.keys("user:*:sessions");
         if (keys != null && !keys.isEmpty()) {
             redisTemplate.delete(keys);
         }
-        log.info("🧹 Redis 초기화: online_users 및 user:*:sessions 삭제 완료");
+
+        log.info("🧹 Redis 초기화: online_users 및 user:*:sessions, user:*:refresh 삭제 완료");
     }
 }

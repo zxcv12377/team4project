@@ -21,8 +21,8 @@ public class Invite {
     private String code; // 초대코드
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false)
-    private ChatRoom room; // 초대 대상 방
+    @JoinColumn(name = "server_id", nullable = false)
+    private Server server; // 초대 대상 방
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
