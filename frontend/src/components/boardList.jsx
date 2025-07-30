@@ -23,7 +23,6 @@ export default function BoardList() {
   const boardList = async () => {
     try {
       const res = await axiosInstance.get(`/boards/list?page=${page}&size=10`, { headers });
-      console.log("📦 받은 데이터:", res.data);
       const data = res.data;
       setPosts(data.dtoList || []);
       setTotalPages(data.totalPage || 1);

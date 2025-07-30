@@ -15,9 +15,6 @@ export default function ImageUploader({ onImagesUploaded }) {
   const [previews, setPreviews] = useState([]);
   const [uploading, setUploading] = useState(false);
 
-  const token = localStorage.getItem("token");
-  const headers = { Authorization: `Bearer ${token}` };
-
   const uploadFiles = async (files) => {
     setUploading(true);
     const uploadedImages = [];

@@ -4,6 +4,7 @@ import LoginForm from "./loginForm";
 import RegisterForm from "./registerForm";
 import SlidePopup from "./slidePopup";
 import axiosInstance from "../lib/axiosInstance";
+import BWButton from "./BWButton/BWbutton";
 
 export default function Navbar() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -92,27 +93,18 @@ export default function Navbar() {
                     )}
                     <p className="text-base font-bold text-slate-700">{nickname}</p>
                   </Link>
-                  <button
-                    className="px-3 py-1 text-sm rounded text-red-600 hover:text-white border border-red-500 hover:bg-red-500"
-                    onClick={handleLogout}
-                  >
+                  <BWButton kind={"logout"} variant={8} onClick={handleLogout}>
                     로그아웃
-                  </button>
+                  </BWButton>
                 </>
               ) : (
                 <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowLogin(true)}
-                    className="text-sm bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600"
-                  >
+                  <BWButton kind={"login"} variant={8} onClick={() => setShowLogin(true)}>
                     로그인
-                  </button>
-                  <button
-                    onClick={() => setShowRegister(true)}
-                    className="text-sm bg-purple-500 text-white px-3 py-1 rounded hover:bg-purple-600 pb-15"
-                  >
+                  </BWButton>
+                  <BWButton kind={"register"} variant={8} onClick={() => setShowRegister(true)}>
                     회원가입
-                  </button>
+                  </BWButton>
                 </div>
               )}
             </div>
