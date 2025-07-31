@@ -87,11 +87,8 @@ public class Member extends Base {
     // @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
     // private List<ChatMessageEntity> chatMessageEntities;
 
-    // @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    // private List<ChatRoomMember> chatRoomMembers;
-
-    // @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    // private List<DmMember> dmMembers;
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    private List<ChatRoomMember> chatRoomMembers;
 
     // @OneToMany(mappedBy = "memberA", cascade = CascadeType.ALL)
     // private List<Friend> friendsA;

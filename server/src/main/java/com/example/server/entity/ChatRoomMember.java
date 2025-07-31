@@ -3,6 +3,10 @@ package com.example.server.entity;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -11,7 +15,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = { "chat_room_id", "member_id" }))
 public class ChatRoomMember {
 
