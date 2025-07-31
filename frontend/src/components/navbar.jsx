@@ -19,13 +19,11 @@ export default function Navbar() {
 
   useEffect(() => {
     const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
+    setIsLoggedIn(token);
 
     if (token) {
       axiosInstance
-        .get("/members/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        .get("/members/me")
         .then((res) => {
           setProfileImage(res.data.profileimg);
           setNickname(res.data.nickname);

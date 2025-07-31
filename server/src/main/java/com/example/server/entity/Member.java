@@ -72,47 +72,47 @@ public class Member extends Base {
     private Set<MemberRole> roles = new HashSet<>();
 
     // 선택: 양방향 관계
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<Board> board;
+    // @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    // private List<Board> board;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<Reply> replies;
+    // @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    // private List<Reply> replies;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<VoiceChatLog> voiceLogs;
+    // @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    // private List<VoiceChatLog> voiceLogs;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<ChannelMember> channelMembers;
+    // @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    // private List<ChannelMember> channelMembers;
 
-    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
-    private List<ChatMessageEntity> chatMessageEntities;
+    // @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
+    // private List<ChatMessageEntity> chatMessageEntities;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<ChatRoomMember> chatRoomMembers;
+    // @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    // private List<ChatRoomMember> chatRoomMembers;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<DmMember> dmMembers;
+    // @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    // private List<DmMember> dmMembers;
 
-    @OneToMany(mappedBy = "memberA", cascade = CascadeType.ALL)
-    private List<Friend> friendsA;
+    // @OneToMany(mappedBy = "memberA", cascade = CascadeType.ALL)
+    // private List<Friend> friendsA;
 
-    @OneToMany(mappedBy = "memberB", cascade = CascadeType.ALL)
-    private List<Friend> friendsB;
+    // @OneToMany(mappedBy = "memberB", cascade = CascadeType.ALL)
+    // private List<Friend> friendsB;
 
-    @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL)
-    private List<Invite> invites;
+    // @OneToMany(mappedBy = "creator", cascade = CascadeType.ALL)
+    // private List<Invite> invites;
 
-    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
-    private List<Notification> notificationSender;
+    // @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
+    // private List<Notification> notificationSender;
 
-    @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
-    private List<Notification> notificationReceiver;
+    // @OneToMany(mappedBy = "receiver", cascade = CascadeType.ALL)
+    // private List<Notification> notificationReceiver;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<ReplyLike> replyLikes;
+    // @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    // private List<ReplyLike> replyLikes;
 
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<ServerMember> serverMembers;
+    // @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
+    // private List<ServerMember> serverMembers;
 
     // 기본 권한 부여 메서드(db 저장 전 호출)
     // 회원가입 시 기본적으로 USER 권한을 부여

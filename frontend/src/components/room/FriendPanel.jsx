@@ -77,7 +77,7 @@ export default function FriendPanel() {
 
   const handleAdd = (id) => {
     if (!id) return;
-    axiosInstance.post("/api/friends", { targetMemberId: id }).then(() => {
+    axiosInstance.post("/friends", { targetMemberId: id }).then(() => {
       const newFriend = result.find((r) => r.id === id);
       if (newFriend) {
         dispatch({
@@ -113,7 +113,7 @@ export default function FriendPanel() {
 
   const handleAccept = async (friendId) => {
     try {
-      await axiosInstance.post(`/api/friends/${friendId}/accept`);
+      await axiosInstance.post(`/friends/${friendId}/accept`);
       dispatch({
         type: "SET_RECEIVED",
         payload: state.receivedRequests.filter((req) => req.requestId !== friendId),
@@ -124,7 +124,7 @@ export default function FriendPanel() {
   };
 
   const handleReject = (friendId) => {
-    axiosInstance.post(`/api/friends/${friendId}/reject`).then(() => {
+    axiosInstance.post(`/friends/${friendId}/reject`).then(() => {
       dispatch({
         type: "SET_RECEIVED",
         payload: state.receivedRequests.filter((req) => req.requestId !== friendId),
