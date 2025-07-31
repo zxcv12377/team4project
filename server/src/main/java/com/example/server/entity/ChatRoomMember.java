@@ -32,4 +32,13 @@ public class ChatRoomMember {
     @JoinColumn(name = "member_id", nullable = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
+
+    @Builder.Default
+    @Column(nullable = false)
+    @ColumnDefault("1")
+    private boolean visible = true;
+
+    @Builder.Default
+    @Column(name = "left_at")
+    private LocalDateTime leftAt = null;
 }

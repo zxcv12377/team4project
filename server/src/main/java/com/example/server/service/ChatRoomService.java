@@ -93,9 +93,4 @@ public class ChatRoomService {
         // 3. 방 삭제
         chatRoomRepository.deleteById(roomId);
     }
-
-    public ChatRoom findByRoomKey(String roomKey) {
-        return chatRoomRepository.findByRoomKey(roomKey);
-    }
-
 }

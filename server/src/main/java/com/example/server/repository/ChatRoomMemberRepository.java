@@ -37,7 +37,7 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
     @Query("""
                 UPDATE ChatRoomMember cm
                 SET cm.visible = false, cm.leftAt = :leftAt
-                WHERE cm.chatRoom.id = :roomId AND cm.member.mno = :memberId
+                WHERE cm.chatRoom.id = :roomId AND cm.member.id = :memberId
             """)
     void markAsHidden(@Param("roomId") Long roomId, @Param("memberId") Long memberId,
             @Param("leftAt") LocalDateTime leftAt);
