@@ -245,7 +245,7 @@ export default function FriendPanel() {
               <div>
                 <div className="text-white font-semibold">{f.name}</div>
                 <div className="text-zinc-400 text-xs">
-                  {state.onlineUsers.has(f.username) ? (
+                  {state.onlineUsers.has(f.email) ? (
                     <span className="flex items-center">
                       <span className="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
                       온라인
