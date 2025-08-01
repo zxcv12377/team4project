@@ -4,11 +4,12 @@ import { useVoiceChat } from "../hooks/useVoiceChat";
 import VoiceChannelOuter from "../components/voice/VoiceChannelOuter";
 import axiosInstance from "../lib/axiosInstance";
 import { useRealtime } from "@/context/RealtimeContext";
+import { useSocket } from "@/context/WebSocketContext";
 
 export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSelectDMRoom, onSelectChannel }) {
   const { user } = useUserContext();
   const currentUserId = user?.id;
-
+  const { subscribe } = useSocket();
   const [friends, setFriends] = useState([]);
   const [channels, setChannels] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
@@ -21,16 +22,55 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
   const { state, dispatch, ready, refreshDmRooms } = useRealtime();
   const dmRooms = state.dmRooms;
   const initialLoadRef = useRef(false);
-
-
+  
 useEffect(() => {
-  if (dmMode && user?.id && ready && !initialLoadRef.current) {
+  console.log("🔥 DM Rooms 응답:", dmRooms);
+}, [dmRooms]);
+  
+useEffect(() => {
+  console.log("⚠️ refresh 조건 체크:", {
+    dmMode,
+    userId: user?.id,
+    ready,
+  });
+}, [dmMode, user?.id, ready]);
+  
+useEffect(() => {
+  if (dmMode && user?.id && ready) {
     console.log("🔄 DM 목록 초기 로딩");
     refreshDmRooms?.();
-    initialLoadRef.current = true;
   }
-}, [dmMode, user?.id, ready, refreshDmRooms]);
+}, [dmMode, user?.id, ready]);
 
+  useEffect(() => {
+  if (!dmMode || !ready) return;
+
+  const subscriptions = [];
+
+  dmRooms.forEach((room) => {
+    const topic = `/topic/chatroom.${room.id}`;
+    const sub = subscribe(
+      topic,
+     async (payload) => {
+        console.log("💬 새 메시지 도착:", payload);
+        const matched = dmRooms.find((r) => r.id === payload.roomId);
+        if (!matched?.visible) {
+          console.log("🆕 숨겨진 DM 방에서 수신 → DM 목록 새로고침 시도");
+          await refreshDmRooms?.();
+        }
+      },
+      {
+        dmMode: true,
+        refreshDmRooms,
+      }
+    );
+    subscriptions.push(sub);
+  });
+
+  return () => {
+    subscriptions.forEach((s) => s.unsubscribe?.());
+  };
+}, [dmMode, ready, dmRooms]);
 
   const memoizedMember = useMemo(
     () => ({
@@ -122,12 +162,15 @@ useEffect(() => {
   function handleDeleteDmRoom(roomId) {
     if (!window.confirm("이 DM방을 목록에서 삭제하시겠습니까?")) return;
 
-    axiosInstance.delete(`/dm/room/${roomId}/hide/${currentUserId}`).then(() => {
-      dispatch({
-        type: "SET_DM_ROOMS",
-        payload: dmRooms.filter((room) => room.id !== roomId),
-      });
-    });
+   axiosInstance.delete(`/dm/room/${roomId}/hide/${currentUserId}`).then(() => {
+  const updatedRooms = dmRooms.map((room) =>
+    room.id === roomId ? { ...room, visible: false } : room
+  );
+  dispatch({
+    type: "SET_DM_ROOMS",
+    payload: updatedRooms,
+  });
+});
   }
 
   const handleJoinVoiceChannel = async (channelId) => {
@@ -164,7 +207,7 @@ useEffect(() => {
         </div>
         <ul className="px-2 flex-1 overflow-y-auto">
           {!ready && <li className="px-3 py-2 text-zinc-500 text-sm">연결 중...</li>}
-          {ready && dmRooms.length === 0 && (
+          {ready && dmRooms.filter(room => room.visible).length === 0 && (
             <li className="px-3 py-2 text-zinc-500 text-sm">DM 목록이 없습니다</li>
           )}
           {dmRooms?.filter((room) => room.visible).map((room) => (

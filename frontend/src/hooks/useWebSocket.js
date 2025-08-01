@@ -152,41 +152,51 @@ export const useWebSocket = (token, onConnect) => {
   }, []);
 
   const subscribe = useCallback(
-    (topic, callback) => {
-      if (!stompRef.current || !stompRef.current.connected) {
-        console.warn(`⛔ Cannot subscribe to ${topic} – not connected`);
-        return { unsubscribe: () => {} };
+  (topic, callback, options = {}) => {
+    if (!stompRef.current || !stompRef.current.connected) {
+      console.warn(`⛔ Cannot subscribe to ${topic} – not connected`);
+      return { unsubscribe: () => {} };
+    }
+
+    const sub = stompRef.current.subscribe(topic, (msg) => {
+      const payload = JSON.parse(msg.body);
+
+      // ✅ DM 채팅방 메시지 도착 시 visible 상태 복구용 갱신
+      callback(payload);
+
+      // ✅ 옵션에 따라 DM 목록 자동 리프레시
+      if (options.dmMode && typeof options.refreshDmRooms === "function") {
+        console.log("🔁 DM 목록 갱신 시도 (메시지 수신)");
+        options.refreshDmRooms();
       }
+    });
 
-      const sub = stompRef.current.subscribe(topic, (msg) => {
-        callback(JSON.parse(msg.body));
-      });
-
-      return {
-        unsubscribe: () => {
-          try {
-            if (stompRef.current?.connected) {
-              sub.unsubscribe();
-            }
-          } catch (e) {
-            console.warn("❗ unsubscribe failed", e);
+    return {
+      unsubscribe: () => {
+        try {
+          if (stompRef.current?.connected) {
+            sub.unsubscribe();
           }
-        },
-      };
-    },
-    [connected]
-  );
+        } catch (e) {
+          console.warn("❗ unsubscribe failed", e);
+        }
+      },
+    };
+  },
+  [connected]
+);
 
-  const send = useCallback(
-    (destination, body) => {
-      if (stompRef.current && connected) {
-        stompRef.current.send(destination, {}, JSON.stringify(body));
-      } else {
-        console.warn("❌ Cannot send message – not connected");
-      }
-    },
-    [connected]
-  );
+  const send = useCallback((destination, body) => {
+    const socketReady = stompRef.current?.ws?.readyState === WebSocket.OPEN;
+    console.log("📤 메시지 전송 시도", { connected, socketReady });
+
+    if (stompRef.current && connected && socketReady) {
+      stompRef.current.send(destination, {}, JSON.stringify(body));
+      console.log("📤 메시지 전송 완료", destination);
+    } else {
+      console.warn("❌ 메시지 전송 실패 – WebSocket 미연결 상태");
+    }
+  }, [connected]);
 
   return {
     connected,

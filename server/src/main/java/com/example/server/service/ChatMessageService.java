@@ -15,6 +15,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.hibernate.Hibernate;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -45,6 +46,7 @@ public class ChatMessageService {
                 }
         }
 
+        @Transactional
         public void handleMessage(Long roomId, String message, String email) {
                 // DB에 저장
                 Member sender = memberRepository.findByEmail(email)
