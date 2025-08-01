@@ -31,7 +31,7 @@ public class ChatRoom {
 
     // (양방향 옵션)
     @Builder.Default
-    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "room", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ChatMessageEntity> messages = new ArrayList<>();
 
     // 채널 타입 (TEXT, VOICE)

@@ -56,6 +56,11 @@ export const useWebSocket = (token, onConnect) => {
 
   const connect = useCallback(
     async (tokenArg, callback) => {
+       if (stompRef.current?.connected) {
+      console.log("⚠️ 이미 STOMP 연결되어 있음. connect() 중복 호출 무시");
+      return;
+      }
+      
       let authToken = tokenArg || tokenRef.current;
       if (!authToken) return;
 
@@ -71,6 +76,7 @@ export const useWebSocket = (token, onConnect) => {
 
       const socket = new WebSocket(`${webSocketURL}/ws-chat`);
       const client = Stomp.over(socket);
+
       client.heartbeat.outgoing = 10000;
       client.heartbeat.incoming = 10000;
       client.debug = () => {};
@@ -93,8 +99,7 @@ export const useWebSocket = (token, onConnect) => {
         () => {
           console.log("✅ STOMP CONNECTED");
           setConnected(true);
-          client.send("/app/auth", {}, JSON.stringify({ token: `Bearer ${authToken}` }));
-          setConnected(true);
+          client.send("/app/auth", {}, JSON.stringify({ token: authToken }));
           reconnectAttempt.current = 0;
           reconnectTimer.current = null;
           onConnect?.();
@@ -148,7 +153,7 @@ export const useWebSocket = (token, onConnect) => {
 
   const subscribe = useCallback(
     (topic, callback) => {
-      if (!stompRef.current || !connected) {
+      if (!stompRef.current || !stompRef.current.connected) {
         console.warn(`⛔ Cannot subscribe to ${topic} – not connected`);
         return { unsubscribe: () => {} };
       }

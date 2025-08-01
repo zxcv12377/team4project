@@ -76,9 +76,9 @@ function App() {
   if (isLoading) return <div>Loading...</div>;
   return (
     <WebSocketContext.Provider value={ws}>
+          <UserProvider>
       <ChatProvider>
         <ThemeProvider>
-          <UserProvider>
             <RealtimeProvider socket={ws}>
               <BrowserRouter>
                 <Routes>
@@ -92,7 +92,6 @@ function App() {
                     <Route path="/register" element={<RegisterForm />} />
                     <Route path="/reply" element={<ReplyList />} />
                     <Route path="/UpdateProfile" element={<UpdateMyProfile />} />
-                    <Route path="/chatting/*" element={<ChattingModule />} />
                     <Route path="/boards" element={<BoardList />} />
                     <Route path="/boards/create" element={<BoardCreate />} />
                     <Route path="/boards/:bno" element={<BoardDetail />} />
@@ -106,9 +105,9 @@ function App() {
                 </Routes>
               </BrowserRouter>
             </RealtimeProvider>
-          </UserProvider>
         </ThemeProvider>
       </ChatProvider>
+          </UserProvider>
     </WebSocketContext.Provider>
   );
 }

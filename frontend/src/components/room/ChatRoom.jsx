@@ -1,73 +1,77 @@
-import { useEffect, useState } from "react";
-import axios from "@/lib/axiosInstance";
-// import { useWebSocket } from "../../hooks/useWebSocket";
+import { useEffect, useRef, useState } from "react";
+import axiosInstance from '@/lib/axiosInstance';
 
-export default function ChatRoom({ roomId, token, connect, connected, subscribe, send }) {
+export default function ChatRoom({ roomId, currentUser, subscribe, send ,connected }) {
   const [messageMap, setMessageMap] = useState({});
   const [input, setInput] = useState("");
   const messages = messageMap[roomId] || [];
+  const [authenticated, setAuthenticated] = useState(false);
+  const scrollRef = useRef(null);
+  const subRef = useRef(null); // ✅ 구독 추적
 
-  // const {  } = useWebSocket(token, () => {
-  //   send("/app/auth", { token: "Bearer " + token });
-  // });
-
+  // 1. 연결 + 인증
   useEffect(() => {
-    if (connect && token) {
-      console.log("✅ WebSocket 연결 후 /app/auth 인증 메시지 전송");
-      send("/app/auth", { token: "Bearer " + token });
-    }
-  }, [connected, token]);
-
-  // 메시지 로딩
+  if (connected && currentUser?.token) {
+    console.log("✅ ChatRoom 인증 메시지 전송");
+    send("/app/auth", { token: "Bearer " + currentUser.token });
+    setAuthenticated(true);
+  }
+  }, [connected, currentUser?.token]);
+  
   useEffect(() => {
-    if (!roomId || messageMap[roomId]) return;
+  console.log("💡 useEffect 조건 체크", { roomId, connected, subscribe });
+}, [roomId, connected, subscribe]);
 
-    axios
-      .get(`/chat/${roomId}`)
-      .then((res) => {
-        setMessageMap((prev) => ({
+// ✅ 3. 실시간 구독
+useEffect(() => {
+  if (!roomId || !connected || !subscribe) return;
+
+  console.log("🟢 실시간 채팅 구독 시작:", `/topic/chatroom.${roomId}`);
+  subRef.current = subscribe(`/topic/chatroom.${roomId}`, payload => {
+    console.log("📥 메시지 수신:", payload);
+    setMessageMap(prev => ({
+      ...prev,
+      [roomId]: [...(prev[roomId] || []), payload]
+    }));
+  });
+
+  return () => {
+    subRef.current?.unsubscribe?.();
+    console.log("🔴 채팅 구독 해제됨:", `/topic/chatroom.${roomId}`);
+  };
+}, [roomId, connected]);
+  
+  // 2. 메시지 가져오기
+  useEffect(() => {
+    if (!roomId) return;
+    if (messageMap[roomId]) return;
+
+    axiosInstance.get(`/chat/${roomId}`)
+      .then(res => {
+        setMessageMap(prev => ({
           ...prev,
-          [roomId]: res.data || [],
+          [roomId]: res.data || []
         }));
       })
       .catch(() => {
-        setMessageMap((prev) => ({
+        setMessageMap(prev => ({
           ...prev,
-          [roomId]: [],
+          [roomId]: []
         }));
       });
   }, [roomId]);
 
-  // 구독
-  useEffect(() => {
-    if (!roomId || !connected) return;
-    console.log("🟢 Subscribing to", `/topic/chatroom.${roomId} + ${connected}`);
-    const sub = subscribe(`/topic/chatroom.${roomId}`, (payload) => {
-      let parsed;
-      try {
-        parsed = typeof payload === "string" ? JSON.parse(payload) : payload;
-      } catch (err) {
-        console.log("메세지 파싱 실패 {}", err);
-        return;
-      }
-      console.log("✅ 수신된 메시지:", parsed);
-      setMessageMap((prev) => ({
-        ...prev,
-        [roomId]: [...(prev[roomId] || []), parsed],
-      }));
-    });
-    return () => {
-      sub?.unsubscribe?.();
-    };
-  }, [roomId, connected]);
 
+  // 4. 스크롤 자동 이동
+  useEffect(() => {
+    if (scrollRef.current) {
+      scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    }
+  }, [messages]);
+
+  // 메시지 전송
   function sendMessage() {
     if (!input.trim()) return;
-    if (!connected) {
-      console.warn("❌ WebSocket not connected. 메시지 전송 실패");
-      return;
-    }
-
     send(`/app/chat.send/${roomId}`, {
       message: input,
     });
@@ -75,23 +79,34 @@ export default function ChatRoom({ roomId, token, connect, connected, subscribe,
   }
 
   return (
-    <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto p-2 bg-zinc-950">
+    <div className="w-full h-full flex flex-col min-h-0">
+      {/* 채팅 메시지 목록 */}
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto p-4 bg-[#313338] text-white min-h-0"
+        style={{ height: 0 }}
+      >
         {messages.map((msg, i) => (
-          <div key={`${msg.message}-${i}`}>
-            {msg?.sender && <span className="font-bold">{msg.sender}:</span>} {msg?.message}
+          <div key={i} className="mb-2">
+            {msg.sender && <span className="font-bold text-blue-400">{msg.sender}:</span>}{" "}
+            <span className="text-gray-200">{msg.message}</span>
           </div>
         ))}
       </div>
-      <div className="flex gap-2 p-2 bg-zinc-900 border-t border-zinc-700">
+
+      {/* 입력창 */}
+      <div className="flex-shrink-0 flex gap-2 p-4 bg-[#2b2d31] border-t border-[#1e1f22]">
         <input
-          className="flex-1 bg-zinc-800 rounded p-2 text-white"
+          className="flex-1 bg-[#383a40] rounded-lg px-4 py-2 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && sendMessage()}
-          placeholder="메시지 입력"
+          placeholder="메시지 입력..."
         />
-        <button className="bg-blue-600 text-white rounded px-4" onClick={sendMessage}>
+        <button
+          className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg px-6 py-2 font-medium transition-colors"
+          onClick={sendMessage}
+        >
           전송
         </button>
       </div>

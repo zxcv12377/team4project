@@ -3,6 +3,7 @@ package com.example.server.controller;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,16 +34,14 @@ public class DmRoomContoller {
     public ChatRoomResponseDTO createOrGetDmRoom(@RequestBody DmRoomRequestDTO request) {
         log.info("📦 DM 요청 도착 - myId: {}, friendId: {}", request.getMyId(), request.getFriendId());
         ChatRoom room = dmRoomService.getOrCreateDmRoom(request.getMyId(), request.getFriendId());
-        return ChatRoomResponseDTO.from(room);
+        return ChatRoomResponseDTO.from(room, request.getMyId());
     }
 
     // 내가 속한 DM방 리스트
     @GetMapping("/rooms/{memberId}")
     public List<ChatRoomResponseDTO> getMyDmRooms(@PathVariable Long memberId) {
-        return dmRoomService.findMyDmRooms(memberId)
-                .stream()
-                .map(ChatRoomResponseDTO::from)
-                .collect(Collectors.toList());
+        return dmRoomService.findMyDmRooms(memberId);
+
     }
 
     // DM방 참여자 리스트
@@ -50,5 +49,15 @@ public class DmRoomContoller {
     public List<MemberResponseDTO> getMembers(@PathVariable Long roomId) {
         List<Member> members = dmRoomService.getMembers(roomId);
         return members.stream().map(MemberMapper::toDTO).toList();
+    }
+
+    @DeleteMapping("/room/{roomId}/hide/{memberId}")
+    public void hideDmRoom(@PathVariable Long roomId, @PathVariable Long memberId) {
+        dmRoomService.hideDmRoom(roomId, memberId);
+    }
+
+    @PostMapping("/room/{roomId}/restore/{memberId}")
+    public void restoreDmRoom(@PathVariable Long roomId, @PathVariable Long memberId) {
+        dmRoomService.restoreDmIfHidden(roomId, memberId);
     }
 }
