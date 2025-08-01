@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.example.server.entity.enums.FriendStatus;
 
 @Entity
@@ -21,10 +24,12 @@ public class Friend {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "memberA_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Member memberA;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "memberB_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Member memberB;
 
     @Enumerated(EnumType.STRING)

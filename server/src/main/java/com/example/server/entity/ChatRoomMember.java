@@ -1,5 +1,12 @@
 package com.example.server.entity;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
+import java.time.LocalDateTime;
+
+import org.hibernate.annotations.ColumnDefault;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -8,7 +15,7 @@ import lombok.*;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 @Table(uniqueConstraints = @UniqueConstraint(columnNames = { "chat_room_id", "member_id" }))
 public class ChatRoomMember {
 
@@ -18,9 +25,20 @@ public class ChatRoomMember {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "chat_room_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private ChatRoom chatRoom;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
+
+    @Builder.Default
+    @Column(nullable = false)
+    @ColumnDefault("1")
+    private boolean visible = true;
+
+    @Builder.Default
+    @Column(name = "left_at")
+    private LocalDateTime leftAt = null;
 }

@@ -8,6 +8,9 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Component;
 
 import com.example.server.dto.FriendEvent;
+import com.example.server.dto.StatusChangeEvent;
+import com.example.server.dto.event.ServerMemberEvent;
+import com.example.server.entity.enums.RedisChannelConstants;
 import com.example.server.repository.MemberRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -26,20 +29,29 @@ public class RedisSubscriber implements MessageListener {
     @Override
     public void onMessage(Message message, byte[] pattern) {
         try {
+            String channel = new String(message.getChannel(), StandardCharsets.UTF_8);
             String body = new String(message.getBody(), StandardCharsets.UTF_8);
-            FriendEvent event = objectMapper.readValue(body, FriendEvent.class);
-            log.info("🔔 수신한 온라인 상태 이벤트: {}", event);
 
-            // targetUserId → username 조회 필요
-            String email = memberRepository.findEmailById(event.getTargetUserId());
+            if (RedisChannelConstants.FRIEND_REQUEST_CHANNEL.equals(channel)) {
+                FriendEvent event = objectMapper.readValue(body, FriendEvent.class);
+                log.info("🔔 친구 요청 수신: {}", event);
+                String username = memberRepository.findEmailById(event.getTargetUserId());
+                messagingTemplate.convertAndSendToUser(username, "/queue/friend", event);
 
-            messagingTemplate.convertAndSendToUser(
-                    email,
-                    "/queue/friend",
-                    event);
+            } else if (RedisChannelConstants.SERVER_MEMBER_CHANGE.equals(channel)) {
+                ServerMemberEvent event = objectMapper.readValue(body, ServerMemberEvent.class);
+                log.info("📡 서버 멤버 변경 수신: {}", event);
+                messagingTemplate.convertAndSend(
+                        "/topic/server." + event.getServerId() + ".members", event);
+
+            } else if ("status.change".equals(channel)) {
+                StatusChangeEvent event = objectMapper.readValue(body, StatusChangeEvent.class);
+                log.info("🟢 상태 변경 수신: {}", event);
+                messagingTemplate.convertAndSend("/topic/online-users", event);
+            }
 
         } catch (Exception e) {
-            log.error("친구 이벤트 수신 실패", e);
+            log.error("❌ Redis 메시지 수신 처리 중 오류 발생", e);
         }
     }
 }
