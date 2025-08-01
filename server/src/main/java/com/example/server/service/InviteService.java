@@ -3,24 +3,21 @@ package com.example.server.service;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
+import java.security.SecureRandom;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.text.RandomStringGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.server.dto.InviteRequestDTO;
 import com.example.server.dto.InviteResponseDTO;
 import com.example.server.dto.event.ServerMemberEvent;
-import com.example.server.entity.ChannelMember;
-import com.example.server.entity.ChatRoom;
 import com.example.server.entity.Invite;
 import com.example.server.entity.Member;
 import com.example.server.entity.Server;
 import com.example.server.entity.ServerMember;
-import com.example.server.entity.enums.ChannelRole;
 import com.example.server.entity.enums.ServerRole;
 import com.example.server.infra.EventPublisher;
-import com.example.server.repository.ChannelMemberRepository;
-import com.example.server.repository.ChatRoomRepository;
 import com.example.server.repository.InviteRepository;
 import com.example.server.repository.MemberRepository;
 import com.example.server.repository.ServerMemberRepository;
@@ -38,11 +35,17 @@ public class InviteService {
     private final InviteRepository inviteRepository;
     private final ServerMemberRepository serverMemberRepository;
     private final EventPublisher eventPublisher;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     // 랜덤 코드 생성 유틸
+    private static final RandomStringGenerator generator = new RandomStringGenerator.Builder()
+            .withinRange('0', 'z')
+            .filteredBy(Character::isLetterOrDigit)
+            .usingRandom(SECURE_RANDOM::nextInt)
+            .build();
+
     private String generateRandomCode() {
-        // 8자리 영문+숫자 (커스텀 가능)
-        return RandomStringUtils.randomAlphanumeric(8);
+        return generator.generate(8);
     }
 
     public Invite createInvite(Long creatorId, InviteRequestDTO dto) {

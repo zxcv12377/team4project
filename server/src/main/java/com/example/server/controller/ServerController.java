@@ -4,10 +4,13 @@ import com.example.server.dto.ChatRoomResponseDTO;
 import com.example.server.dto.ServerRequestDTO;
 import com.example.server.dto.ServerResponseDTO;
 import com.example.server.security.CustomMemberDetails;
+import com.example.server.service.InviteService;
+import com.example.server.service.ServerMemberService;
 import com.example.server.service.ServerService;
 import lombok.RequiredArgsConstructor;
 
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -19,6 +22,8 @@ import org.springframework.web.bind.annotation.*;
 public class ServerController {
 
     private final ServerService serverService;
+    private final InviteService inviteService;
+    private final ServerMemberService serverMemberService;
 
     // 전체 서버 검색용
     @GetMapping
@@ -62,7 +67,20 @@ public class ServerController {
             @PathVariable Long serverId) {
         if (member == null)
             return ResponseEntity.status(401).build();
-        serverService.joinServer(serverId, member.getId());
+        serverMemberService.joinServer(serverId, member.getId());
+        return ResponseEntity.ok().build();
+    }
+
+    // 초대코드 참여
+    @PostMapping("/join")
+    public ResponseEntity<Void> joinByCode(
+            @AuthenticationPrincipal CustomMemberDetails member,
+            @RequestBody Map<String, String> body) {
+        if (member == null)
+            return ResponseEntity.status(401).build();
+
+        String code = body.get("code");
+        inviteService.joinByInvite(code, member.getId()); // 초대코드 → 서버 참여 처리
         return ResponseEntity.ok().build();
     }
 

@@ -81,9 +81,9 @@ function App() {
   if (isLoading) return <div>Loading...</div>;
   return (
     <WebSocketContext.Provider value={ws}>
-      <ChatProvider>
-        <ThemeProvider>
-          <UserProvider>
+      <UserProvider>
+        <ChatProvider>
+          <ThemeProvider>
             <RealtimeProvider socket={ws}>
               <BrowserRouter>
                 <Routes>
@@ -115,9 +115,9 @@ function App() {
                 </Routes>
               </BrowserRouter>
             </RealtimeProvider>
-          </UserProvider>
-        </ThemeProvider>
-      </ChatProvider>
+          </ThemeProvider>
+        </ChatProvider>
+      </UserProvider>
     </WebSocketContext.Provider>
   );
 }
