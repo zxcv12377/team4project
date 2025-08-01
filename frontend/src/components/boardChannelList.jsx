@@ -43,7 +43,7 @@ export default function BoardChannelList() {
               onClick={() => navigate(`/channels/${ch.id}`)}
               className="cursor-pointer bg-white rounded-lg border border-gray-200 shadow hover:shadow-lg p-4 flex flex-col items-center text-center transition"
             >
-              <span className="text-lg font-semibold text-gray-800 mb-2">#{ch.name}</span>
+              <span className="text-lg font-semibold text-gray-800 mb-2">{ch.name}</span>
               {ch.description && <p className="text-sm text-gray-500 line-clamp-2">{ch.description}</p>}
             </li>
           ))}

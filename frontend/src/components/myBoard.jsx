@@ -37,7 +37,7 @@ export default function MyBoard() {
           {posts.map((post) => (
             <li
               key={post.bno}
-              onClick={() => navigate(`/boards/${post.bno}`)}
+              onClick={() => navigate(`/channels/${post.channelId}/${post.bno}`)}
               className="p-3 bg-white rounded-lg shadow-sm hover:shadow-md flex justify-between items-center border border-yellow-100 cursor-pointer transition"
             >
               {/* 제목 · 날짜 */}

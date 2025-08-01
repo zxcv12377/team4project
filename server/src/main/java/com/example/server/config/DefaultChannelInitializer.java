@@ -33,6 +33,10 @@ public class DefaultChannelInitializer implements ApplicationRunner {
                                 BoardChannel.builder()
                                                 .name("최고딸기 게시판")
                                                 .description("딸기(좋아요)를 많이 받은 게시글 모음")
+                                                .build(),
+                                BoardChannel.builder()
+                                                .name("전체게시판")
+                                                .description("모든 채널 게시글 모음")
                                                 .build());
 
                 defaults.forEach(c -> repo.findByName(c.getName())
