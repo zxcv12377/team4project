@@ -123,4 +123,22 @@ public class MemberServiceImpl implements MemberService {
                 .map(MemberMapper::toDTO)
                 .toList();
     }
+
+    @Override
+    @Transactional
+    public List<MemberResponseDTO> findAll() {
+        return memberRepository.findAll() // 모든 Member 엔티티
+                .stream()
+                .map(MemberMapper::toDTO) // DTO 변환
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public void deleteByEmail(String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("회원이 존재하지 않습니다."));
+        tokenRepository.deleteByEmail(member.getEmail());
+        memberRepository.delete(member);
+    }
 }

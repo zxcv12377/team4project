@@ -35,7 +35,7 @@ const UpdateMyProfile = () => {
       if (err.response?.status === 401) {
         alert("세션이 만료되었습니다. 다시 로그인해주세요.");
         localStorage.removeItem("token");
-        navigate("/boards");
+        navigate("/");
       } else {
         setError("프로필 정보를 불러오지 못했습니다.");
       }
@@ -123,7 +123,7 @@ const UpdateMyProfile = () => {
       await axiosInstance.delete("/members/delete", { headers });
       localStorage.removeItem("token");
       alert("회원 탈퇴가 완료되었습니다.");
-      navigate("/boards");
+      navigate("/");
     } catch {
       setError("❌ 회원 탈퇴 실패");
     }

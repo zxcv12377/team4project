@@ -132,7 +132,7 @@ public class ReplyController {
         return ResponseEntity.ok("댓글 삭제 완료");
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     @GetMapping("/my")
     public ResponseEntity<?> getMyReplies(@AuthenticationPrincipal CustomMemberDetails currentMemeber) {
         Member member = memberRepository.findById(currentMemeber.getId())

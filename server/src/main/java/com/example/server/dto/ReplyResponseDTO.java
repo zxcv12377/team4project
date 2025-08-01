@@ -41,6 +41,9 @@ public class ReplyResponseDTO {
 
     private boolean likedByMe;
 
+    private Long channelId;
+    private String channelName;
+
     public ReplyResponseDTO(Reply reply) {
         this.rno = reply.getRno();
         this.text = reply.getText();

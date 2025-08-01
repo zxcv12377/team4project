@@ -11,4 +11,6 @@ public interface BoardRepository extends JpaRepository<Board, Long>, SearchBoard
 
     List<Board> findAllByMember(Member member);
 
+    List<Board> findByChannelId(Long channelId);
+
 }

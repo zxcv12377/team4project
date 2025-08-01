@@ -12,6 +12,7 @@ import lombok.extern.log4j.Log4j2;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -114,5 +115,20 @@ public class MemberController {
             @RequestParam String name,
             @AuthenticationPrincipal CustomMemberDetails principal) {
         return memberService.searchMembers(name, principal.getId());
+    }
+
+    // ------------ 여기서부터 관리자 기능 --------------
+    @GetMapping("/admin/list")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<MemberResponseDTO>> getAllMembers() {
+        List<MemberResponseDTO> members = memberService.findAll();
+        return ResponseEntity.ok(members);
+    }
+
+    @DeleteMapping("/admin/{email}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> deleteMemberByEmail(@PathVariable String email) {
+        memberService.delete(email);
+        return ResponseEntity.ok().build();
     }
 }

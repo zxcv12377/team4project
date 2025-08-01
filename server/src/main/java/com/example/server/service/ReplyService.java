@@ -46,6 +46,7 @@ public class ReplyService {
                                 .board(board)
                                 .member(member) // 🔐 로그인된 사용자
                                 .parent(parent)
+                                .channel(board.getChannel())
                                 .build();
 
                 return replyRepository.save(reply).getRno();
@@ -237,6 +238,8 @@ public class ReplyService {
                                 .deleted(reply.isDeleted())
                                 .likeCount(likeCount)
                                 .likedByCurrentMember(likedByCurrentMember)
+                                .channelId(reply.getChannel().getId())
+                                .channelName(reply.getChannel().getName())
                                 .children(reply.getChildren().stream()
                                                 .map(child -> toResponseDTOWithChildren(child, currentMember))
                                                 .collect(Collectors.toList()))
