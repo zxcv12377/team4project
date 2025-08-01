@@ -97,7 +97,6 @@ function App() {
                     <Route path="/register" element={<RegisterForm />} />
                     <Route path="/reply" element={<ReplyList />} />
                     <Route path="/UpdateProfile" element={<UpdateMyProfile />} />
-                    <Route path="/chatting/*" element={<ChattingModule />} />
                     <Route path="/channels/:channelId" element={<BoardList />} />
                     <Route path="/channels/:channelId/create" element={<BoardCreate />} />
                     <Route path="/channels/:channelId/:bno" element={<BoardDetail />} />
