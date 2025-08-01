@@ -58,7 +58,7 @@ export default function MainPage() {
   return (
     <div className="p-6 w-1/2 mx-auto grid grid-cols-2 grid-rows-3 divide-x divide-y border border-gray-200 bg-white">
       {sections.map((sec) => (
-        <div key={sec.id} className="p-4 flex flex-col">
+        <div key={sec.id} className="p-4 flex flex-col border">
           <div className="flex items-center justify-between mb-2 bg-gray-100">
             <h3
               onClick={() => navigate(`/channels/${sec.id}`)}

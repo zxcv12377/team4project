@@ -16,7 +16,7 @@ export default function BoardList() {
   const headers = { Authorization: `Bearer ${token}` };
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
-  /* ---------- 채널 이름 로딩 ---------- */
+  // 채널 이름 로딩
   useEffect(() => {
     if (!channelId) {
       setChannelName("전체 게시판");
