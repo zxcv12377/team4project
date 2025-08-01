@@ -4,26 +4,27 @@ import { useLocation, useNavigate } from "react-router-dom";
 import axiosInstance from "../lib/axiosInstance";
 
 export default function BoardSearch() {
-  const { search } = useLocation(); // "?type=tc&keyword=foo&page=1"
+  const { search } = useLocation();
   const navigate = useNavigate();
+
   const params = new URLSearchParams(search);
   const type = params.get("type");
   const keyword = params.get("keyword");
   const page = parseInt(params.get("page") || "1", 10);
 
-  const [channelsMap, setChannelsMap] = useState({}); // id → name
+  const [channelsMap, setChannelsMap] = useState({});
   const [results, setResults] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [loading, setLoading] = useState(true);
 
-  // 1) 채널 목록 미리 로딩 → id→name 맵 생성
+  // 1) 채널 맵 로딩 (키를 문자열로)
   useEffect(() => {
     axiosInstance
       .get("/board-channels")
       .then((res) => {
         const map = {};
         res.data.forEach((ch) => {
-          map[ch.id] = ch.name;
+          map[String(ch.id)] = ch.name;
         });
         setChannelsMap(map);
       })
@@ -34,7 +35,12 @@ export default function BoardSearch() {
   useEffect(() => {
     setLoading(true);
     axiosInstance
-      .get(`/boards/list?type=${type}&keyword=${keyword}&page=${page}&size=10`)
+      .get(
+        `/boards/list?` +
+          `type=${encodeURIComponent(type || "")}` +
+          `&keyword=${encodeURIComponent(keyword || "")}` +
+          `&page=${page}&size=10`
+      )
       .then((res) => {
         const data = res.data;
         setResults(data.dtoList || []);
@@ -74,8 +80,8 @@ export default function BoardSearch() {
                   className="rounded-lg bg-white p-4 shadow hover:shadow-lg transition-shadow cursor-pointer"
                   onClick={() => navigate(`/channels/${b.channelId}/${b.bno}`)}
                 >
-                  <span className="inline-block bg-gray-800 text-white text-xs font-semibold px-2 py-0.5 rounded mb-2">
-                    {channelsMap[b.channelId] ?? "알 수 없는 채널"}
+                  <span className="inline-block bg-black text-white text-xs font-semibold px-2 py-0.5 rounded mb-2">
+                    {channelsMap[String(b.channelId)] ?? "알 수 없는 채널"}
                   </span>
                   <h3 className="text-xl font-semibold mb-1">{b.title}</h3>
                   <p className="text-gray-500 text-sm">
@@ -87,6 +93,7 @@ export default function BoardSearch() {
                 </li>
               ))}
             </ul>
+
             <div className="mt-6 flex justify-center items-center space-x-3">
               <button
                 disabled={page <= 1}
