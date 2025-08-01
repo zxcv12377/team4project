@@ -40,7 +40,7 @@ public class BoardController {
         return ResponseEntity.ok(list);
     }
 
-    @PostMapping("/boards/{bno}/like")
+    @PostMapping("/{bno}/like")
     public ResponseEntity<?> toggleLike(@PathVariable Long bno, @AuthenticationPrincipal Member member) {
         boolean liked = boardService.toggleBoardLike(bno, member);
         return ResponseEntity.ok(Map.of("liked", liked));

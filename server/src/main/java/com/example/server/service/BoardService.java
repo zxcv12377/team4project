@@ -150,6 +150,8 @@ public class BoardService {
                 .attachments(fromJson((String) en[5]))
                 .viewCount((Long) en[6])
                 .boardLikeCount((Long) en[7])
+                .channelId((Long) en[8])
+                .channelName((String) en[9])
                 .build();
 
         return PageResultDTO.<BoardDTO>withAll()
@@ -212,6 +214,7 @@ public class BoardService {
                 .viewCount(board.getViewCount())
                 .boardLikeCount(board.getBoardLikeCount())
                 .channelId(board.getChannel().getId())
+                .channelName(board.getChannel().getName())
                 .build();
     }
 }

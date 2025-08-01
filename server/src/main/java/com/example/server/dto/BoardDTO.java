@@ -55,4 +55,6 @@ public class BoardDTO {
     // 게시판 채널 아이디
     private Long channelId;
 
+    private String channelName;
+
 }
