@@ -16,5 +16,6 @@ public class ReplyRequestDTO {
     private Long parentRno;
     // 사용자 식별
     private String nickname;
+    private Long channel; // 댓글이 속한 채널 ID
 
 }
