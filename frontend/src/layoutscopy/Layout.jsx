@@ -1,14 +1,14 @@
 // src/components/layout/MainLayout.jsx
 
 import { useUserContext } from "../context/UserContext";
-import { useWebSocket } from "../hooks/useWebSocket";
 import Sidebar1 from "./Sidebar1";
 import Sidebar2 from "./Sidebar2";
 import Sidebar3 from "./Sidebar3";
 import Sidebar4 from "./Sidebar4";
-import { useState, useEffect } from "react";
+import { useState, useEffect,useContext } from "react";
 import { Outlet } from "react-router-dom";
 import NotificationCenter from "./../components/notification/NotificationCenter";
+import { WebSocketContext } from "../context/WebSocketContext";
 
 export default function MainLayout() {
   const [selectedDM, setSelectedDM] = useState(false);
@@ -18,7 +18,8 @@ export default function MainLayout() {
   const [friendMode, setFriendMode] = useState(false);
   const { user } = useUserContext();
   const token = user?.token || localStorage.getItem("token");
-  const { subscribe, send, connected } = useWebSocket(token);
+  const { subscribe, send, connected } = useContext(WebSocketContext);
+
 
   console.log("▶️ MainLayout user:", user);
   console.log("▶️ MainLayout token:", user?.token);
