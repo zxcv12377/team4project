@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
 import axiosInstance from "../lib/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 const fmt = (iso) => iso?.replace("T", " ").slice(0, 19) || "";
 
@@ -9,14 +8,24 @@ export default function MyReply() {
   const [replies, setReplies] = useState([]);
   const navigate = useNavigate();
 
-  useEffect(() => loadReplies(), []);
+  useEffect(() => {
+    async function loadReplies() {
+      try {
+        const res = await axiosInstance.get("/replies/my");
+        console.log("리플", res.data);
+        setReplies(res.data);
+      } catch (err) {
+        console.error("댓글 로딩 실패:", err);
+      }
+    }
+    loadReplies();
+  }, []);
 
-  const loadReplies = () => {
-    axiosInstance.get("/replies/my").then((res) => {
-      console.log(res.data[0]);
-      setReplies(res.data);
-    });
-  };
+  // const loadReplies = async () => {
+  //   const res = await axiosInstance.get("/replies/my");
+  //   console.log("리플" + res.data);
+  //   setReplies(res.data);
+  // };
 
   /* 삭제 */
   const handleDelete = async (e, rno) => {
@@ -42,7 +51,7 @@ export default function MyReply() {
           {replies.map((reply) => (
             <li
               key={reply.rno}
-              onClick={() => navigate(`/boards/${reply.bno}`)}
+              onClick={() => navigate(`/channels/${reply.channelId}/${reply.bno}`)}
               className="p-3 bg-white rounded-lg shadow-sm hover:shadow-md flex justify-between items-center border border-pink-100 cursor-pointer transition"
             >
               {/* 왼쪽: 댓글 내용·날짜 */}

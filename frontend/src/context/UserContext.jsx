@@ -13,17 +13,11 @@ export const UserContext = createContext({
 export const UserProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
-  
+
   const fetchUser = async () => {
     try {
+      const res = await axiosInstance.get("/members/me");
       const token = localStorage.getItem("token");
-      if (!token) {
-        setUser(null);
-        setLoading(false);
-        return;
-      }
-      
-      const res = await axiosInstance.get("members/me");
       setUser({ ...res.data, token });
     } catch (err) {
       console.error("유저 정보 가져오기 실패:", err);
@@ -35,15 +29,11 @@ export const UserProvider = ({ children }) => {
       setLoading(false);
     }
   };
-  
+
   useEffect(() => {
     fetchUser();
   }, []);
-  
-  return (
-    <UserContext.Provider value={{ user, setUser, loading }}>
-      {children}
-    </UserContext.Provider>
-  );
+
+  return <UserContext.Provider value={{ user, setUser, loading }}>{children}</UserContext.Provider>;
 };
 export const useUserContext = () => useContext(UserContext);

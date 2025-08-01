@@ -1,3 +1,5 @@
+
+logback-spring.xml
 # 빌드파일 무시
 deploy.sh
 # AWS 키 무시
