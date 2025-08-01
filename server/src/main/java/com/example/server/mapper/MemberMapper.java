@@ -28,6 +28,7 @@ public class MemberMapper {
                 .nickname(member.getNickname())
                 .profileimg(member.getProfileimg())
                 .comment(member.getComment())
+                .roles(member.getRoles())
                 .build();
     }
 }

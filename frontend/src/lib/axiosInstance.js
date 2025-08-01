@@ -128,8 +128,8 @@ function clearSession() {
 
 // ✅ 로그인 페이지 이동 함수 (중복 이동 방지)
 function redirectToLogin() {
-  if (window.location.pathname !== "/boards") {
-    window.location.replace("/boards"); // replace → 히스토리 안 쌓임
+  if (window.location.pathname !== "/") {
+    window.location.replace("/"); // replace → 히스토리 안 쌓임
   }
 }
 

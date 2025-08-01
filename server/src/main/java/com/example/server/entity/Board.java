@@ -22,14 +22,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @Getter
+@Setter
 @Table(name = "BOARD")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = { "member", "replies" })
+@ToString(exclude = { "member", "replies", "channel" })
 @Entity
 public class Board extends Base {
 
@@ -54,6 +56,19 @@ public class Board extends Base {
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Reply> replies;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private BoardChannel channel;
+
+    // 게시글 조회수
+    @Builder.Default
+    @Column(nullable = false)
+    private Long viewCount = 0L;
+
+    // 게시글 좋아요 수
+    @Builder.Default
+    @Column(nullable = false)
+    private Long boardLikeCount = 0L;
+
     // 수정 메서드
     public void changeTitle(String title) {
         this.title = title;
@@ -65,5 +80,13 @@ public class Board extends Base {
 
     public void changeAttachments(String attachmentsJson) {
         this.attachmentsJson = attachmentsJson;
+    }
+
+    public void increaseViewCount() {
+        this.viewCount++;
+    }
+
+    public void increaseBoardLikeCount() {
+        this.boardLikeCount++;
     }
 }

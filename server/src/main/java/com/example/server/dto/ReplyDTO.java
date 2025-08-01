@@ -39,6 +39,8 @@ public class ReplyDTO {
 
     private boolean likedByCurrentMember;
 
+    private Long channel;
+
     @Builder.Default
     private List<ReplyDTO> children = new ArrayList<>();
 
@@ -52,6 +54,7 @@ public class ReplyDTO {
                 .parentRno(reply.getParent() != null ? reply.getParent().getRno() : null)
                 .createdDate(reply.getCreatedDate())
                 .deleted(reply.isDeleted())
+                .channel(reply.getChannel().getId())
                 .build();
     }
 
@@ -61,6 +64,7 @@ public class ReplyDTO {
                 .member(member)
                 .text(dto.getText())
                 .parent(parentReply)
+                .channel(board.getChannel())
                 .build();
     }
 

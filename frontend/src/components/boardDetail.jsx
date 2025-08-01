@@ -1,118 +1,101 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
-import ReplyList from "./replyList";
 import axiosInstance from "../lib/axiosInstance";
+import ReplyList from "./replyList";
 
 const BoardDetail = () => {
-  const { bno } = useParams();
+  /* ─── URL 파라미터 ──────────────────────────────── */
+  const { channelId, bno } = useParams(); // /channels/:channelId/:bno
   const navigate = useNavigate();
+
+  /* ─── 상태 ──────────────────────────────────────── */
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 현재 로그인한 사용자 정보 가져오기
   const currentUser = JSON.parse(localStorage.getItem("user"));
-
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
+  /* ─── 게시글 조회 ───────────────────────────────── */
   useEffect(() => {
     axiosInstance
       .get(`/boards/read/${bno}`)
-      .then((res) => {
-        setPost(res.data);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("게시글 조회 실패:", err);
-        setLoading(false);
-      });
+      .then((res) => setPost(res.data))
+      .catch((err) => console.error("게시글 조회 실패:", err))
+      .finally(() => setLoading(false));
   }, [bno]);
 
-  if (loading) return <div className="text-center mt-10 text-gray-500">⏳ 게시글을 불러오는 중입니다...</div>;
-  if (!post) return <div className="text-center mt-10 text-red-500">❌ 게시글이 존재하지 않습니다.</div>;
+  if (loading) return <div className="mt-10 text-center text-gray-500">⏳ 게시글을 불러오는 중입니다...</div>;
+  if (!post) return <div className="mt-10 text-center text-red-500">❌ 게시글이 존재하지 않습니다.</div>;
 
-  const formattedCreated = post.createdDate
-    ? new Date(post.createdDate).toLocaleString("ko-KR", {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
-    : "날짜 없음";
+  /* ─── 날짜 포맷 ─────────────────────────────────── */
+  const fmt = (d) =>
+    d
+      ? new Date(d).toLocaleString("ko-KR", {
+          year: "numeric",
+          month: "numeric",
+          day: "numeric",
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        })
+      : "날짜 없음";
 
-  const formattedUpdated = post.updatedDate
-    ? new Date(post.updatedDate).toLocaleString("ko-KR", {
-        year: "numeric",
-        month: "numeric",
-        day: "numeric",
-        hour: "numeric",
-        minute: "2-digit",
-        hour12: true,
-      })
-    : null;
-
+  const created = fmt(post.createdDate);
+  const updated = fmt(post.updatedDate);
   const isModified = post.createdDate !== post.updatedDate;
 
+  /* ─── 헬퍼 ──────────────────────────────────────── */
+  const goList = () => navigate(`/channels/${channelId}`);
+  const goUpdate = () => navigate(`/channels/${channelId}/update/${post.bno}`);
+
+  const handleDelete = () => {
+    if (!window.confirm("정말 삭제하시겠습니까?")) return;
+    axiosInstance
+      .delete(`/boards/delete/${post.bno}`)
+      .then(goList)
+      .catch((err) => console.error("삭제 실패:", err));
+  };
+
+  /* ─── 렌더 ──────────────────────────────────────── */
   return (
-    <div className="max-w-3xl mx-auto mt-24 p-6 bg-white shadow-md rounded-lg">
-      <h2 className="text-2xl font-bold text-blue-700 mb-3">
+    <div className="mx-auto mt-24 max-w-3xl rounded-lg bg-white p-6 shadow-md">
+      <h2 className="mb-3 text-2xl font-bold text-blue-700">
         {post.title} <span className="text-sm text-gray-500">[{post.bno}]</span>
       </h2>
 
-      <div className="text-sm text-gray-600 mb-1">
-        작성자: {post.nickname || "알 수 없음"} | 작성일: {formattedCreated}
+      <div className="mb-1 text-sm text-gray-600">
+        작성자: {post.nickname || "알 수 없음"}
+        {" | 조회수: "}
+        {post.viewCount ?? 0}
+        {" | 작성일: "}
+        {created}
       </div>
-      {isModified && <div className="text-sm text-gray-400 mb-4">수정일: {formattedUpdated}</div>}
+      {isModified && <div className="mb-4 text-sm text-gray-400">수정일: {updated}</div>}
 
-      <div className="text-gray-900 whitespace-pre-wrap text-lg mb-6">{post.content}</div>
+      <div className="mb-6 whitespace-pre-wrap text-lg text-gray-900">{post.content}</div>
 
       {Array.isArray(post.attachments) && post.attachments.length > 0 && (
-        <div className="grid grid-cols-3 gap-2 mb-6">
-          {post.attachments.map((img, index) => {
-            const src = img.thumbnailUrl || img.originalUrl || "";
+        <div className="mb-6 grid grid-cols-3 gap-2">
+          {post.attachments.map((img, i) => {
+            const src = typeof img === "string" ? img : img.thumbnailUrl || img.originalUrl || "";
             const finalSrc = src.startsWith(import.meta.env.VITE_HTTP_URL) ? src : `${baseURL}${src}`;
-            return (
-              <img
-                key={index}
-                src={finalSrc}
-                alt={`첨부이미지-${index}`}
-                className="w-full h-32 object-cover rounded border"
-              />
-            );
+            return <img key={i} src={finalSrc} alt={`첨부-${i}`} className="h-32 w-full rounded border object-cover" />;
           })}
         </div>
       )}
 
-      <div className="flex gap-2 mb-6">
-        <button
-          onClick={() => navigate("/boards")}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
+      {/* 버튼 영역 */}
+      <div className="mb-6 flex gap-2">
+        <button onClick={goList} className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
           목록
         </button>
-        {/* ✅ 작성자 본인일 때만 수정/삭제 버튼 노출 */}
+
         {currentUser?.id === post.memberid && (
           <>
-            <button
-              onClick={() => navigate(`/boards/update/${post.bno}`)}
-              className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
-            >
+            <button onClick={goUpdate} className="rounded bg-yellow-500 px-4 py-2 text-white hover:bg-yellow-600">
               수정
             </button>
-
-            <button
-              onClick={() => {
-                if (window.confirm("정말 삭제하시겠습니까?")) {
-                  axiosInstance
-                    .delete(`/boards/delete/${post.bno}`)
-                    .then(() => navigate("/"))
-                    .catch((err) => console.error("삭제 실패:", err));
-                }
-              }}
-              className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
-            >
+            <button onClick={handleDelete} className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600">
               삭제
             </button>
           </>
