@@ -78,9 +78,7 @@ export default function FriendPanel() {
   const handleAdd = (id) => {
     if (!id) return;
     axiosInstance.post("/friends", { targetMemberId: id }).then(() => {
-      const newFriend = result.find(
-        (r) => r.mno === id || r.id === id || r.memberId === id
-      );
+      const newFriend = result.find((r) => r.id === id);
       if (newFriend) {
         dispatch({
           type: "SET_SENT",

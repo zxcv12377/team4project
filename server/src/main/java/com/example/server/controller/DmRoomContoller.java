@@ -41,7 +41,6 @@ public class DmRoomContoller {
     @GetMapping("/rooms/{memberId}")
     public List<ChatRoomResponseDTO> getMyDmRooms(@PathVariable Long memberId) {
         return dmRoomService.findMyDmRooms(memberId);
-
     }
 
     // DM방 참여자 리스트

@@ -23,8 +23,6 @@ import org.springframework.security.web.authentication.rememberme.TokenBasedReme
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import org.springframework.web.servlet.config.annotation.CorsRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import com.example.server.jwt.JwtAuthenticationEntryPoint;
 import com.example.server.jwt.JwtAuthenticationFilter;
