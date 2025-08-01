@@ -75,10 +75,10 @@ const MyProfile = () => {
 
       <p className="text-center text-2xl font-bold text-gray-800">{profile.nickname}</p>
 
-      {/* 게시글/댓글 수 */}
       <div className="-mx-6">
         <hr className="border-t border-green-500 my-6" />
       </div>
+      {/* 게시글/댓글 수 */}
 
       <div className="flex justify-center gap-10 text-gray-700 text-lg">
         <Link

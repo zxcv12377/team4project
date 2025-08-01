@@ -53,6 +53,9 @@ public class Reply extends Base {
     @Column(nullable = false)
     private String text;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    private BoardChannel channel;
+
     @Column(nullable = true)
     @Builder.Default
     private boolean deleted = false;

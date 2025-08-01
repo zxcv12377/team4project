@@ -3,14 +3,13 @@ package com.example.server;
 import com.example.server.entity.Member;
 import com.example.server.entity.enums.MemberRole;
 import com.example.server.repository.MemberRepository;
-import jakarta.transaction.Transactional;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
