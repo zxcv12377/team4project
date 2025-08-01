@@ -30,6 +30,7 @@ export default function Navbar() {
         .get("/members/me")
         .then((res) => {
           setProfileImage(res.data.profileimg);
+          console.log(uploadURL + "/" + profileImage);
           setNickname(res.data.nickname);
         })
         .catch(() => {

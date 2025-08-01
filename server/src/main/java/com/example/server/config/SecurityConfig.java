@@ -55,7 +55,7 @@ public class SecurityConfig {
                                                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // 세션 안씀
                                 .authorizeHttpRequests(auth -> auth
                                                 .requestMatchers("/", "/assets/**", "/css/**", "/js/**", "/upload/**",
-                                                                "/uploads/**")
+                                                                "/uploads/**", "/api/uploads/**")
                                                 .permitAll()
                                                 .requestMatchers("/reviews/**", "/upload/display/**", "/img/**",
                                                                 "/error", "/api/auth/**")

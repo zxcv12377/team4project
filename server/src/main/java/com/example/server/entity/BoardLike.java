@@ -1,5 +1,8 @@
 package com.example.server.entity;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.example.server.base.Base;
 
 import jakarta.persistence.Entity;
@@ -14,15 +17,15 @@ import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 
 @Getter
-@Table(name = "board_like", uniqueConstraints = {
-        @UniqueConstraint(columnNames = { "board_id", "member_id" }) // 중복 방지
-})
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@ToString(exclude = { "board", "member" })
 @Entity
 public class BoardLike extends Base {
     // 현재 Board에 있는 boardLikeCount는 단순 캐싱용 (수만 저장)
@@ -33,10 +36,11 @@ public class BoardLike extends Base {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Board board;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "member_id", nullable = true)
     private Member member;
 
 }

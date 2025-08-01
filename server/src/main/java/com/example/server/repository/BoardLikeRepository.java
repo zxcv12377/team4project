@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.example.server.entity.Board;
 import com.example.server.entity.BoardLike;
@@ -18,4 +21,8 @@ public interface BoardLikeRepository extends JpaRepository<BoardLike, Long> {
 
     // 로그인한 유저가 누른 모든 좋아요 목록
     List<BoardLike> findAllByMember(Member member);
+
+    @Modifying
+    @Query("UPDATE BoardLike bl SET bl.member = NULL WHERE bl.member.id = :memberId")
+    void setMemberToNullByMemberId(@Param("memberId") Long memberId);
 }
