@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 @Entity
 @Getter
 @Setter
@@ -21,11 +24,13 @@ public class Invite {
     private String code; // 초대코드
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "room_id", nullable = false)
-    private ChatRoom room; // 초대 대상 방
+    @JoinColumn(name = "server_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
+    private Server server; // 초대 대상 방
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creator_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Member creator; // 코드 생성자
 
     private LocalDateTime createdAt;

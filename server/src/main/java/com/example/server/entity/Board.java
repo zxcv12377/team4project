@@ -2,6 +2,9 @@ package com.example.server.entity;
 
 import java.util.List;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.example.server.base.Base;
 
 import jakarta.persistence.CascadeType;
@@ -47,6 +50,7 @@ public class Board extends Base {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)

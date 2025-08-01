@@ -33,6 +33,7 @@ uploads/
 **/applicationsecret.properties
 **/application.properties
 **/application.yml
+application-local.properties
 
 ### Java ###
 # Compiled class file

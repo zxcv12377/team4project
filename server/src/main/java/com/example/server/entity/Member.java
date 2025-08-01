@@ -71,22 +71,6 @@ public class Member extends Base {
     @Enumerated(EnumType.STRING)
     private Set<MemberRole> roles = new HashSet<>();
 
-    // 선택: 양방향 관계
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<Board> board;
-
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<Reply> replies;
-
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<VoiceChatLog> voiceLogs;
-
-    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
-    private List<ChannelMember> channelMembers;
-
-    @OneToMany(mappedBy = "sender", cascade = CascadeType.ALL)
-    private List<ChatMessageEntity> chatMessageEntities;
-
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<ChatRoomMember> chatRoomMembers;
 

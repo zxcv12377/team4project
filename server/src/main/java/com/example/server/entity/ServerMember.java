@@ -1,5 +1,8 @@
 package com.example.server.entity;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.example.server.entity.enums.ServerRole;
 
 import jakarta.persistence.Column;
@@ -35,10 +38,12 @@ public class ServerMember {
     // 참여자(회원)와 서버 다대일
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "server_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Server server;
 
     // 권한(ADMIN/USER)
