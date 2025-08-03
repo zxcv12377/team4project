@@ -59,10 +59,16 @@ const BoardDetail = () => {
   };
 
   const boardLike = async () => {
-    await axiosInstance.post(`/boards/${post.bno}/like`);
-    setLike(!like);
-    setLikeCount(likeCount + 1);
-    alert("추천 완료");
+    try {
+      const res = await axiosInstance.post(`/boards/${post.bno}/like`);
+      const {liked, likeCount} = res.data;
+      setLike(liked);
+      setLikeCount(likeCount);
+      alert(liked ? "추천 완료" : "추천 취소");
+    } catch (error) {
+      console.error("추천 에러 : ",error);
+      alert("추천 처리 중 오류가 발생했습니다.");
+    }
   };
 
   /* ─── 렌더 ──────────────────────────────────────── */
@@ -114,8 +120,9 @@ const BoardDetail = () => {
           )}
         </div>
         <div className="flex justify-center">
-          <button className="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600" onClick={boardLike}>
-            VERY!
+          <button className="px-4 py-3 bg-gray-500 text-red-200 rounded hover:bg-gray-600 rounded-full" onClick={boardLike}>
+            VERY! 
+            <div className="text-white">{likeCount}</div>
           </button>
         </div>
       </div>
