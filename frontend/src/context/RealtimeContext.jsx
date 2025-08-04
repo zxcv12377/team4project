@@ -17,7 +17,7 @@ const initialState = {
   friends: [],
   dmRooms: [],
   serverMembers: {},
-  loadingServerMember: new Set(),
+  loadingServerMembers: new Set(),
 };
 
 function realtimeReducer(state, action) {
@@ -50,19 +50,29 @@ function realtimeReducer(state, action) {
       };
     case "SET_DM_ROOMS":
       return { ...state, dmRooms: action.payload };
-    case "SET_SERVER_MEMBERS": {
-      const sid = action.serverId; // 숫자든 문자열이든, dispatch 한 것과 동일 타입
+    case "SET_SERVER_MEMBERS":
       return {
         ...state,
-        // 서버 멤버 데이터 병합
         serverMembers: {
           ...state.serverMembers,
-          [sid]: action.payload,
+          [action.serverId]: action.payload,
         },
-        // 로딩 Set 에서 제거
-        loadingServerMember: new Set([...state.loadingServerMember].filter((id) => id !== sid)),
+      };
+    case "START_LOADING_SERVER_MEMBERS":
+      return {
+        ...state,
+        loadingServerMembers: new Set(state.loadingServerMembers).add(action.payload),
+      };
+    case "FINISH_LOADING_SERVER_MEMBERS": {
+      const newSet = new Set(state.loadingServerMembers);
+      newSet.delete(action.payload);
+      return {
+        ...state,
+        loadingServerMembers: newSet,
       };
     }
+    case "RESET":
+      return { ...initialState };
     default:
       return state;
   }
@@ -115,11 +125,19 @@ export function RealtimeProvider({ children, socket }) {
 
   const fetchAndSetServerMembers = async (serverId) => {
     try {
+      dispatch({ type: "START_LOADING_SERVER_MEMBERS", payload: serverId });
       const res = await axiosInstance.get(`/servers/${serverId}/members`);
-      console.log("🔥 API res.data:", res.data);
-      dispatch({ type: "SET_SERVER_MEMBERS", serverId, payload: res.data });
+      const data = Array.isArray(res.data) ? res.data : [];
+      dispatch({
+        type: "SET_SERVER_MEMBERS",
+        serverId,
+        payload: data.filter((m) => m && typeof m === "object"),
+      });
     } catch (err) {
       console.error(`❌ 서버 멤버 갱신 실패 (serverId=${serverId}):`, err);
+      dispatch({ type: "SET_SERVER_MEMBERS", serverId, payload: [] });
+    } finally {
+      dispatch({ type: "FINISH_LOADING_SERVER_MEMBERS", payload: serverId });
     }
   };
 
@@ -133,7 +151,6 @@ export function RealtimeProvider({ children, socket }) {
         initFriendState();
       });
     }
-
     return () => {
       unsubscribeFnRef.current?.();
       disconnect();
@@ -143,7 +160,7 @@ export function RealtimeProvider({ children, socket }) {
   useEffect(() => {
     if (connected && ready && subscribeFnRef.current) {
       console.log("🔄 재연결 후 수동 재구독 시도");
-      subscribeFnRef.current(); // 내부에서 이전 구독을 해제함
+      subscribeFnRef.current();
     }
   }, [connected]);
 
@@ -153,7 +170,6 @@ export function RealtimeProvider({ children, socket }) {
       return () => {};
     }
 
-    // ✅ 이전 구독 해제
     if (unsubscribeFnRef.current) {
       console.log("🧹 이전 구독 해제 시도...");
       unsubscribeFnRef.current();
@@ -163,7 +179,6 @@ export function RealtimeProvider({ children, socket }) {
 
     const subStatus = subscribe(`/user/queue/status`, (ev) => {
       dispatch({ type: "USER_STATUS_CHANGE", payload: ev });
-
       if (ev.email !== email) {
         toast({
           title: ev.status === "ONLINE" ? "🔔 친구 접속" : "🔕 친구 퇴장",
@@ -181,11 +196,8 @@ export function RealtimeProvider({ children, socket }) {
     });
 
     const subFriend = subscribe(`/user/queue/friend`, async (payload) => {
-      console.log("🤝 친구 이벤트 수신:", payload);
-
       try {
         const type = payload.type;
-
         if (
           ["REQUEST_RECEIVED", "REQUEST_SENT", "REQUEST_CANCELLED", "REQUEST_ACCEPTED", "REQUEST_REJECTED"].includes(
             type
@@ -197,7 +209,6 @@ export function RealtimeProvider({ children, socket }) {
             axiosInstance.get("/friends/requests/sent"),
             axiosInstance.get("/friends/online"),
           ]);
-
           dispatch({ type: "SET_FRIENDS", payload: friendsRes.data || [] });
           dispatch({ type: "SET_RECEIVED", payload: receivedRes.data || [] });
           dispatch({ type: "SET_SENT", payload: sentRes.data || [] });
@@ -206,16 +217,10 @@ export function RealtimeProvider({ children, socket }) {
 
         if (type === "FRIEND_DELETED") {
           const friendId = payload.payload?.requestId;
-          if (friendId) {
-            dispatch({ type: "REMOVE_FRIEND", payload: friendId });
-          } else {
-            console.warn("⚠️ FRIEND_DELETED 이벤트에 friendId 없음:", payload);
-          }
+          if (friendId) dispatch({ type: "REMOVE_FRIEND", payload: friendId });
         }
 
-        // ✅ 추가: FRIEND_STATUS_CHANGE 이벤트 처리
         if (type === "FRIEND_STATUS_CHANGE") {
-          console.log("✅ FRIEND_STATUS_CHANGE 수신 → 온라인 상태 재조회");
           const onlineRes = await axiosInstance.get("/friends/online");
           dispatch({ type: "SET_ONLINE_USERS", payload: onlineRes.data || [] });
         }
@@ -225,7 +230,6 @@ export function RealtimeProvider({ children, socket }) {
     });
 
     const subDmRestore = subscribe(`/user/queue/dm-restore`, async (payload) => {
-      console.log("📥 DM 복구 알림 수신:", payload);
       try {
         await refreshDmRooms();
         toast({
@@ -237,10 +241,25 @@ export function RealtimeProvider({ children, socket }) {
       }
     });
 
-    const subServerMemberEvent = subscribe(`/topic/server.*.members`, async (payload) => {
-      if (!payload.serverId) return;
-      await fetchAndSetServerMembers(payload.serverId);
-    });
+    // ✅ 서버 멤버 개별 구독
+    const serverSubscriptions = [];
+    const subscribeServerMemberEvents = async () => {
+      try {
+        const res = await axiosInstance.get("/servers/my");
+        const servers = res.data || [];
+        servers.forEach((server) => {
+          const sub = subscribe(`/topic/server.${server.id}.members`, async (payload) => {
+            if (payload.serverId === server.id) {
+              await fetchAndSetServerMembers(server.id);
+            }
+          });
+          serverSubscriptions.push(sub);
+        });
+      } catch (err) {
+        console.error("❌ 서버 멤버 구독 실패:", err);
+      }
+    };
+    subscribeServerMemberEvents();
 
     // ✅ 해제 함수 저장
     const unsubscribe = () => {
@@ -249,16 +268,29 @@ export function RealtimeProvider({ children, socket }) {
       subNoti?.unsubscribe?.();
       subFriend?.unsubscribe?.();
       subDmRestore?.unsubscribe?.();
-      subServerMemberEvent?.unsubscribe?.();
+      serverSubscriptions.forEach((sub) => sub?.unsubscribe?.());
       console.log("✅ WebSocket 구독 해제 완료");
     };
-
     unsubscribeFnRef.current = unsubscribe;
-
     console.log("✅ 모든 WebSocket 구독 완료");
-
     return unsubscribe;
   }
+
+  const subscribeServerMember = (serverId) => {
+    if (!serverId || typeof subscribe !== "function") return;
+
+    const sub = subscribe(`/topic/server.${serverId}.members`, async (payload) => {
+      if (payload.serverId === serverId) {
+        await fetchAndSetServerMembers(serverId);
+      }
+    });
+
+    const prevUnsubscribe = unsubscribeFnRef.current;
+    unsubscribeFnRef.current = () => {
+      prevUnsubscribe?.();
+      sub?.unsubscribe?.();
+    };
+  };
 
   return (
     <RealtimeContext.Provider
@@ -268,6 +300,7 @@ export function RealtimeProvider({ children, socket }) {
         ready,
         refreshDmRooms,
         fetchAndSetServerMembers,
+        subscribeServerMember,
       }}
     >
       {children}

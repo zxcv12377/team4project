@@ -34,6 +34,7 @@ uploads/
 **/application.properties
 **/application.yml
 **/application-local.properties
+**/application-prod.properties
 
 ### Java ###
 # Compiled class file
