@@ -35,9 +35,17 @@ function leaveVoiceRoom(io, socket) {
         }
         producers.delete(socket.id);
       }
+      const consumer = consumers.get(socket.id);
+      if (consumer) consumer.close();
+      const transport = transports.get(socket.id);
+      if (transport) transport.close();
+
       // ✅ 유저 수 갱신 (voiceRooms 기준)
       const size = socketSet?.size || 0;
       io.to(roomId).emit("userCount", size);
+
+      const remaining = Array.from(userMap.values());
+      io.to(roomId).emit("voiceRoomParticipants", remaining);
 
       console.log(`❌ ${socket.id} left voice room: ${roomId} (size: ${size})`);
     }
@@ -90,10 +98,23 @@ function setupSignaling(io, router) {
           });
         }
       }
+      // 참여자 목록을 배열로 만들어서 브로드캐스트
+      const participants = Array.from(
+        voiceRoomParticipants
+          .get(roomId)
+          .values()
+          .map((m) => ({
+            memberId: m.memberId,
+            name: m.name,
+            profile: m.profile,
+          }))
+      );
+      io.to(roomId).emit("voiceRoomParticipants", participants);
 
       // 유저 수 갱신 브로드캐스트
-      const size = voiceRooms.get(roomId).size;
-      io.to(roomId).emit("userCount", size);
+      io.to(roomId).emit("userCount", participants.length);
+
+      const size = participants.length;
 
       console.log(`🎧 ${socket.id} joined voice room: ${roomId} (size: ${size})`);
       if (typeof callback === "function") {
@@ -156,7 +177,6 @@ function setupSignaling(io, router) {
         // 본인 제외 처리 + 다른 peer에게 이 producer 정보 전달
         // 두번 사용하는 이유는 새로운 유저가 들어올 때마다 새로 추가 해줘야 하기 때문
         for (const [peerId, peer] of peers.entries()) {
-          console.log("★★★★★★★ 새 유저 도착 시 한번 더 실행");
           if (peerId !== socket.id) {
             // 나 빼고 다른 사람에게 알려줌
             peer.socket.emit("newProducer", {
@@ -283,7 +303,6 @@ function setupSignaling(io, router) {
       const consumer = consumers.get(socket.id);
       const producerMap = producers.get(socket.id);
       const transport = transports.get(socket.id);
-      // const producer = producers.get(socket.id);
       if (producerMap) {
         for (const producer of producerMap.values()) {
           producer.close();
@@ -291,7 +310,6 @@ function setupSignaling(io, router) {
         producers.delete(socket.id);
       }
 
-      // if (producer) producer.close();
       if (transport) {
         transport.close();
         console.warn("transport 닫음 : ", socket.id);
@@ -301,7 +319,6 @@ function setupSignaling(io, router) {
       peers.delete(socket.id);
       transports.delete(socket.id);
       consumerTransports.delete(socket.id);
-      // producers.delete(socket.id);
       consumers.delete(socket.id);
       console.log(`🚫 클라이언트 연결 해제됨: ${socket.id}`);
     });
