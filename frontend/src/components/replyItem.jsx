@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import ReplyForm from "./replyForm";
 import axiosInstance from "../lib/axiosInstance";
 
-export default function ReplyItem({ reply, bno, refresh, depth = 0, onToggleLike }) {
+export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editedText, setEditedText] = useState(reply.text);

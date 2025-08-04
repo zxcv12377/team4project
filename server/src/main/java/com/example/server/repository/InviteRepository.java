@@ -11,4 +11,5 @@ public interface InviteRepository extends JpaRepository<Invite, Long> {
 
     List<Invite> findAllByServer_IdAndActiveTrue(Long roomId);
 
+    void deleteAllByServerId(Long serverId);
 }
