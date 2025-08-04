@@ -105,7 +105,7 @@ export default function Sidebar1({ onSelectDM, onSelectServer , onLeaveOrDeleteS
             {server.name[0] || "?"}
           </button>
           <button
-            onClick={() => handleLeaveOrDelete(server.id)}
+            onClick={() => handleLeaveOrDelete(server.id, server.role)}
             className="opacity-0 group-hover:opacity-100 mt-1 text-xs text-red-400 transition"
             title="탈퇴/삭제"
           >
