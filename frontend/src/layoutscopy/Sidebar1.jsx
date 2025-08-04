@@ -1,15 +1,19 @@
 // src/components/layout/Sidebar1.jsx
 import { useEffect, useState } from "react";
 import axiosInstance from "../lib/axiosInstance";
+import { toast } from "@/hooks/use-toast";
+import { useUserContext } from "@/context/UserContext";
+import { useRealtime } from "@/context/RealtimeContext"; 
 
-export default function Sidebar1({ onSelectDM, onSelectServer }) {
+export default function Sidebar1({ onSelectDM, onSelectServer , onLeaveOrDeleteServer }) {
   const [servers, setServers] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
   const [serverName, setServerName] = useState("");
   const [joinCode, setJoinCode] = useState("");
-
-  const fetchServers = () => axiosInstance.get("/servers").then((res) => setServers(res.data));
+  const { user } = useUserContext();
+  const { subscribeServerMember } = useRealtime();
+  const fetchServers = () => axiosInstance.get("/servers/my").then((res) => setServers(res.data));
 
   useEffect(() => {
     fetchServers();
@@ -27,19 +31,57 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
   // 서버 참여
   const handleJoin = async () => {
     if (!joinCode.trim()) return;
-    await axiosInstance.post("/servers/join", { code: joinCode });
-    setJoinCode("");
-    setShowJoin(false);
-    fetchServers();
+    try {
+  const res = await axiosInstance.post("/servers/join", { code: joinCode });
+  const joinedServerId = res.data?.id;
+
+  setJoinCode("");
+  setShowJoin(false);
+  fetchServers();
+
+  if (joinedServerId) {
+    subscribeServerMember(joinedServerId); // ✅ 서버별 멤버 WebSocket 구독 추가
+  }
+} catch (err) {
+  toast({
+    title: "참여 실패",
+    description: err.response?.data?.message || "서버 참여 중 오류 발생",
+    variant: "destructive",
+  });
+}
   };
 
   // 서버 탈퇴/삭제
-  const handleLeave = async (id) => {
-    if (!window.confirm("정말 탈퇴/삭제하시겠습니까?")) return;
-    await axiosInstance.delete(`/servers/${id}`);
-    fetchServers();
-  };
+  const handleLeaveOrDelete = async (serverId, userRole) => {
+    const isAdmin = (userRole?.toUpperCase?.() === "ADMIN"); // 🔑 권한에 따라 분기
+    console.log("🧪 서버 ID:", serverId, "역할:", userRole);
+    const confirmMsg = isAdmin
+      ? "정말 이 서버를 삭제하시겠습니까? 삭제 시 복구할 수 없습니다."
+      : "정말 이 서버에서 탈퇴하시겠습니까?";
 
+    if (!window.confirm(confirmMsg)) return;
+
+    try {
+      if (isAdmin) {
+        await axiosInstance.delete(`/servers/${serverId}`);
+      } else {
+        await axiosInstance.delete(`/servers/${serverId}/members/leave`);
+      }
+      toast({ title: "알림", description: isAdmin ? "서버를 삭제했습니다." : "서버에서 나갔습니다." });
+      fetchServers(); // ✅ 성공 시에만
+      // 상태 초기화 함수
+      onLeaveOrDeleteServer();
+    } catch (err) {
+      console.error("❌ 서버 탈퇴/삭제 실패", err);
+      toast({
+        title: "오류 발생",
+        description: err.response?.data?.message || err.message || "서버에서 오류가 발생했습니다.",
+        variant: "destructive",
+      });
+    }
+  }
+
+  
   return (
     <div className="w-[72px] bg-[#1e1f22] flex flex-col items-center py-3 gap-3 border-r border-[#232428] h-full">
       {/* DM 아이콘 */}
@@ -63,7 +105,7 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
             {server.name[0] || "?"}
           </button>
           <button
-            onClick={() => handleLeave(server.id)}
+            onClick={() => handleLeaveOrDelete(server.id)}
             className="opacity-0 group-hover:opacity-100 mt-1 text-xs text-red-400 transition"
             title="탈퇴/삭제"
           >
@@ -117,7 +159,7 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
             <div className="font-bold text-white mb-2">서버 참여</div>
             <input
               type="text"
-              className="p-2 rounded w-56"
+              className="p-2 rounded w-56 text-black"
               placeholder="참여코드"
               value={joinCode}
               onChange={(e) => setJoinCode(e.target.value)}

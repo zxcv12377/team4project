@@ -52,9 +52,8 @@ public class EventPublisher {
     public void publishServerMemberEvent(ServerMemberEvent event) {
         redisTemplate.convertAndSend(RedisChannelConstants.SERVER_MEMBER_CHANGE, event);
         // WebSocket으로 참여자에게 실시간 전송
-        messagingTemplate.convertAndSendToUser(
-                String.valueOf(event.getMemberId()),
-                "/queue/server",
+        messagingTemplate.convertAndSend(
+                "/topic/server." + event.getServerId() + ".members",
                 event);
     }
 

@@ -21,7 +21,6 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
   const [roomId, setRoomId] = useState(0);
   const { state, dispatch, ready, refreshDmRooms } = useRealtime();
   const dmRooms = state.dmRooms;
-  const initialLoadRef = useRef(false);
   
 useEffect(() => {
   console.log("🔥 DM Rooms 응답:", dmRooms);
@@ -138,6 +137,13 @@ useEffect(() => {
   }
 
   function handleInviteCode(serverId) {
+     console.log("🔍 Invite 요청 serverId:", serverId);
+    console.log("📦 현재 토큰:", localStorage.getItem("token"));
+     if (!serverId) {
+    alert("serverId가 없습니다. 초대코드를 생성할 수 없습니다.");
+    return;
+  }
+
     axiosInstance
       .post(`/invites`, {
         serverId,
@@ -237,8 +243,9 @@ useEffect(() => {
   }
 
   return (
-    <div className="w-[260px] min-w-[200px] max-w-[320px] h-full bg-[#2b2d31] flex flex-col border-r border-[#232428]">
+    <div className="w-[280px] min-w-[280px] max-w-[280px] h-full bg-[#2b2d31] flex flex-col border-r border-[#232428]">
       <div className="flex-1 flex flex-col">
+      <button className="text-xs bg-zinc-700 text-white rounded px-2 py-2 ml-1" onClick={e => { e.stopPropagation(); handleInviteCode(serverId); }}>서버 초대</button>
         <div className="flex items-center justify-between px-4 mt-4 mb-1">
           <span className="text-xs text-zinc-400 font-bold">텍스트 채널</span>
           <button
@@ -273,15 +280,6 @@ useEffect(() => {
                 title="채널 삭제"
               >
                 －
-              </button>
-              <button
-                className="text-xs bg-zinc-700 text-white rounded px-2 py-0.5 ml-1"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleInviteCode(serverId);
-                }}
-              >
-                초대
               </button>
             </li>
           ))}

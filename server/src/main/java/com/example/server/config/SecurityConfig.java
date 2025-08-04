@@ -67,7 +67,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/email/send", "/api/email/verify").permitAll()
 
                                                 .requestMatchers(HttpMethod.POST, "/api/members/register",
-                                                                "/api/members/login",
+                                                                "/api/members/login", "/api/invite/**",
                                                                 "/error")
                                                 .permitAll()
 
