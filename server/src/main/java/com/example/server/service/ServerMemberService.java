@@ -72,6 +72,8 @@ public class ServerMemberService {
                 .role(ServerRole.USER)
                 .build();
         serverMemberRepository.save(serverMember);
+
+        // 입장전파
         ServerMemberEvent event = new ServerMemberEvent(serverId, memberId, "JOIN");
         eventPublisher.publishServerMemberEvent(event);
     }
@@ -90,7 +92,7 @@ public class ServerMemberService {
                 .orElseThrow(() -> new IllegalArgumentException("서버 참여 정보가 없습니다."));
         serverMemberRepository.delete(serverMember);
 
-        // 실시간 퇴장 전파
+        // 퇴장 전파
         ServerMemberEvent event = new ServerMemberEvent(serverId, memberId, "LEAVE");
         eventPublisher.publishServerMemberEvent(event);
     }
