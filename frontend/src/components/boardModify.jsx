@@ -1,153 +1,163 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import axios from "axios";
-import ImageUploader from "@/components/ImageUploader";
+import { Editor } from "@toast-ui/react-editor";
+import "@toast-ui/editor/dist/toastui-editor.css";
 import axiosInstance from "../lib/axiosInstance";
 
 export default function BoardModify() {
-  const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
-  const [attachments, setAttachments] = useState([]); // ✅ 기존 + 새 첨부 이미지
   const { bno } = useParams();
   const navigate = useNavigate();
 
-  const token = localStorage.getItem("token");
-  const headers = { Authorization: `Bearer ${token}` };
-
-  const baseURL = import.meta.env.VITE_API_BASE_URL;
+  const editorRef = useRef();
+  const [title, setTitle] = useState("");
+  const [attachments, setAttachments] = useState([]);
+  const baseImageUrl = import.meta.env.VITE_IMAGE_BASE_URL;
 
   useEffect(() => {
-    const getData = async () => {
+    const fetchData = async () => {
       try {
-        const res = await axiosInstance.get(`/boards/read/${bno}`, { headers });
+        const res = await axiosInstance.get(`/boards/read/${bno}`);
         const { title, content, attachments } = res.data;
+
         setTitle(title);
-        setContent(content);
-        setAttachments(attachments || []); // ✅ 기존 첨부 이미지
-      } catch (error) {
-        console.error("게시글 정보 가져오기 실패:", error);
-        alert("게시글 정보 불러오기 실패");
+        editorRef.current?.getInstance().setHTML(content || "");
+
+        if (attachments?.length) {
+          const fixed = attachments.map((img) => ({
+            originalUrl: img.originalUrl?.startsWith("http") ? img.originalUrl : `${baseImageUrl}${img.originalUrl}`,
+            thumbnailUrl: img.thumbnailUrl?.startsWith("http")
+              ? img.thumbnailUrl
+              : `${baseImageUrl}${img.thumbnailUrl}`,
+          }));
+          setAttachments(fixed);
+        }
+      } catch (err) {
+        console.error("게시글 불러오기 실패:", err);
+        alert("게시글 정보를 불러오지 못했습니다.");
       }
     };
-    getData();
 
-    console.log("🔍 토큰:", token);
-    console.log("🔍 headers:", headers);
-  }, [bno]);
+    fetchData();
+  }, [bno, baseImageUrl]);
 
-  // 🔁 새 이미지 업로드
-  const handleFileChange = async (e) => {
-    const selectedFiles = [...e.target.files];
-    const uploadedImages = [];
+  // 🔁 이미지 업로드 후 에디터에 삽입
+  const handleImagesUploaded = (newImages) => {
+    setAttachments((prev) => [...prev, ...newImages]);
 
-    for (const file of selectedFiles) {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      try {
-        const res = await axiosInstance.post("/images/upload", formData, {
-          headers: {
-            "Content-Type": "multipart/form-data",
-          },
-        });
-        uploadedImages.push(res.data);
-      } catch (err) {
-        console.error("이미지 업로드 실패:", err);
-        alert("이미지 업로드 실패");
-      }
-    }
-
-    setAttachments((prev) => [...prev, ...uploadedImages]);
+    const editor = editorRef.current?.getInstance();
+    newImages.forEach((img) => {
+      editor.insertText(`![image](${img.originalUrl})\n`);
+    });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  // 🖼 에디터 내 이미지 업로드 처리
+  const imageUploadHook = async (blob, callback) => {
+    const formData = new FormData();
+    formData.append("file", blob);
+
+    try {
+      const res = await axiosInstance.post("/images/upload", formData);
+      const imageUrl = res.data.originalUrl.startsWith("http")
+        ? res.data.originalUrl
+        : `${baseImageUrl}${res.data.originalUrl}`;
+
+      callback(imageUrl, blob.name);
+      setAttachments((prev) => [...prev, res.data]);
+    } catch (err) {
+      console.error("에디터 이미지 업로드 실패:", err);
+      alert("이미지 업로드에 실패했습니다.");
+    }
+  };
+
+  const handleSubmit = async () => {
+    const content = editorRef.current?.getInstance().getHTML();
+
     if (!title.trim() || !content.trim()) {
-      alert("제목과 내용을 모두 입력해주세요.");
+      alert("제목과 본문을 모두 입력해주세요.");
       return;
     }
 
     try {
-      await axiosInstance.put(`/boards/update/${bno}`, { title, content, attachments }, { headers });
-      alert("게시글이 성공적으로 수정되었습니다.");
+      await axiosInstance.put(`/boards/update/${bno}`, {
+        title,
+        content,
+        attachments,
+      });
+      alert("게시글이 수정되었습니다.");
       navigate(`/boards/${bno}`);
-    } catch (error) {
-      console.error("게시글 수정 실패:", error);
-      alert("게시글 수정 실패");
+    } catch (err) {
+      console.error("게시글 수정 실패:", err);
+      alert("게시글 수정에 실패했습니다.");
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto mt-24 p-6 rounded-lg">
-      <h2 className="text-2xl font-bold text-blue-700 mb-6">📝 게시글 수정</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
-          <label className="block mb-1 text-gray-700 font-medium">제목</label>
-          <input
-            type="text"
-            className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring focus:ring-blue-200"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="제목을 입력하세요"
-          />
-        </div>
+    <div
+      className="max-w-5xl mx-auto mt-24 p-6 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50"
+      onDrop={(e) => {
+        e.preventDefault();
+        const files = Array.from(e.dataTransfer.files);
+        const editor = editorRef.current?.getInstance();
 
-        <div>
-          <label className="block mb-1 text-gray-700 font-medium">내용</label>
-          <textarea
-            className="w-full h-40 px-4 py-2 border rounded-lg resize-none focus:outline-none focus:ring focus:ring-blue-200"
-            value={content}
-            onChange={(e) => setContent(e.target.value)}
-            placeholder="내용을 입력하세요"
-          />
-        </div>
+        files.forEach(async (file) => {
+          if (!file.type.startsWith("image/")) return;
+          if (file.size > 3 * 1024 * 1024) {
+            alert(`${file.name}은(는) 3MB를 초과합니다.`);
+            return;
+          }
 
-        <div>
-          <label className="block mb-1 text-gray-700 font-medium">이미지 추가</label>
-          <input
-            type="file"
-            accept="image/*"
-            multiple
-            onChange={handleFileChange}
-            className="block w-full text-sm text-gray-600"
-          />
+          const formData = new FormData();
+          formData.append("file", file);
 
-          {attachments.length > 0 && (
-            <div className="mt-2 grid grid-cols-3 gap-2">
-              {attachments.map((img, idx) => {
-                let src = "";
-                if (typeof img === "string") {
-                  src = img;
-                } else {
-                  src = img.thumbnailUrl || img.originalUrl || "";
-                }
-                const finalSrc = src.startsWith("http") ? src : `${baseURL}${src}`;
-                return (
-                  <img
-                    key={idx}
-                    src={finalSrc}
-                    alt={`첨부 이미지 ${idx + 1}`}
-                    className="w-full h-24 object-cover rounded"
-                  />
-                );
-              })}
-            </div>
-          )}
-        </div>
+          try {
+            const res = await axiosInstance.post("/images/upload", formData);
+            const imageUrl = res.data.originalUrl.startsWith("http")
+              ? res.data.originalUrl
+              : `${baseImageUrl}${res.data.originalUrl}`;
+            editor.insertText(`![${file.name}](${imageUrl})\n`);
+            setAttachments((prev) => [...prev, res.data]);
+          } catch (err) {
+            alert(`❌ ${file.name} 업로드 실패`);
+          }
+        });
+      }}
+      onDragOver={(e) => e.preventDefault()}
+    >
+      <h2 className="text-2xl font-bold text-yellow-600 mb-6">✏️ 게시글 수정</h2>
 
-        <div className="flex justify-end gap-2">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400"
-          >
-            취소
-          </button>
-          <button type="submit" className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
-            수정 완료
-          </button>
-        </div>
-      </form>
+      <input
+        type="text"
+        className="w-full mb-4 p-4 border rounded-xl"
+        placeholder="제목을 입력해 주세요"
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        maxLength={255}
+      />
+
+      <p className="text-sm text-gray-500 mb-2">
+        ✨ 이미지를 이 영역으로 드래그하면 본문에 자동 삽입되고, 저장 시 함께 등록됩니다.
+      </p>
+
+      <Editor
+        ref={editorRef}
+        previewStyle="vertical"
+        height="500px"
+        initialEditType="wysiwyg"
+        placeholder="여기에 본문을 작성하세요..."
+        hooks={{ addImageBlobHook: imageUploadHook }}
+      />
+
+      <div className="mt-4 flex justify-end">
+        <button
+          onClick={() => navigate(-1)}
+          className="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400 mr-2"
+        >
+          취소
+        </button>
+        <button onClick={handleSubmit} className="px-6 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+          수정 완료
+        </button>
+      </div>
     </div>
   );
 }

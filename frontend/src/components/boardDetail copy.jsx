@@ -8,7 +8,7 @@ const BoardDetail = () => {
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
-
+  // 현재 로그인한 사용자 정보 가져오기
   const currentUser = JSON.parse(localStorage.getItem("user"));
   const baseImageUrl = import.meta.env.VITE_IMAGE_BASE_URL;
 
@@ -44,17 +44,18 @@ const BoardDetail = () => {
   const isModified = post.createdDate !== post.updatedDate;
 
   return (
-    <div className="max-w-5xl mx-auto mt-24 p-6 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-      <h2 className="text-2xl font-bold text-blue-700 mb-4">
-        📄 {post.title}
-        <span className="ml-2 text-sm text-gray-500">[{post.bno}]</span>
-      </h2>
+    <div className="max-w-3xl mx-auto mt-24 p-6 bg-white shadow-md rounded-lg">
+      <header className="mb-4">
+        <h2 className="text-2xl font-bold text-blue-700 mb-1">
+          {post.title} <span className="text-sm text-gray-500">[{post.bno}]</span>
+        </h2>
+        <div className="text-sm text-gray-600">
+          작성자: {post.nickname || "알 수 없음"} | 작성일: {formattedDate(post.createdDate)}
+        </div>
+        {isModified && <div className="text-sm text-gray-400">수정일: {formattedDate(post.updatedDate)}</div>}
+      </header>
 
-      <div className="text-sm text-gray-600 mb-1">
-        작성자: {post.nickname || "알 수 없음"} | 작성일: {formattedDate(post.createdDate)}
-      </div>
-      {isModified && <div className="text-sm text-gray-400 mb-4">수정일: {formattedDate(post.updatedDate)}</div>}
-
+      {/* HTML 본문 렌더링 */}
       <article
         className="prose prose-img:rounded-lg prose-img:shadow text-gray-900 max-w-none text-lg mb-8"
         dangerouslySetInnerHTML={{ __html: post.content }}
@@ -62,7 +63,7 @@ const BoardDetail = () => {
 
       {/* 첨부 이미지 썸네일 */}
       {post.attachments?.length > 0 && (
-        <section className="mb-8">
+        <section className="mb-6">
           <h3 className="font-semibold text-gray-700 mb-2">📎 첨부 이미지</h3>
           <div className="flex flex-wrap gap-4">
             {post.attachments.map((img, idx) => {
@@ -82,7 +83,8 @@ const BoardDetail = () => {
         </section>
       )}
 
-      <div className="flex justify-end gap-2 mb-6">
+      {/* 버튼 영역 */}
+      <div className="flex gap-2 mb-6">
         <button
           onClick={() => navigate("/boards")}
           className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
@@ -90,6 +92,7 @@ const BoardDetail = () => {
           목록
         </button>
 
+        {/* 작성자 본인일 때만 수정/삭제 버튼 노출 */}
         {currentUser?.id === post.memberid && (
           <>
             <button

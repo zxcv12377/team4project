@@ -32,7 +32,7 @@ public class BoardController {
 
     private final BoardService boardService;
 
-    @PostMapping("/")
+    @PostMapping("/create")
     public ResponseEntity<?> create(@RequestBody @Valid BoardDTO dto) {
         log.info("게시글 작성 요청: {}", dto);
         boardService.create(dto);

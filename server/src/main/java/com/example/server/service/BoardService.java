@@ -2,8 +2,8 @@ package com.example.server.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -14,17 +14,16 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.example.server.dto.BoardDTO;
-import com.example.server.dto.ImageDTO;
 import com.example.server.dto.PageRequestDTO;
 import com.example.server.dto.PageResultDTO;
 import com.example.server.entity.Board;
+import com.example.server.entity.BoardLike;
 import com.example.server.entity.Member;
+import com.example.server.repository.BoardLikeRepository;
 import com.example.server.repository.BoardRepository;
 import com.example.server.repository.MemberRepository;
 import com.example.server.repository.ReplyRepository;
 import com.example.server.security.CustomMemberDetails;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.transaction.Transactional;
@@ -39,33 +38,30 @@ public class BoardService {
     private final BoardRepository boardRepository;
     private final MemberRepository memberRepository;
     private final ReplyRepository replyRepository;
+    private final BoardLikeRepository boardLikeRepository;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
-    // 이미지 첨부 → JSON 문자열로 변환 (ImageDTO)
-    private String toJson(List<ImageDTO> list) {
-        try {
-            return objectMapper.writeValueAsString(list);
-        } catch (Exception e) {
-            throw new RuntimeException("JSON 직렬화 실패", e);
-        }
-    }
-    // private String toJson(List<ImageDTO> list) {
-    // try {
-    // return list == null ? null : objectMapper.writeValueAsString(list);
-    // } catch (JsonProcessingException e) {
-    // throw new RuntimeException("JSON 직렬화 실패", e);
-    // }
-    // }
+    @Transactional
+    public boolean toggleBoardLike(Long bno, Member member) {
+        Board board = boardRepository.findById(bno).orElseThrow();
 
-    // JSON 문자열 → 이미지 첨부 리스트 (ImageDTO)
-    private List<ImageDTO> fromJson(String json) {
-        try {
-            return (json == null || json.isBlank()) ? List.of()
-                    : objectMapper.readValue(json, new TypeReference<List<ImageDTO>>() {
-                    });
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("JSON 파싱 실패", e);
+        // 좋아요 중복 확인
+        Optional<BoardLike> existing = boardLikeRepository.findByBoardAndMember(board, member);
+
+        if (existing.isPresent()) {
+            // 이미 누른 경우 → 삭제 (좋아요 취소)
+            boardLikeRepository.delete(existing.get());
+            return false; // 좋아요 취소
+        } else {
+            // 안 누른 경우 → 추가
+            BoardLike like = BoardLike.builder()
+                    .board(board)
+                    .member(member)
+                    .build();
+
+            boardLikeRepository.save(like);
+            return true; // 좋아요 등록
         }
     }
 
@@ -75,11 +71,21 @@ public class BoardService {
         CustomMemberDetails userDetails = (CustomMemberDetails) auth.getPrincipal();
         Member loginMember = memberRepository.findById(userDetails.getId()).orElseThrow();
 
+        String attachmentsJson = "[]"; // ← 기본값으로 빈 배열 JSON
+
+        try {
+            // null도 허용 → 항상 JSON 문자열로 변환
+            attachmentsJson = objectMapper.writeValueAsString(
+                    Optional.ofNullable(dto.getAttachments()).orElse(List.of()));
+        } catch (Exception e) {
+            log.error("❌ attachments 직렬화 실패: {}", e.getMessage());
+        }
+
         Board board = Board.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
-                .attachmentsJson(toJson(dto.getAttachments())) // ✅ ImageDTO로 저장
                 .member(loginMember)
+                .attachments(attachmentsJson)
                 .build();
 
         return boardRepository.save(board).getBno();
@@ -99,7 +105,6 @@ public class BoardService {
 
         board.changeTitle(dto.getTitle());
         board.changeContent(dto.getContent());
-        board.changeAttachments(toJson(dto.getAttachments())); // ImageDTO 직렬화
 
         return board.getBno();
     }
@@ -122,7 +127,8 @@ public class BoardService {
                 .createdDate((LocalDateTime) en[2])
                 .nickname((String) en[3])
                 .replyCount((Long) en[4])
-                .attachments(fromJson((String) en[5])) // JSON → ImageDTO
+                .viewCount((Long) en[5]) //
+                .boardLikeCount((Long) en[6])
                 .build());
 
         return PageResultDTO.<BoardDTO>withAll()
@@ -132,8 +138,11 @@ public class BoardService {
                 .build();
     }
 
-    // 게시글 상세조회
+    // 상세조회 시 조회수 증가 포함
     public BoardDTO getRow(Long bno) {
+        Board board = boardRepository.findById(bno).orElseThrow();
+        board.increaseViewCount(); // 조회수 +1
+
         Object[] result = boardRepository.getBoardRow(bno);
         return entityToDto((Board) result[0], (Member) result[1], (Long) result[2]);
     }
@@ -143,13 +152,18 @@ public class BoardService {
         List<Board> boards = boardRepository.findAllByMember(member);
 
         return boards.stream()
-                // replycount는 기존 entitytodto재활용할거라 null로 지정했습니다
                 .map(board -> entityToDto(board, member, null))
                 .toList();
     }
 
+    // 좋아요 처리 API용
+    @Transactional
+    public void increaseLike(Long bno) {
+        Board board = boardRepository.findById(bno).orElseThrow();
+        board.increaseBoardLikeCount();// 좋아요 +1
+    }
+
     private BoardDTO entityToDto(Board board, Member member, Long replyCount) {
-        List<ImageDTO> attachments = fromJson(board.getAttachmentsJson()); // ImageDTO 리스트
 
         return BoardDTO.builder()
                 .bno(board.getBno())
@@ -160,7 +174,9 @@ public class BoardService {
                 .memberid(member != null ? member.getId() : null)
                 .nickname(member != null ? member.getNickname() : null)
                 .replyCount(replyCount != null ? replyCount : 0L)
-                .attachments(attachments) // ImageDTO 세팅
+                .viewCount(board.getViewCount()) //
+                .boardLikeCount(board.getBoardLikeCount())
                 .build();
     }
+
 }

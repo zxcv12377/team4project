@@ -1,35 +1,20 @@
 package com.example.server.dto;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
-@AllArgsConstructor // 원본 + 썸네일이 분리된 경우에 사용
-@NoArgsConstructor // Jackson 직렬화/역직렬화에 필요 (JSON ↔ DTO 자동 매핑용)
+@Getter
+@Setter
+@NoArgsConstructor // 기본 생성자 필요 시
+@AllArgsConstructor // 모든 필드를 초기화하는 생성자 자동 생성
 public class ImageDTO {
     private String originalUrl;
     private String thumbnailUrl;
 
-    // String 하나만 받으면 둘 다 같은 값으로 초기화!
-    public ImageDTO(String url) {
-        this.originalUrl = url;
-        this.thumbnailUrl = url;
+    // 썸네일이 필요 없는 경우에도 명확하게 작성 가능
+    public static ImageDTO fromSingleUrl(String url) {
+        return new ImageDTO(url, url);
     }
 }
-
-// Board (게시글)
-// - bno (PK)
-// - title
-// - content
-// - created_date
-// - ...
-
-// Image (첨부 이미지)
-// - id (PK)
-// - board_bno (FK) ← 게시글과 연결
-// - original_url
-// - thumbnail_url
-// - created_at
-// → Board 1 : N Image 관계
-// → 게시글이 삭제되면 cascade로 이미지도 삭제 가능

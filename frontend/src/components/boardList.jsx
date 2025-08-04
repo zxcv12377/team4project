@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import axiosInstance from "../lib/axiosInstance";
+import axiosInstance from "./../lib/axiosInstance"; // axiosInstance는 그대로 사용
 
 export default function BoardList() {
+  // 🔹 게시글 관련 상태 관리
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -11,18 +11,38 @@ export default function BoardList() {
 
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  const headers = { Authorization: `Bearer ${token}` };
+  // headers와 baseURL은 axiosInstance에서 처리한다고 가정하여 여기서는 제거했습니다.
+  // const headers = { Authorization: `Bearer ${token}` };
+  // const baseURL = import.meta.env.VITE_API_BASE_URL;
 
-  const baseURL = import.meta.env.VITE_API_BASE_URL;
-
+  // 🔹 페이지 변경 시 게시글 목록 호출
+  // 📡 게시글 목록
   useEffect(() => {
-    console.log("📡 useEffect 실행됨");
-    boardList();
-  }, []);
+    const fetchBoards = async () => {
+      try {
+        setLoading(true);
+        const { data } = await axiosInstance.get("/boards/list", {
+          params: { page, size: 15 },
+        });
+        setPosts(data.dtoList || []);
+        setTotalPages(data.totalPage || 1);
+      } catch (err) {
+        console.error("게시글 로딩 실패:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
+    fetchBoards();
+  }, [page]);
+
+  // 📡 게시글 목록 API 호출
   const boardList = async () => {
     try {
-      const res = await axiosInstance.get(`/boards/list?page=${page}&size=10`, { headers });
+      // axiosInstance에 토큰이 필요하다면, 인터셉터 등으로 처리되어야 합니다.
+      // 만약 axiosInstance가 토큰을 자동으로 붙이지 않는다면, 아래처럼 headers를 추가해야 합니다.
+      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
+      const res = await axiosInstance.get(`/boards/list?page=${page}&size=15`, config);
       const data = res.data;
       setPosts(data.dtoList || []);
       setTotalPages(data.totalPage || 1);
@@ -33,14 +53,34 @@ export default function BoardList() {
     }
   };
 
+  // 📆 작성일 포맷: 오늘이면 시:분, 아니면 날짜
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    const today = new Date();
+    const isToday =
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate();
+
+    return isToday
+      ? date.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false })
+      : date.toLocaleDateString("ko-KR");
+  };
+
   if (loading) {
     return <div className="text-center mt-6 text-gray-500">📦 게시글을 불러오는 중입니다...</div>;
   }
 
+  // 📌 공지글 상단 정렬 처리
+  const noticePosts = posts.filter((post) => post.notice === true || post.title?.startsWith("[공지]"));
+  const normalPosts = posts.filter((post) => !(post.notice === true || post.title?.startsWith("[공지]")));
+  const combinedPosts = [...noticePosts, ...normalPosts];
+
   return (
-    <div className="min-h-[calc(100vh-96px)] mt-[96px] bg-consilk">
-      <main className="max-w-3xl mx-auto p-6 pt-10">
-        {/* ✅ 질문등록 버튼 */}
+    // ✅ 전체 배경 연노랑색으로 통일
+    <div className="min-h-screen pt-24 bg-consilk">
+      <main className="max-w-6xl mx-auto p-6 pt-10">
+        {/* 🔹 상단 등록 버튼 */}
         {token && (
           <div className="flex justify-end mb-4">
             <button
@@ -52,74 +92,66 @@ export default function BoardList() {
           </div>
         )}
 
-        {/* 게시판 제목 */}
-        <h2 className="text-2xl font-bold mb-4">📋 게시판 목록</h2>
+        {/* 🔹 게시판 제목 */}
+        <h2 className="text-[20px] font-semibold mb-4">📋 게시판 목록</h2>
 
-        {/* 게시글 목록 */}
-        {posts.length === 0 ? (
-          <div className="text-center mt-6 text-gray-600">📭 게시글이 없습니다.</div>
-        ) : (
-          <ul className="space-y-4">
-            {posts.map((post) => (
-              <li
-                key={post.bno}
-                onClick={() => navigate(`/boards/${post.bno}`)}
-                className="flex justify-between items-start p-4 bg-white border border-gray-200 shadow-sm rounded-xl hover:shadow-md transition-shadow"
-              >
-                {/* 텍스트 영역 */}
-                <div className="flex-1 pr-4">
-                  <div className="text-blue-600 font-semibold text-lg">
-                    <span className="text-gray-600 font-bold mr-2">[{post.bno}]</span>
-                    {post.title}
-                  </div>
+        {/* 🔹 게시글 테이블 감싼 카드 형태 (하얀 배경 박스) */}
+        <div className="bg-white rounded-xl shadow-md p-6 border">
+          <div className="overflow-x-auto rounded-lg">
+            <table className="w-full text-sm text-left text-gray-700">
+              <thead className="bg-gray-100 text-gray-800">
+                <tr>
+                  <th className="px-3 py-2 w-[5%] text-center">번호</th>
+                  <th className="px-3 py-2 w-[45%]">제목</th>
+                  <th className="px-3 py-2 w-[15%] text-center">작성자</th>
+                  <th className="px-3 py-2 w-[15%] text-center">작성일</th>
+                  <th className="px-3 py-2 w-[10%] text-center">조회수</th>
+                  <th className="px-3 py-2 w-[10%] text-center">좋아요</th>
+                </tr>
+              </thead>
+              <tbody>
+                {combinedPosts.map((post, index) => {
+                  const isNotice = post.notice === true || post.title?.startsWith("[공지]");
+                  // 페이지네이션 번호 계산 로직 수정: 현재 페이지와 전체 페이지 수를 고려하여 정확한 번호 부여
+                  // 공지글이 아닌 경우에만 실제 번호를 계산하고, 공지글은 "공지"로 표시
+                  const displayIndex = isNotice ? "공지" : (totalPages - page) * 15 + (combinedPosts.length - index);
 
-                  <div className="text-sm text-gray-600 mt-1">
-                    작성자: {post.nickname || "익명"} | 작성일:{" "}
-                    {post.createdDate
-                      ? new Date(post.createdDate).toLocaleString("ko-KR", {
-                          year: "numeric",
-                          month: "numeric",
-                          day: "numeric",
-                          hour: "numeric",
-                          minute: "2-digit",
-                          hour12: true,
-                        })
-                      : "날짜 없음"}{" "}
-                    | 댓글 {typeof post.replyCount === "number" ? post.replyCount : 0}
-                  </div>
-                </div>
+                  return (
+                    <tr
+                      key={post.bno}
+                      onClick={() => navigate(`/boards/${post.bno}`)}
+                      className={`cursor-pointer hover:bg-gray-50 transition ${
+                        isNotice ? "bg-yellow-100 font-semibold" : "bg-white"
+                      }`}
+                    >
+                      <td className="px-3 py-3 text-center align-middle">{displayIndex}</td>
+                      <td className="px-3 py-3">
+                        {/* 제목에 썸네일 관련 로직이 있었으나, 테이블 구조에 맞게 제거했습니다. */}
+                        <div className="text-xl font-bold text-black leading-snug mb-2 line-clamp-2">{post.title}</div>
+                      </td>
+                      <td className="px-3 py-3 text-center align-middle">{post.nickname || "익명"}</td>
+                      <td className="px-3 py-3 text-center align-middle">{formatDate(post.createdDate)}</td>
+                      <td className="px-3 py-3 text-center align-middle">{post.viewCount || 0}</td>
+                      <td className="px-3 py-3 text-center align-middle">{post.boardLikeCount || 0}</td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
 
-                {/* ✅ 안전한 썸네일 */}
-                {Array.isArray(post.attachments) && post.attachments.length > 0 && (
-                  <img
-                    src={(() => {
-                      const img = post.attachments[0];
-
-                      // 🔒 안전: fallback 처리
-                      if (typeof img === "string") {
-                        return img.startsWith(import.meta.env.VITE_HTTP_URL) ? img : `${baseURL}${img}`;
-                      }
-
-                      const src = img.thumbnailUrl || img.originalUrl || "";
-                      return src.startsWith(import.meta.env.VITE_HTTP_URL) ? src : `${baseURL}${src}`;
-                    })()}
-                    alt="썸네일"
-                    className="w-32 h-20 object-cover rounded"
-                  />
-                )}
-              </li>
-            ))}
-          </ul>
-        )}
+        {/* 게시글이 없을 때 메시지 */}
+        {posts.length === 0 && !loading && <div className="text-center mt-6 text-gray-500">게시글이 없습니다.</div>}
 
         {/* 페이지네이션 */}
-        {posts.length > 0 && (
+        {totalPages > 1 && ( // totalPages가 1보다 클 때만 페이지네이션 표시
           <div className="flex justify-center mt-6 gap-2">
             {Array.from({ length: totalPages }, (_, i) => (
               <button
                 key={i}
                 onClick={() => setPage(i + 1)}
-                className={`px-3 py-1 rounded border ${
+                className={`px-3 py-1 rounded border text-sm ${
                   page === i + 1 ? "bg-blue-500 text-white font-bold" : "bg-white text-gray-700 hover:bg-gray-100"
                 }`}
               >

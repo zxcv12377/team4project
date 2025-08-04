@@ -23,9 +23,23 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
+        // // 서버의 실제 경로
+        // String path = "file:" + System.getProperty("user.dir") + "/uploads/";
+
+        // // 클라이언트가 접근할 수 있도록 정적 리소스 매핑
+        // registry.addResourceHandler("/uploads/**")
+        // .addResourceLocations(path)
+        // .setCachePeriod(3600); // (선택 사항) 캐시 시간 설정
+
+        // // API 주소 패턴에서도 접근 허용 (예외적으로 필요 시)
+        // registry.addResourceHandler("/api/uploads/**")
+        // .addResourceLocations(path);
+
         String path = "file:" + System.getProperty("user.dir") + "/uploads/";
+
         registry.addResourceHandler("/uploads/**")
-                .addResourceLocations(path);
+                .addResourceLocations(path)
+                .setCachePeriod(3600);
 
         registry.addResourceHandler("/api/uploads/**")
                 .addResourceLocations(path);

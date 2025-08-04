@@ -1,5 +1,6 @@
 package com.example.server.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import com.example.server.base.Base;
@@ -12,7 +13,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Lob;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -35,14 +35,12 @@ public class Board extends Base {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bno;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String title;
 
-    @Column(length = 32767)
+    // @Column(length = 32767)
+    @Column(columnDefinition = "TEXT")
     private String content;
-
-    @Column(name = "attachments_json", length = 3000)
-    private String attachmentsJson;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -50,6 +48,19 @@ public class Board extends Base {
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Reply> replies;
+
+    @Column(columnDefinition = "TEXT")
+    private String attachments; // JSON 문자열로 이미지 리스트 저장
+
+    // 게시글 조회수
+    @Builder.Default
+    @Column(nullable = false)
+    private Long viewCount = 0L;
+
+    // 게시글 좋아요 수
+    @Builder.Default
+    @Column(nullable = false)
+    private Long boardLikeCount = 0L;
 
     // 수정 메서드
     public void changeTitle(String title) {
@@ -60,7 +71,14 @@ public class Board extends Base {
         this.content = content;
     }
 
-    public void changeAttachments(String attachmentsJson) {
-        this.attachmentsJson = attachmentsJson;
+    public void increaseViewCount() {
+        this.viewCount++;
     }
+
+    public void increaseBoardLikeCount() {
+        this.boardLikeCount++;
+    }
+
+    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<BoardLike> boardLikes = new ArrayList<>();
 }
