@@ -12,7 +12,7 @@ export default function Sidebar1({ onSelectDM, onSelectServer , onLeaveOrDeleteS
   const [serverName, setServerName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const { user } = useUserContext();
-  const { subscribeServerMember } = useRealtime();
+  const { subscribeServerMember, dispatch: realtimeDispatch } = useRealtime();
   const fetchServers = () => axiosInstance.get("/servers/my").then((res) => setServers(res.data));
 
   useEffect(() => {
@@ -40,8 +40,22 @@ export default function Sidebar1({ onSelectDM, onSelectServer , onLeaveOrDeleteS
   fetchServers();
 
   if (joinedServerId) {
-    subscribeServerMember(joinedServerId); // ✅ 서버별 멤버 WebSocket 구독 추가
+    subscribeServerMember(joinedServerId);
+    onSelectServer(joinedServerId); 
   }
+  try {
+    const res = await axiosInstance.get(`/servers/${joinedServerId}/members`);
+    realtimeDispatch({ 
+      type: "SET_SERVER_MEMBERS", 
+      payload: { 
+        serverId: joinedServerId, 
+        members: res.data 
+      } 
+    });
+  } catch (err) {
+    console.warn("❌ 참여자 목록 강제 fetch 실패", err);
+  }
+
 } catch (err) {
   toast({
     title: "참여 실패",
