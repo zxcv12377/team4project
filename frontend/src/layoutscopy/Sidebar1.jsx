@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../lib/axiosInstance";
 
-export default function Sidebar1({ onSelectDM, onSelectServer }) {
+export default function Sidebar1({ onSelectDM, onSelectServer, serverId }) {
   const [servers, setServers] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
   const [showJoin, setShowJoin] = useState(false);
@@ -25,9 +25,9 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
   };
 
   // 서버 참여
-  const handleJoin = async () => {
+  const handleJoin = async (id) => {
     if (!joinCode.trim()) return;
-    await axiosInstance.post("/servers/join", { code: joinCode });
+    await axiosInstance.post(`/servers/${id}/join`, { code: joinCode });
     setJoinCode("");
     setShowJoin(false);
     fetchServers();
@@ -124,7 +124,7 @@ export default function Sidebar1({ onSelectDM, onSelectServer }) {
               autoFocus
             />
             <div className="flex gap-2">
-              <button onClick={handleJoin} className="px-3 py-1 bg-blue-600 text-white rounded">
+              <button onClick={() => handleJoin(serverId)} className="px-3 py-1 bg-blue-600 text-white rounded">
                 참여
               </button>
               <button onClick={() => setShowJoin(false)} className="px-3 py-1 bg-zinc-700 text-white rounded">

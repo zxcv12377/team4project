@@ -1,5 +1,5 @@
 // src/context/RealtimeContext.jsx
-import { useState, createContext, useContext, useReducer, useEffect ,useRef} from "react";
+import { useState, createContext, useContext, useReducer, useEffect, useRef } from "react";
 import axiosInstance from "@/lib/axiosInstance";
 import { UserContext } from "./UserContext";
 import { usePing } from "@/hooks/usePing";
@@ -16,6 +16,8 @@ const initialState = {
   sentRequests: [],
   friends: [],
   dmRooms: [],
+  serverMembers: {},
+  loadingServerMember: new Set(),
 };
 
 function realtimeReducer(state, action) {
@@ -47,7 +49,20 @@ function realtimeReducer(state, action) {
         friends: state.friends.filter((f) => f.friendId !== action.payload),
       };
     case "SET_DM_ROOMS":
-  return { ...state, dmRooms: action.payload };
+      return { ...state, dmRooms: action.payload };
+    case "SET_SERVER_MEMBERS": {
+      const sid = action.serverId; // 숫자든 문자열이든, dispatch 한 것과 동일 타입
+      return {
+        ...state,
+        // 서버 멤버 데이터 병합
+        serverMembers: {
+          ...state.serverMembers,
+          [sid]: action.payload,
+        },
+        // 로딩 Set 에서 제거
+        loadingServerMember: new Set([...state.loadingServerMember].filter((id) => id !== sid)),
+      };
+    }
     default:
       return state;
   }
@@ -63,7 +78,7 @@ export function RealtimeProvider({ children, socket }) {
   const unsubscribeFnRef = useRef(null);
   const { connected, subscribe, connect, disconnect } = socket;
   const { toast } = useToast();
-  
+
   usePing();
 
   const initFriendState = async () => {
@@ -97,11 +112,12 @@ export function RealtimeProvider({ children, socket }) {
       console.error("❌ DM 목록 새로고침 실패:", err);
     }
   };
-  
-   const fetchAndSetServerMembers = async (serverId) => {
+
+  const fetchAndSetServerMembers = async (serverId) => {
     try {
       const res = await axiosInstance.get(`/servers/${serverId}/members`);
-      dispatch({ type: 'SET_SERVER_MEMBERS', serverId, payload: res.data });
+      console.log("🔥 API res.data:", res.data);
+      dispatch({ type: "SET_SERVER_MEMBERS", serverId, payload: res.data });
     } catch (err) {
       console.error(`❌ 서버 멤버 갱신 실패 (serverId=${serverId}):`, err);
     }
@@ -145,8 +161,8 @@ export function RealtimeProvider({ children, socket }) {
 
     console.log("🔔 WebSocket 구독 시작:", email);
 
-    const subStatus = subscribe(`/user/queue/status`, ev => {
-      dispatch({ type: 'USER_STATUS_CHANGE', payload: ev });
+    const subStatus = subscribe(`/user/queue/status`, (ev) => {
+      dispatch({ type: "USER_STATUS_CHANGE", payload: ev });
 
       if (ev.email !== email) {
         toast({
@@ -156,21 +172,25 @@ export function RealtimeProvider({ children, socket }) {
       }
     });
 
-    const subBroadcast = subscribe(`/topic/status`, ev => {
-      dispatch({ type: 'USER_STATUS_CHANGE', payload: ev });
+    const subBroadcast = subscribe(`/topic/status`, (ev) => {
+      dispatch({ type: "USER_STATUS_CHANGE", payload: ev });
     });
 
-    const subNoti = subscribe(`/user/queue/notifications.${email}`, msg => {
-      dispatch({ type: 'ADD_NOTIFICATION', payload: msg });
+    const subNoti = subscribe(`/user/queue/notifications.${email}`, (msg) => {
+      dispatch({ type: "ADD_NOTIFICATION", payload: msg });
     });
 
-    const subFriend = subscribe(`/user/queue/friend`, async payload => {
+    const subFriend = subscribe(`/user/queue/friend`, async (payload) => {
       console.log("🤝 친구 이벤트 수신:", payload);
 
       try {
         const type = payload.type;
 
-        if (["REQUEST_RECEIVED", "REQUEST_SENT", "REQUEST_CANCELLED", "REQUEST_ACCEPTED", "REQUEST_REJECTED"].includes(type)) {
+        if (
+          ["REQUEST_RECEIVED", "REQUEST_SENT", "REQUEST_CANCELLED", "REQUEST_ACCEPTED", "REQUEST_REJECTED"].includes(
+            type
+          )
+        ) {
           const [friendsRes, receivedRes, sentRes, onlineRes] = await Promise.all([
             axiosInstance.get("/friends"),
             axiosInstance.get("/friends/requests/received"),
@@ -199,13 +219,12 @@ export function RealtimeProvider({ children, socket }) {
           const onlineRes = await axiosInstance.get("/friends/online");
           dispatch({ type: "SET_ONLINE_USERS", payload: onlineRes.data || [] });
         }
-
       } catch (err) {
         console.error("❌ 친구 이벤트 WebSocket 처리 실패:", err);
       }
     });
 
-    const subDmRestore = subscribe(`/user/queue/dm-restore`, async payload => {
+    const subDmRestore = subscribe(`/user/queue/dm-restore`, async (payload) => {
       console.log("📥 DM 복구 알림 수신:", payload);
       try {
         await refreshDmRooms();
@@ -218,8 +237,7 @@ export function RealtimeProvider({ children, socket }) {
       }
     });
 
-
-    const subServerMemberEvent = subscribe(`/topic/server.*.members`, async payload => {
+    const subServerMemberEvent = subscribe(`/topic/server.*.members`, async (payload) => {
       if (!payload.serverId) return;
       await fetchAndSetServerMembers(payload.serverId);
     });
@@ -240,16 +258,18 @@ export function RealtimeProvider({ children, socket }) {
     console.log("✅ 모든 WebSocket 구독 완료");
 
     return unsubscribe;
-    }
+  }
 
   return (
-    <RealtimeContext.Provider value={{
-      state,
-      dispatch,
-      ready,
-      refreshDmRooms,
-      fetchAndSetServerMembers,
-    }}>
+    <RealtimeContext.Provider
+      value={{
+        state,
+        dispatch,
+        ready,
+        refreshDmRooms,
+        fetchAndSetServerMembers,
+      }}
+    >
       {children}
     </RealtimeContext.Provider>
   );
