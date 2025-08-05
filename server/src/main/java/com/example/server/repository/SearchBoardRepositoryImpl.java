@@ -10,6 +10,7 @@ import org.springframework.data.support.PageableExecutionUtils;
 
 import com.example.server.entity.Board;
 import com.example.server.entity.QBoard;
+import com.example.server.entity.QBoardChannel;
 import com.example.server.entity.QMember;
 import com.example.server.entity.QReply;
 import com.querydsl.core.BooleanBuilder;
@@ -18,6 +19,7 @@ import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberPath;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
@@ -36,6 +38,7 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                 QBoard board = QBoard.board;
                 QMember member = QMember.member;
                 QReply reply = QReply.reply;
+                QBoardChannel channel = QBoardChannel.boardChannel;
 
                 // 댓글 수 별칭 Path 선언
                 NumberPath<Long> replyCountAlias = Expressions.numberPath(Long.class, "replyCount");
@@ -50,6 +53,7 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                 // 기본 SELECT + JOIN 구성[게시판 단순 리스트업]
                 JPQLQuery<Tuple> query = from(board)
                                 .leftJoin(board.member, member)
+                                .leftJoin(board.channel, channel)
                                 .select(
                                                 board.bno,
                                                 board.title,
@@ -57,7 +61,9 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 member.nickname,
                                                 replyCountExpr,
                                                 board.viewCount,
-                                                board.boardLikeCount);
+                                                board.boardLikeCount,
+                                                channel.id,
+                                                channel.name);
 
                 if (type != null && keyword != null && !keyword.isBlank()) {
                         BooleanBuilder builder = new BooleanBuilder();
@@ -77,8 +83,11 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                 board.title,
                                 board.createdDate,
                                 member.nickname,
+                                board.attachmentsJson,
                                 board.viewCount,
-                                board.boardLikeCount);
+                                board.boardLikeCount,
+                                channel.id,
+                                channel.name);
                 // 페이징 처리
                 List<Tuple> resultList = getQuerydsl().applyPagination(pageable, query).fetch();
 
@@ -91,7 +100,9 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 t.get(member.nickname),
                                                 t.get(replyCountAlias),
                                                 t.get(board.viewCount),
-                                                t.get(board.boardLikeCount)
+                                                t.get(board.boardLikeCount),
+                                                t.get(channel.id),
+                                                t.get(channel.name)
                                 })
                                 .collect(Collectors.toList());
 

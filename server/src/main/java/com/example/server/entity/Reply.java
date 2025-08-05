@@ -6,19 +6,11 @@ import jakarta.persistence.*;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.example.server.base.Base;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -40,18 +32,24 @@ public class Reply extends Base {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "board_bno", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Board board;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_rno", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Reply parent;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
 
     @Column(nullable = false)
     private String text;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    private BoardChannel channel;
 
     @Column(nullable = true)
     @Builder.Default

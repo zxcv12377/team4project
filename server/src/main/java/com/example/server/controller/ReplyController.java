@@ -4,7 +4,6 @@ import com.example.server.dto.ReplyDTO;
 import com.example.server.dto.ReplyRequestDTO;
 import com.example.server.dto.ReplyResponseDTO;
 import com.example.server.entity.Member;
-import com.example.server.jwt.JwtUtil;
 import com.example.server.repository.MemberRepository;
 import com.example.server.security.CustomMemberDetails;
 import com.example.server.service.ReplyService;
@@ -133,7 +132,7 @@ public class ReplyController {
         return ResponseEntity.ok("댓글 삭제 완료");
     }
 
-    @Transactional(readOnly = true)
+    @Transactional
     @GetMapping("/my")
     public ResponseEntity<?> getMyReplies(@AuthenticationPrincipal CustomMemberDetails currentMemeber) {
         Member member = memberRepository.findById(currentMemeber.getId())

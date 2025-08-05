@@ -7,10 +7,12 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.server.dto.ServerMemberResponseDTO;
+import com.example.server.dto.event.ServerMemberEvent;
 import com.example.server.entity.Member;
 import com.example.server.entity.Server;
 import com.example.server.entity.ServerMember;
 import com.example.server.entity.enums.ServerRole;
+import com.example.server.infra.EventPublisher;
 import com.example.server.repository.MemberRepository;
 import com.example.server.repository.ServerMemberRepository;
 import com.example.server.repository.ServerRepository;
@@ -23,6 +25,7 @@ public class ServerMemberService {
     private final ServerRepository serverRepository;
     private final ServerMemberRepository serverMemberRepository;
     private final MemberRepository memberRepository;
+    private final EventPublisher eventPublisher;
 
     // 서버 참여자 목록 반환
     @Transactional(readOnly = true)
@@ -39,6 +42,9 @@ public class ServerMemberService {
         ServerMember serverMember = serverMemberRepository.findByMemberIdAndServerId(memberId, serverId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 멤버가 서버에 없음"));
         serverMemberRepository.delete(serverMember);
+
+        ServerMemberEvent event = new ServerMemberEvent(serverId, memberId, "KICK");
+        eventPublisher.publishServerMemberEvent(event);
     }
 
     // 서버 멤버 권한 변경
@@ -66,6 +72,10 @@ public class ServerMemberService {
                 .role(ServerRole.USER)
                 .build();
         serverMemberRepository.save(serverMember);
+
+        // 입장전파
+        ServerMemberEvent event = new ServerMemberEvent(serverId, memberId, "JOIN");
+        eventPublisher.publishServerMemberEvent(event);
     }
 
     // (선택) 참여자의 권한 반환
@@ -73,5 +83,17 @@ public class ServerMemberService {
     public String getMemberRole(Long serverId, Long memberId) {
         Optional<ServerMember> sm = serverMemberRepository.findByMemberIdAndServerId(memberId, serverId);
         return sm.map(serverMember -> serverMember.getRole().name()).orElse(null);
+    }
+
+    @Transactional
+    public void leaveServer(Long serverId, Long memberId) {
+        ServerMember serverMember = serverMemberRepository
+                .findByMemberIdAndServerId(memberId, serverId)
+                .orElseThrow(() -> new IllegalArgumentException("서버 참여 정보가 없습니다."));
+        serverMemberRepository.delete(serverMember);
+
+        // 퇴장 전파
+        ServerMemberEvent event = new ServerMemberEvent(serverId, memberId, "LEAVE");
+        eventPublisher.publishServerMemberEvent(event);
     }
 }

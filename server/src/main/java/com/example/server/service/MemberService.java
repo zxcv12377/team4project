@@ -30,4 +30,11 @@ public interface MemberService {
 
     @Transactional(readOnly = true)
     public List<MemberResponseDTO> searchMembers(String name, Long myMno);
+
+    // admin에서 전체 회원조회
+    @Transactional
+    List<MemberResponseDTO> findAll();
+
+    void deleteByEmail(String email);
+
 }

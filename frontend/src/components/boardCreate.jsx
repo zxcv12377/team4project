@@ -1,5 +1,5 @@
+import { useNavigate, useParams } from "react-router-dom";
 import React, { useRef, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import { Editor } from "@toast-ui/react-editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import axiosInstance from "../lib/axiosInstance";
@@ -9,7 +9,14 @@ const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 
 export default function BoardCreate() {
   const editorRef = useRef();
+  const navigate = useNavigate();
+  const { channelId: paramChannelId } = useParams(); // /channels/:channelId/create
+
+  const [channels, setChannels] = useState([]);
+  const [channelId, setChannelId] = useState(Number(paramChannelId) || "");
   const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+
   const [attachments, setAttachments] = useState([]); // 이미지 정보 리스트
   const navigate = useNavigate();
 
@@ -59,6 +66,10 @@ export default function BoardCreate() {
     }
   };
 
+  /* 1) 채널 목록 로딩 */
+  useEffect(() => {
+    axiosInstance.get("/board-channels").then((res) => setChannels(res.data));
+  }, []);
   // 🖼️ Toast UI Editor 내에서 이미지 삽입 시 자동 업로드
   const imageUploadHook = async (blob, callback) => {
     const formData = new FormData();
@@ -92,10 +103,11 @@ export default function BoardCreate() {
       await axiosInstance.post("/boards/create", {
         title,
         content,
+        channelId,
         attachments,
       });
       alert("게시글이 등록되었습니다.");
-      navigate("/boards");
+      navigate(`/channels/${channelId}`); // 글 작성 후 목록으로
     } catch (err) {
       console.error("❌ 게시글 등록 실패:", err);
       alert("게시글 등록에 실패했습니다.");
@@ -109,6 +121,25 @@ export default function BoardCreate() {
       onDragOver={(e) => e.preventDefault()}
     >
       <h2 className="text-2xl font-bold text-red-400 mb-6">📝 게시글 작성</h2>
+      {/* 🔻 채널 선택 */}
+      <div>
+        <label className="block mb-1 font-medium">채널</label>
+        <select
+          className="w-full px-3 py-2 border rounded"
+          value={channelId}
+          onChange={(e) => setChannelId(Number(e.target.value))}
+          required
+        >
+          <option value="" disabled>
+            채널 선택
+          </option>
+          {channels.map((ch) => (
+            <option key={ch.id} value={ch.id}>
+              {ch.name}
+            </option>
+          ))}
+        </select>
+      </div>
 
       <input
         type="text"

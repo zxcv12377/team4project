@@ -1,5 +1,8 @@
 package com.example.server.entity;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.example.server.entity.enums.ChannelRole;
 
 import jakarta.persistence.*;
@@ -22,11 +25,13 @@ public class ChannelMember {
     // 참여자(멤버)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
 
     // 채널(방)
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private ChatRoom room;
 
     // 권한 (ADMIN / USER)

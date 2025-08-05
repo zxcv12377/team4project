@@ -61,8 +61,9 @@ axiosInstance.interceptors.response.use(
 
       // RefreshToken 없으면 즉시 종료
       if (!refreshToken) {
-        clearSession();
-        redirectToLogin();
+        // 리프레시 토큰이 없으면, 사용자는 그냥 로그아웃 상태인 것.
+        // 에러를 그대로 반환하여 각 컴포넌트가 처리하도록 함.
+        // 여기서 페이지를 리로드하면 무한 루프 발생.
         return Promise.reject(err);
       }
 
@@ -94,24 +95,17 @@ axiosInstance.interceptors.response.use(
         originalConfig.headers.Authorization = `Bearer ${newAccessToken}`;
         return axiosInstance(originalConfig);
       } catch (refreshError) {
-        console.warn("❌ RefreshToken 재발급 실패");
+        console.error("❌ RefreshToken 재발급 실패. 세션을 초기화하고 로그인 페이지로 이동합니다.");
 
         isRefreshing = false;
-        localStorage.removeItem("token");
-        localStorage.removeItem("refresh_token");
-        localStorage.removeItem("email");
-        localStorage.removeItem("nickname");
+        clearSession(); // 세션 정보 모두 삭제
 
-        // window.location.href = "/login";
+        // 로그인 페이지로 리다이렉트. 사용자의 세션이 만료되었음을 명확히 함.
+        if (window.location.pathname !== "/") {
+          window.location.replace("/");
+        }
         return Promise.reject(refreshError);
       }
-    }
-
-    // ✅ 최대 재시도 초과
-    if (originalConfig._retryCount >= MAX_RETRY) {
-      console.warn("🚫 최대 재시도 횟수 초과, 세션 종료");
-      clearSession();
-      redirectToLogin();
     }
 
     return Promise.reject(err);
@@ -122,15 +116,14 @@ axiosInstance.interceptors.response.use(
 function clearSession() {
   localStorage.removeItem("token");
   localStorage.removeItem("refresh_token");
-  localStorage.removeItem("username");
-  localStorage.removeItem("name");
+  localStorage.removeItem("user");
 }
 
 // ✅ 로그인 페이지 이동 함수 (중복 이동 방지)
-function redirectToLogin() {
-  if (window.location.pathname !== "/boards") {
-    window.location.replace("/boards"); // replace → 히스토리 안 쌓임
-  }
-}
+// function redirectToLogin() {
+//   if (window.location.pathname !== "/") {
+//     window.location.replace("/"); // replace → 히스토리 안 쌓임
+//   }
+// }
 
 export default axiosInstance;

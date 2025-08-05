@@ -1,22 +1,33 @@
 import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import axiosInstance from "./../lib/axiosInstance"; // axiosInstance는 그대로 사용
+import { useNavigate, useParams } from "react-router-dom";
+import axiosInstance from "../lib/axiosInstance";
 
 export default function BoardList() {
-  // 🔹 게시글 관련 상태 관리
+  const { channelId } = useParams(); // /channels/:channelId
+
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [channelName, setChannelName] = useState("전체 게시판");
 
-  const navigate = useNavigate();
   const token = localStorage.getItem("token");
-  // headers와 baseURL은 axiosInstance에서 처리한다고 가정하여 여기서는 제거했습니다.
-  // const headers = { Authorization: `Bearer ${token}` };
-  // const baseURL = import.meta.env.VITE_API_BASE_URL;
+  const headers = { Authorization: `Bearer ${token}` };
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
 
-  // 🔹 페이지 변경 시 게시글 목록 호출
-  // 📡 게시글 목록
+  // 채널 이름 로딩
+  useEffect(() => {
+    if (!channelId) {
+      setChannelName("전체 게시판");
+      return;
+    }
+    axiosInstance
+      .get(`/board-channels/${channelId}`) // id 기반 조회
+      .then((res) => setChannelName(res.data.name))
+      .catch(() => setChannelName(`채널 ${channelId}`));
+  }, [channelId]);
+
+  /* ---------- 게시글 로딩 ---------- */
   useEffect(() => {
     const fetchBoards = async () => {
       try {
@@ -34,18 +45,23 @@ export default function BoardList() {
     };
 
     fetchBoards();
-  }, [page]);
+  }, [channelId, page]);
 
   // 📡 게시글 목록 API 호출
   const boardList = async () => {
     try {
-      // axiosInstance에 토큰이 필요하다면, 인터셉터 등으로 처리되어야 합니다.
-      // 만약 axiosInstance가 토큰을 자동으로 붙이지 않는다면, 아래처럼 headers를 추가해야 합니다.
-      const config = token ? { headers: { Authorization: `Bearer ${token}` } } : {};
-      const res = await axiosInstance.get(`/boards/list?page=${page}&size=15`, config);
+      const res = channelId
+        ? await axiosInstance.get(`/boards/channel/${channelId}?page=${page}&size=10`, { headers })
+        : await axiosInstance.get(`/boards/list?page=${page}&size=15`, { headers });
+
       const data = res.data;
-      setPosts(data.dtoList || []);
-      setTotalPages(data.totalPage || 1);
+      if (Array.isArray(data)) {
+        setPosts(data);
+        setTotalPages(1);
+      } else {
+        setPosts(data.dtoList || []);
+        setTotalPages(data.totalPage || 1);
+      }
     } catch (err) {
       console.error("게시글 로딩 실패:", err);
     } finally {
@@ -81,19 +97,19 @@ export default function BoardList() {
     <div className="min-h-screen pt-24 bg-consilk">
       <main className="max-w-6xl mx-auto p-6 pt-10">
         {/* 🔹 상단 등록 버튼 */}
-        {token && (
+        {token && channelId && (
           <div className="flex justify-end mb-4">
             <button
-              className="bg-blue-500 hover:bg-blue-600 text-white font-semibold py-2 px-4 rounded"
-              onClick={() => navigate("/boards/create")}
+              className="rounded bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600"
+              onClick={() => navigate(`/channels/${channelId}/create`)}
             >
               게시글 등록
             </button>
           </div>
         )}
 
-        {/* 🔹 게시판 제목 */}
-        <h2 className="text-[20px] font-semibold mb-4">📋 게시판 목록</h2>
+        {/* 채널 이름 */}
+        <h2 className="text-[20px] font-semibold mb-4">{channelName}</h2>
 
         {/* 🔹 게시글 테이블 감싼 카드 형태 (하얀 배경 박스) */}
         <div className="bg-white rounded-xl shadow-md p-6 border">

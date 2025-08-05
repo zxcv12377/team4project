@@ -1,8 +1,5 @@
 package com.example.server.jwt;
 
-import com.example.server.security.CustomMemberDetails;
-import com.example.server.security.CustomMemberDetailsService;
-
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

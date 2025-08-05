@@ -48,7 +48,15 @@ public class BoardDTO {
     // 댓글 수
     private Long replyCount;
 
-    private Long viewCount; // 조회수
-    private Long boardLikeCount; // 게시글 좋아요 수
+    // 조회수
+    private Long viewCount;
+
+    // 게시글 좋아요 수
+    private Long boardLikeCount;
+
+    // 게시판 채널 아이디
+    private Long channelId;
+
+    private String channelName;
 
 }

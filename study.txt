@@ -103,3 +103,8 @@ AuthenticationManager : spring의 사용자 인증 기능. 인증이 맞으면 a
 6. 백엔드 : 인증코드 유효한지 확인 > token 상태를 인증 완료로 변경
 7. 백엔드 : 프론트엔드에서 <회원가입> 버튼을 누르면 백엔드 MemberController에서 post register 에서 이메일 인증 여부 확인, 인증 완료된 이메일 member엔티티로 DB에 저장,Passwordencoder로 비밀번호 암호화
 8. 프론트 : 회원가입 완료 메세지 응답 > 현재 페이지 리로드(/boards)
+
+
+경로수정 axiosinstance 쓸 때 .env.development 보고 위에 const 지정해줘야됨
+
+const Url = import.meta.env.VITE_API_BASE_URL

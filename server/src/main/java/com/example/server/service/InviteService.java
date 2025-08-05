@@ -3,21 +3,25 @@ package com.example.server.service;
 import java.time.LocalDateTime;
 import java.util.NoSuchElementException;
 
+import java.security.SecureRandom;
 import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.text.RandomStringGenerator;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.server.dto.InviteRequestDTO;
 import com.example.server.dto.InviteResponseDTO;
-import com.example.server.entity.ChannelMember;
-import com.example.server.entity.ChatRoom;
+import com.example.server.dto.event.ServerMemberEvent;
 import com.example.server.entity.Invite;
 import com.example.server.entity.Member;
-import com.example.server.entity.enums.ChannelRole;
-import com.example.server.repository.ChannelMemberRepository;
-import com.example.server.repository.ChatRoomRepository;
+import com.example.server.entity.Server;
+import com.example.server.entity.ServerMember;
+import com.example.server.entity.enums.ServerRole;
+import com.example.server.infra.EventPublisher;
 import com.example.server.repository.InviteRepository;
 import com.example.server.repository.MemberRepository;
+import com.example.server.repository.ServerMemberRepository;
+import com.example.server.repository.ServerRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -26,19 +30,26 @@ import lombok.RequiredArgsConstructor;
 
 public class InviteService {
 
-    private final ChatRoomRepository chatRoomRepository;
+    private final ServerRepository serverRepository;
     private final MemberRepository memberRepository;
     private final InviteRepository inviteRepository;
-    private final ChannelMemberRepository channelMemberRepository;
+    private final ServerMemberRepository serverMemberRepository;
+    private final EventPublisher eventPublisher;
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
 
     // 랜덤 코드 생성 유틸
+    private static final RandomStringGenerator generator = new RandomStringGenerator.Builder()
+            .withinRange('0', 'z')
+            .filteredBy(Character::isLetterOrDigit)
+            .usingRandom(SECURE_RANDOM::nextInt)
+            .build();
+
     private String generateRandomCode() {
-        // 8자리 영문+숫자 (커스텀 가능)
-        return RandomStringUtils.randomAlphanumeric(8);
+        return generator.generate(8);
     }
 
     public Invite createInvite(Long creatorId, InviteRequestDTO dto) {
-        ChatRoom room = chatRoomRepository.findById(dto.getRoomId())
+        Server server = serverRepository.findById(dto.getServerId())
                 .orElseThrow(() -> new IllegalArgumentException("채팅방 없음"));
 
         Member creator = memberRepository.findById(creatorId)
@@ -52,7 +63,7 @@ public class InviteService {
 
         Invite invite = Invite.builder()
                 .code(code)
-                .room(room)
+                .server(server)
                 .creator(creator)
                 .expireAt(dto.getExpireAt())
                 .maxUses(dto.getMaxUses())
@@ -78,9 +89,8 @@ public class InviteService {
         // DTO 변환
         InviteResponseDTO dto = new InviteResponseDTO();
         dto.setInviteCode(invite.getCode());
-        dto.setRoomId(invite.getRoom().getId());
-        dto.setRoomName(invite.getRoom().getName());
-        dto.setRoomDescription(invite.getRoom().getDescription());
+        dto.setServerId(invite.getServer().getId());
+        dto.setServerName(invite.getServer().getName());
         dto.setCreatorName(invite.getCreator().getNickname());
         dto.setExpireAt(invite.getExpireAt());
         dto.setMaxUses(invite.getMaxUses());
@@ -107,24 +117,23 @@ public class InviteService {
         }
 
         // 3. 방 멤버십 체크 (이미 입장된 사용자면 예외)
-        ChatRoom room = invite.getRoom();
-        boolean isMember = channelMemberRepository.existsByRoomIdAndMemberId(room.getId(), memberId);
+        Long serverId = invite.getServer().getId();
+        boolean isMember = serverMemberRepository.existsByMemberIdAndServerId(memberId, serverId);
         if (isMember) {
             throw new IllegalStateException("이미 참여 중인 방입니다.");
         }
 
         // 4. 방 멤버 등록
+        Server server = invite.getServer();
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new NoSuchElementException("사용자 없음"));
 
-        ChannelMember newMember = ChannelMember.builder()
-                .room(room)
+        ServerMember newMember = ServerMember.builder()
+                .server(server)
                 .member(member)
-                .role(ChannelRole.USER) // 이거 반드시 추가!!
-                .muted(false)
-                .banned(false)
+                .role(ServerRole.USER) // 이거 반드시 추가!!
                 .build();
-        channelMemberRepository.save(newMember);
+        serverMemberRepository.save(newMember);
 
         // 5. 사용횟수 증가, 최대치 도달시 active=false
         invite.setUses(invite.getUses() + 1);
@@ -132,7 +141,9 @@ public class InviteService {
             invite.setActive(false);
         }
         inviteRepository.save(invite);
+        ServerMemberEvent event = new ServerMemberEvent(serverId, memberId, "JOIN");
+        eventPublisher.publishServerMemberEvent(event);
 
-        return room.getId();
+        return server.getId();
     }
 }

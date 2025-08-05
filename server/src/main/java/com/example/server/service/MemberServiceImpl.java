@@ -4,8 +4,11 @@ import com.example.server.dto.MemberRequestDTO;
 import com.example.server.dto.MemberResponseDTO;
 import com.example.server.entity.Member;
 import com.example.server.mapper.MemberMapper;
+import com.example.server.repository.BoardLikeRepository;
 import com.example.server.repository.EmailVerificationTokenRepository;
 import com.example.server.repository.MemberRepository;
+import com.example.server.repository.ReplyLikeRepository;
+
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -25,6 +28,10 @@ public class MemberServiceImpl implements MemberService {
     private final PasswordEncoder passwordEncoder;
     private final EmailVerificationService emailVerificationService;
     private final EmailVerificationTokenRepository tokenRepository;
+
+    // 멤버가 삭제되어도 좋아요는 사라지지 않고 좋아요의 member값만 null로 바꾸도록 함
+    private final BoardLikeRepository boardLikeRepository;
+    private final ReplyLikeRepository replyLikeRepository;
 
     // 회원 가입시 이메일 중복여부 확인
     @Override
@@ -76,6 +83,8 @@ public class MemberServiceImpl implements MemberService {
     public void delete(String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
+        boardLikeRepository.setMemberToNullByMemberId(member.getId());
+        replyLikeRepository.setMemberToNullByMemberId(member.getId());
         tokenRepository.deleteByEmail(member.getEmail());
         memberRepository.delete(member);
     }
@@ -122,5 +131,23 @@ public class MemberServiceImpl implements MemberService {
                 .filter(m -> !m.getId().equals(myMno))
                 .map(MemberMapper::toDTO)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public List<MemberResponseDTO> findAll() {
+        return memberRepository.findAll() // 모든 Member 엔티티
+                .stream()
+                .map(MemberMapper::toDTO) // DTO 변환
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public void deleteByEmail(String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("회원이 존재하지 않습니다."));
+        tokenRepository.deleteByEmail(member.getEmail());
+        memberRepository.delete(member);
     }
 }

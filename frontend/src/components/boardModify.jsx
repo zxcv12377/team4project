@@ -5,8 +5,11 @@ import "@toast-ui/editor/dist/toastui-editor.css";
 import axiosInstance from "../lib/axiosInstance";
 
 export default function BoardModify() {
-  const { bno } = useParams();
   const navigate = useNavigate();
+  const { channelId: paramChannelId, bno } = useParams(); // /channels/:channelId/update/:bno
+
+  const [channels, setChannels] = useState([]);
+  const [channelId, setChannelId] = useState(Number(paramChannelId) || "");
 
   const editorRef = useRef();
   const [title, setTitle] = useState("");
@@ -16,11 +19,18 @@ export default function BoardModify() {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        // 채널 목록
+        axiosInstance.get("/board-channels").then((res) => setChannels(res.data));
+
         const res = await axiosInstance.get(`/boards/read/${bno}`);
         const { title, content, attachments } = res.data;
 
         setTitle(title);
         editorRef.current?.getInstance().setHTML(content || "");
+
+        setTitle(title);
+        setContent(content);
+        setChannelId(channelId);
 
         if (attachments?.length) {
           const fixed = attachments.map((img) => ({
@@ -81,10 +91,11 @@ export default function BoardModify() {
       await axiosInstance.put(`/boards/update/${bno}`, {
         title,
         content,
+        channelId,
         attachments,
       });
       alert("게시글이 수정되었습니다.");
-      navigate(`/boards/${bno}`);
+      navigate(`/channels/${channelId}/${bno}`);
     } catch (err) {
       console.error("게시글 수정 실패:", err);
       alert("게시글 수정에 실패했습니다.");

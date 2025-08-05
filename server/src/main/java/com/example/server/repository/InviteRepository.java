@@ -9,6 +9,7 @@ public interface InviteRepository extends JpaRepository<Invite, Long> {
 
     Optional<Invite> findByCodeAndActiveTrue(String code);
 
-    List<Invite> findAllByRoom_IdAndActiveTrue(Long roomId);
+    List<Invite> findAllByServer_IdAndActiveTrue(Long roomId);
 
+    void deleteAllByServerId(Long serverId);
 }

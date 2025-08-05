@@ -3,6 +3,9 @@ package com.example.server.entity;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.hibernate.annotations.OnDelete;
+import org.hibernate.annotations.OnDeleteAction;
+
 import com.example.server.base.Base;
 
 import jakarta.persistence.CascadeType;
@@ -20,14 +23,16 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
 
 @Getter
+@Setter
 @Table(name = "BOARD")
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(exclude = { "member", "replies" })
+@ToString(exclude = { "member", "replies", "channel" })
 @Entity
 public class Board extends Base {
 
@@ -44,10 +49,13 @@ public class Board extends Base {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Reply> replies;
+    @ManyToOne(fetch = FetchType.LAZY)
+    private BoardChannel channel;
 
     @Column(columnDefinition = "TEXT")
     private String attachments; // JSON 문자열로 이미지 리스트 저장
@@ -78,7 +86,4 @@ public class Board extends Base {
     public void increaseBoardLikeCount() {
         this.boardLikeCount++;
     }
-
-    @OneToMany(mappedBy = "board", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<BoardLike> boardLikes = new ArrayList<>();
 }

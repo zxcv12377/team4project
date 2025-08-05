@@ -56,6 +56,11 @@ export const useWebSocket = (token, onConnect) => {
 
   const connect = useCallback(
     async (tokenArg, callback) => {
+       if (stompRef.current?.connected) {
+      console.log("⚠️ 이미 STOMP 연결되어 있음. connect() 중복 호출 무시");
+      return;
+      }
+      
       let authToken = tokenArg || tokenRef.current;
       if (!authToken) return;
 
@@ -71,6 +76,7 @@ export const useWebSocket = (token, onConnect) => {
 
       const socket = new WebSocket(`${webSocketURL}/ws-chat`);
       const client = Stomp.over(socket);
+
       client.heartbeat.outgoing = 10000;
       client.heartbeat.incoming = 10000;
       client.debug = () => {};
@@ -93,8 +99,7 @@ export const useWebSocket = (token, onConnect) => {
         () => {
           console.log("✅ STOMP CONNECTED");
           setConnected(true);
-          client.send("/app/auth", {}, JSON.stringify({ token: `Bearer ${authToken}` }));
-          setConnected(true);
+          client.send("/app/auth", {}, JSON.stringify({ token: authToken }));
           reconnectAttempt.current = 0;
           reconnectTimer.current = null;
           onConnect?.();
@@ -147,41 +152,51 @@ export const useWebSocket = (token, onConnect) => {
   }, []);
 
   const subscribe = useCallback(
-    (topic, callback) => {
-      if (!stompRef.current || !connected) {
-        console.warn(`⛔ Cannot subscribe to ${topic} – not connected`);
-        return { unsubscribe: () => {} };
+  (topic, callback, options = {}) => {
+    if (!stompRef.current || !stompRef.current.connected) {
+      console.warn(`⛔ Cannot subscribe to ${topic} – not connected`);
+      return { unsubscribe: () => {} };
+    }
+
+    const sub = stompRef.current.subscribe(topic, (msg) => {
+      const payload = JSON.parse(msg.body);
+
+      // ✅ DM 채팅방 메시지 도착 시 visible 상태 복구용 갱신
+      callback(payload);
+
+      // ✅ 옵션에 따라 DM 목록 자동 리프레시
+      if (options.dmMode && typeof options.refreshDmRooms === "function") {
+        console.log("🔁 DM 목록 갱신 시도 (메시지 수신)");
+        options.refreshDmRooms();
       }
+    });
 
-      const sub = stompRef.current.subscribe(topic, (msg) => {
-        callback(JSON.parse(msg.body));
-      });
-
-      return {
-        unsubscribe: () => {
-          try {
-            if (stompRef.current?.connected) {
-              sub.unsubscribe();
-            }
-          } catch (e) {
-            console.warn("❗ unsubscribe failed", e);
+    return {
+      unsubscribe: () => {
+        try {
+          if (stompRef.current?.connected) {
+            sub.unsubscribe();
           }
-        },
-      };
-    },
-    [connected]
-  );
+        } catch (e) {
+          console.warn("❗ unsubscribe failed", e);
+        }
+      },
+    };
+  },
+  [connected]
+);
 
-  const send = useCallback(
-    (destination, body) => {
-      if (stompRef.current && connected) {
-        stompRef.current.send(destination, {}, JSON.stringify(body));
-      } else {
-        console.warn("❌ Cannot send message – not connected");
-      }
-    },
-    [connected]
-  );
+  const send = useCallback((destination, body) => {
+    const socketReady = stompRef.current?.ws?.readyState === WebSocket.OPEN;
+    console.log("📤 메시지 전송 시도", { connected, socketReady });
+
+    if (stompRef.current && connected && socketReady) {
+      stompRef.current.send(destination, {}, JSON.stringify(body));
+      console.log("📤 메시지 전송 완료", destination);
+    } else {
+      console.warn("❌ 메시지 전송 실패 – WebSocket 미연결 상태");
+    }
+  }, [connected]);
 
   return {
     connected,

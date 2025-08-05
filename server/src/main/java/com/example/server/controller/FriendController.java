@@ -115,7 +115,7 @@ public class FriendController {
             return ResponseEntity.status(401).build();
 
         String me = principal.getName();
-        List<String> onlineFriends = userStatusService.getOnlineFriendemails(me);
+        List<String> onlineFriends = userStatusService.getOnlineFriendEmails(me);
         return ResponseEntity.ok(onlineFriends);
     }
 

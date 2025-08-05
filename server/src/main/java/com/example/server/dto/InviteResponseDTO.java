@@ -7,9 +7,8 @@ import java.time.LocalDateTime;
 public class InviteResponseDTO {
     // 프론트에 보여줄 정보
     private String inviteCode;
-    private Long roomId;
-    private String roomName;
-    private String roomDescription;
+    private Long serverId;
+    private String serverName;
     private String creatorName;
     private LocalDateTime expireAt;
     private Integer maxUses;
