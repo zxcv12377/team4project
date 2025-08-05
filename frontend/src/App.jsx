@@ -13,8 +13,6 @@ import { ChatProvider } from "./context/ChatContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import { RealtimeProvider } from "./context/RealtimeContext";
 import Layout from "./layoutscopy/Layout";
-import LoginForm from "./components/loginForm";
-import RegisterForm from "./components/registerForm";
 
 import BoardList from "./components/boardList";
 import BoardCreate from "./components/boardCreate";
@@ -94,7 +92,7 @@ function App() {
                   <Route element={<Navbar />}>
                     <Route path="/MainPage" element={<MainPage />} />
                     <Route path="/boardChannels" element={<BoardChannelList />}></Route>
-                    <Route path="/register" element={<RegisterForm />} />
+
                     <Route path="/reply" element={<ReplyList />} />
                     <Route path="/UpdateProfile" element={<UpdateMyProfile />} />
                     <Route path="/channels/:channelId" element={<BoardList />} />
