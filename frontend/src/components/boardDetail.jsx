@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { clsx } from "clsx";
 import axiosInstance from "../lib/axiosInstance";
 import ReplyList from "./replyList";
 
@@ -15,6 +16,25 @@ const BoardDetail = () => {
 
   const currentUser = JSON.parse(localStorage.getItem("user"));
   const baseImageUrl = import.meta.env.VITE_IMAGE_BASE_URL;
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
+
+  useEffect(() => {
+    if (post) {
+      setLikeCount(post.boardLikeCount);
+      setLike(!!post.like);
+    }
+  });
+
+  const fetchPost = async () => {
+    try {
+      const res = await axiosInstance.get(`/boards/read/${bno}`);
+      setPost(res.data);
+    } catch (err) {
+      console.error("게시글 조회 실패:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /* ─── 게시글 조회 ───────────────────────────────── */
   //UI에서는 likeCount를 보여줌
@@ -71,6 +91,8 @@ const BoardDetail = () => {
     } catch (error) {
       console.error("추천 에러 : ", error);
       alert("추천 처리 중 오류가 발생했습니다.");
+    } finally {
+      fetchPost();
     }
   };
   /* ─── 렌더 ──────────────────────────────────────── */
@@ -87,7 +109,16 @@ const BoardDetail = () => {
       </div>
 
       <article
-        className="prose prose-img:rounded-lg prose-img:shadow text-gray-900 max-w-none text-lg mb-8"
+        className="h-[30rem]
+        prose 
+        prose-img:rounded-lg 
+        prose-img:shadow
+         text-gray-900 
+         max-w-none 
+         text-lg 
+         mb-8
+          overflow-auto
+           whitespace-pre-wrap"
         dangerouslySetInnerHTML={{ __html: post.content }}
       />
 

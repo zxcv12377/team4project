@@ -82,8 +82,4 @@ public class Board extends Base {
     public void increaseViewCount() {
         this.viewCount++;
     }
-
-    public void increaseBoardLikeCount() {
-        this.boardLikeCount++;
-    }
 }

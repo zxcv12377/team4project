@@ -18,7 +18,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins(allowedOrigins) // React 개발 서버 주소
                 .allowedMethods("*") // GET, POST, PUT 등
                 .allowedHeaders("*") // 모든 헤더 허용
-                .allowCredentials(true); // ★ JSESSIONID 쿠키 허용
+                .allowCredentials(true) // ★ JSESSIONID 쿠키 허용
+                .maxAge(3600); // 1시간
     }
 
     @Override

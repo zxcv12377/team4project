@@ -77,6 +77,7 @@ public class SecurityConfig {
 
                                                 .requestMatchers(HttpMethod.GET,
                                                                 "/api/boards/**",
+                                                                "/api/channels/*/boards",
                                                                 "/api/board-channels",
                                                                 "/api/board-channels/**",
                                                                 "/api/replies/**",

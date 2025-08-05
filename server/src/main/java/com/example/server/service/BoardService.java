@@ -1,8 +1,10 @@
 package com.example.server.service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -16,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.example.server.dto.BoardDTO;
+import com.example.server.dto.BoardViewResponseDTO;
 import com.example.server.dto.ImageDTO;
 import com.example.server.dto.PageRequestDTO;
 import com.example.server.dto.PageResultDTO;
@@ -23,15 +26,16 @@ import com.example.server.entity.Board;
 import com.example.server.entity.BoardChannel;
 import com.example.server.entity.BoardLike;
 import com.example.server.entity.Member;
+import com.example.server.entity.BoardViewLog;
 import com.example.server.entity.Reply;
 import com.example.server.repository.BoardChannelRepository;
 import com.example.server.repository.BoardLikeRepository;
 import com.example.server.repository.BoardRepository;
+import com.example.server.repository.BoardViewLogRepository;
 import com.example.server.repository.MemberRepository;
 import com.example.server.repository.ReplyRepository;
 import com.example.server.security.CustomMemberDetails;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -46,6 +50,7 @@ public class BoardService {
     private final ReplyRepository replyRepository;
     private final BoardChannelRepository boardChannelRepository;
     private final BoardLikeRepository boardLikeRepository;
+    private final BoardViewLogRepository boardViewLogRepository;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -167,32 +172,103 @@ public class BoardService {
     }
 
     @Transactional
-    public BoardDTO getRow(Long bno) {
-        Board board = boardRepository.findById(bno).orElseThrow();
-        board.increaseViewCount(); // 조회수 +1
+    public BoardViewResponseDTO getRow(Long bno, String viewedBoardsCookie) {
+        Board board = boardRepository.findById(bno)
+                .orElseThrow(() -> new NoSuchElementException("게시글을 찾을 수 없습니다. bno=" + bno));
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String newCookieValue = null;
+
+        // 1. 로그인 사용자 처리
+        if (authentication != null && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof CustomMemberDetails) {
+            CustomMemberDetails userDetails = (CustomMemberDetails) authentication.getPrincipal();
+            Member member = memberRepository.findById(userDetails.getId())
+                    .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. ID: " + userDetails.getId()));
+
+            if (!boardViewLogRepository.existsByBoardAndMember(board, member)) {
+                board.increaseViewCount(); // 조회수 증가
+                BoardViewLog viewLog = BoardViewLog.builder().board(board).member(member).build();
+                boardViewLogRepository.save(viewLog); // 조회 기록 저장
+            }
+        }
+        // 2. 비로그인 사용자 처리 (쿠키 기반)
+        else {
+            boolean alreadyViewed = false;
+            String bnoStr = String.valueOf(bno);
+
+            if (viewedBoardsCookie != null && !viewedBoardsCookie.isBlank()) {
+                // 쿠키 값에 현재 게시글 ID가 있는지 확인
+                if (viewedBoardsCookie.contains("[" + bnoStr + "]")) {
+                    alreadyViewed = true;
+                }
+            }
+
+            if (!alreadyViewed) {
+                board.increaseViewCount(); // 조회수 증가
+                // 컨트롤러에서 쿠키를 생성할 수 있도록 새로운 쿠키 값을 준비
+                newCookieValue = (viewedBoardsCookie == null ? "" : viewedBoardsCookie) + "[" + bnoStr + "]";
+            }
+        }
 
         Object[] result = boardRepository.getBoardRow(bno);
-        return entityToDto((Board) result[0], (Member) result[1], (Long) result[2]);
+        BoardDTO boardDTO;
+        if (result == null) {
+            // getBoardRow가 결과를 못찾는 경우 (삭제 직후 등)
+            boardDTO = entityToDto(board, board.getMember(), 0L);
+        } else {
+            boardDTO = entityToDto((Board) result[0], (Member) result[1], (Long) result[2]);
+        }
+
+        return new BoardViewResponseDTO(boardDTO, newCookieValue);
     }
 
-    @Transactional
-    public void increaseLike(Long bno) {
-        Board board = boardRepository.findById(bno).orElseThrow();
-        board.increaseBoardLikeCount();
-    }
-
-    public List<BoardDTO> getBoardsByChannel(Long channelId) {
+    public PageResultDTO<BoardDTO> getBoardsByChannel(Long channelId, PageRequestDTO pageRequestDTO) {
 
         BoardChannel channel = boardChannelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("채널 없음 id=" + channelId));
 
-        List<Board> boards = "전체게시판".equals(channel.getName())
-                ? boardRepository.findAll()
-                : boardRepository.findByChannelId(channelId);
+        // 2) Pageable 생성 (페이지 번호는 0부터)
+        Pageable pageable = PageRequest.of(
+                pageRequestDTO.getPage() - 1,
+                pageRequestDTO.getSize(),
+                Sort.by("bno").descending());
 
-        return boards.stream()
-                .map(b -> entityToDto(b, b.getMember(), null))
-                .collect(Collectors.toList());
+        // 3) Repository 호출: 전체게시판이면 채널 필터 없이, 아니면 channelId 조건 추가
+        Page<Object[]> result;
+        if ("전체게시판".equals(channel.getName())) {
+            result = boardRepository.getBoardList(
+                    pageRequestDTO.getType(),
+                    pageRequestDTO.getKeyword(),
+                    pageable);
+        } else {
+            result = boardRepository.getBoardListByChannel(
+                    channelId,
+                    pageRequestDTO.getType(),
+                    pageRequestDTO.getKeyword(),
+                    pageable);
+        }
+
+        // 4) Object[] → DTO 변환 함수
+        Function<Object[], BoardDTO> fn = en -> BoardDTO.builder()
+                .bno((Long) en[0])
+                .title((String) en[1])
+                .createdDate((LocalDateTime) en[2])
+                .nickname((String) en[3])
+                .replyCount((Long) en[4])
+                .viewCount((Long) en[5])
+                .boardLikeCount((Long) en[6])
+                .channelId((Long) en[7])
+                .channelName((String) en[8])
+                .build();
+
+        // 5) PageResultDTO 빌드하여 리턴
+        return PageResultDTO.<BoardDTO>withAll()
+                .dtoList(result.map(fn).getContent())
+                .totalCount(result.getTotalElements())
+                .pageRequestDTO(pageRequestDTO)
+                .build();
+
     }
 
     public List<BoardDTO> getBoardsByWriterEmail(String email) {
