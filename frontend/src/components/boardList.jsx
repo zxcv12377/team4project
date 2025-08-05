@@ -10,6 +10,7 @@ export default function BoardList() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [channelName, setChannelName] = useState("전체 게시판");
+  const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
   const headers = { Authorization: `Bearer ${token}` };
@@ -135,7 +136,7 @@ export default function BoardList() {
                   return (
                     <tr
                       key={post.bno}
-                      onClick={() => navigate(`/boards/${post.bno}`)}
+                      onClick={() => navigate(`/channels/${channelId}/${post.bno}`)}
                       className={`cursor-pointer hover:bg-gray-50 transition ${
                         isNotice ? "bg-yellow-100 font-semibold" : "bg-white"
                       }`}

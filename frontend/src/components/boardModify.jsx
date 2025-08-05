@@ -13,6 +13,7 @@ export default function BoardModify() {
 
   const editorRef = useRef();
   const [title, setTitle] = useState("");
+  // const [content, setContent] = useState("");
   const [attachments, setAttachments] = useState([]);
   const baseImageUrl = import.meta.env.VITE_IMAGE_BASE_URL;
 
@@ -29,7 +30,7 @@ export default function BoardModify() {
         editorRef.current?.getInstance().setHTML(content || "");
 
         setTitle(title);
-        setContent(content);
+        // setContent(content);
         setChannelId(channelId);
 
         if (attachments?.length) {

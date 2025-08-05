@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axiosInstance from "../lib/axiosInstance";
 import ReplyList from "./replyList";
-import ReplyList from "./replyList";
 
 const BoardDetail = () => {
   /* ─── URL 파라미터 ──────────────────────────────── */
@@ -44,7 +43,6 @@ const BoardDetail = () => {
         })
       : "날짜 없음";
 
-  const created = fmt(post.createdDate);
   // const updated = fmt(post.updatedDate);
   // const isModified = post.createdDate !== post.updatedDate;
 
@@ -125,7 +123,7 @@ const BoardDetail = () => {
         {currentUser?.id === post.memberid && (
           <>
             <button
-              onClick={() => navigate(`/boards/update/${post.bno}`)}
+              onClick={() => navigate(`/channels/${channelId}/update/${post.bno}`)}
               className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
             >
               수정
@@ -135,7 +133,7 @@ const BoardDetail = () => {
                 if (window.confirm("정말 삭제하시겠습니까?")) {
                   axiosInstance
                     .delete(`/boards/delete/${post.bno}`)
-                    .then(() => navigate("/boards"))
+                    .then(() => navigate(`/channels/${channelId}`))
                     .catch((err) => console.error("삭제 실패:", err));
                 }
               }}
