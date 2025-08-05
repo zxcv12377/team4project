@@ -20,6 +20,7 @@ import com.querydsl.core.types.ExpressionUtils;
 import com.querydsl.core.types.dsl.Expressions;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.core.types.dsl.StringPath;
+import com.querydsl.core.types.dsl.StringPath;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
 
@@ -49,10 +50,6 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 .where(reply.board.eq(board)),
                                 replyCountAlias);
 
-                // attachmentsJson 별칭
-                StringPath attachmentsAlias = Expressions.stringPath("attachmentsJson");
-                Expression<String> attachmentsExpr = ExpressionUtils.as(board.attachmentsJson, attachmentsAlias);
-
                 // 기본 SELECT + JOIN 구성[게시판 단순 리스트업]
                 JPQLQuery<Tuple> query = from(board)
                                 .leftJoin(board.member, member)
@@ -63,7 +60,6 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 board.createdDate,
                                                 member.nickname,
                                                 replyCountExpr,
-                                                attachmentsExpr,
                                                 board.viewCount,
                                                 board.boardLikeCount,
                                                 channel.id,
@@ -87,7 +83,6 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                 board.title,
                                 board.createdDate,
                                 member.nickname,
-                                board.attachmentsJson,
                                 board.viewCount,
                                 board.boardLikeCount,
                                 channel.id,
@@ -103,7 +98,6 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 t.get(board.createdDate),
                                                 t.get(member.nickname),
                                                 t.get(replyCountAlias),
-                                                t.get(attachmentsAlias),
                                                 t.get(board.viewCount),
                                                 t.get(board.boardLikeCount),
                                                 t.get(channel.id),

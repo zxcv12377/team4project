@@ -1,5 +1,6 @@
 package com.example.server.entity;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.hibernate.annotations.OnDelete;
@@ -39,14 +40,12 @@ public class Board extends Base {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long bno;
 
-    @Column(nullable = false)
+    @Column(nullable = false, length = 255)
     private String title;
 
-    @Column(length = 32767)
+    // @Column(length = 32767)
+    @Column(columnDefinition = "TEXT")
     private String content;
-
-    @Column(name = "attachments_json", length = 3000)
-    private String attachmentsJson;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", nullable = false)
@@ -55,9 +54,11 @@ public class Board extends Base {
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Reply> replies;
-
     @ManyToOne(fetch = FetchType.LAZY)
     private BoardChannel channel;
+
+    @Column(columnDefinition = "TEXT")
+    private String attachments; // JSON 문자열로 이미지 리스트 저장
 
     // 게시글 조회수
     @Builder.Default
@@ -76,10 +77,6 @@ public class Board extends Base {
 
     public void changeContent(String content) {
         this.content = content;
-    }
-
-    public void changeAttachments(String attachmentsJson) {
-        this.attachmentsJson = attachmentsJson;
     }
 
     public void increaseViewCount() {

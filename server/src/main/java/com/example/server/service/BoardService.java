@@ -35,8 +35,6 @@ import com.example.server.repository.BoardViewLogRepository;
 import com.example.server.repository.MemberRepository;
 import com.example.server.repository.ReplyRepository;
 import com.example.server.security.CustomMemberDetails;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -55,24 +53,6 @@ public class BoardService {
     private final BoardViewLogRepository boardViewLogRepository;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
-
-    private String toJson(List<ImageDTO> list) {
-        try {
-            return objectMapper.writeValueAsString(list);
-        } catch (Exception e) {
-            throw new RuntimeException("JSON 직렬화 실패", e);
-        }
-    }
-
-    private List<ImageDTO> fromJson(String json) {
-        try {
-            return (json == null || json.isBlank()) ? List.of()
-                    : objectMapper.readValue(json, new TypeReference<List<ImageDTO>>() {
-                    });
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("JSON 파싱 실패", e);
-        }
-    }
 
     @Transactional
     public boolean toggleBoardLike(Long bno, Member member) {
@@ -110,14 +90,24 @@ public class BoardService {
         CustomMemberDetails userDetails = (CustomMemberDetails) auth.getPrincipal();
         Member loginMember = memberRepository.findById(userDetails.getId()).orElseThrow();
 
+        String attachmentsJson = "[]"; // ← 기본값으로 빈 배열 JSON
+
+        try {
+            // null도 허용 → 항상 JSON 문자열로 변환
+            attachmentsJson = objectMapper.writeValueAsString(
+                    Optional.ofNullable(dto.getAttachments()).orElse(List.of()));
+        } catch (Exception e) {
+            log.error("❌ attachments 직렬화 실패: {}", e.getMessage());
+        }
+
         BoardChannel channel = boardChannelRepository.findById(dto.getChannelId())
                 .orElseThrow(() -> new RuntimeException("채널 없음"));
 
         Board board = Board.builder()
                 .title(dto.getTitle())
                 .content(dto.getContent())
-                .attachmentsJson(toJson(dto.getAttachments()))
                 .member(loginMember)
+                .attachments(attachmentsJson)
                 .channel(channel)
                 .build();
 
@@ -143,7 +133,6 @@ public class BoardService {
 
         board.setTitle(dto.getTitle());
         board.setContent(dto.getContent());
-        board.setAttachmentsJson(toJson(dto.getAttachments()));
 
         return boardRepository.save(board).getBno();
     }
@@ -159,18 +148,17 @@ public class BoardService {
                 pageRequestDTO.getType(),
                 pageRequestDTO.getKeyword(), pageable);
 
-        Function<Object[], BoardDTO> fn = en -> BoardDTO.builder()
+        Function<Object[], BoardDTO> fn = (en -> BoardDTO.builder()
                 .bno((Long) en[0])
                 .title((String) en[1])
                 .createdDate((LocalDateTime) en[2])
                 .nickname((String) en[3])
                 .replyCount((Long) en[4])
-                .attachments(fromJson((String) en[5]))
-                .viewCount((Long) en[6])
-                .boardLikeCount((Long) en[7])
-                .channelId((Long) en[8])
-                .channelName((String) en[9])
-                .build();
+                .viewCount((Long) en[5]) //
+                .boardLikeCount((Long) en[6])
+                .channelId((Long) en[7])
+                .channelName((String) en[8])
+                .build());
 
         return PageResultDTO.<BoardDTO>withAll()
                 .dtoList(result.map(fn).getContent())
@@ -247,14 +235,15 @@ public class BoardService {
 
     public List<BoardDTO> getBoardsByWriterEmail(String email) {
         Member member = memberRepository.findByEmail(email).orElseThrow();
-        return boardRepository.findAllByMember(member)
-                .stream()
-                .map(b -> entityToDto(b, member, null))
-                .collect(Collectors.toList());
+        List<Board> boards = boardRepository.findAllByMember(member);
+
+        return boards.stream()
+                // replycount는 기존 entitytodto재활용할거라 null로 지정했습니다
+                .map(board -> entityToDto(board, member, null))
+                .toList();
     }
 
     private BoardDTO entityToDto(Board board, Member member, Long replyCount) {
-        List<ImageDTO> attachments = fromJson(board.getAttachmentsJson());
 
         return BoardDTO.builder()
                 .bno(board.getBno())
@@ -265,11 +254,11 @@ public class BoardService {
                 .memberid(member != null ? member.getId() : null)
                 .nickname(member != null ? member.getNickname() : null)
                 .replyCount(replyCount != null ? replyCount : 0L)
-                .attachments(attachments)
                 .viewCount(board.getViewCount())
                 .boardLikeCount(board.getBoardLikeCount())
                 .channelId(board.getChannel().getId())
                 .channelName(board.getChannel().getName())
                 .build();
     }
+
 }

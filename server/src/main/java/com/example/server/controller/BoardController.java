@@ -59,7 +59,7 @@ public class BoardController {
                 "likeCount", likeCount));
     }
 
-    @PostMapping("/")
+    @PostMapping("/create")
     public ResponseEntity<?> create(@RequestBody @Valid BoardDTO dto) {
         if (dto.getChannelId() == null) {
             return ResponseEntity.badRequest().body(null);

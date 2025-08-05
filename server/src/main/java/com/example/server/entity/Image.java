@@ -17,5 +17,4 @@ public class Image {
     private Long id;
 
     private String originalUrl;
-    private String thumbnailUrl;
 }
