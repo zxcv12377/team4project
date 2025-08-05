@@ -12,35 +12,23 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class BoardMapper {
 
-    // ✅ JSON 문자열 → List<ImageDTO> 변환(첨부파일용)
-    private static List<ImageDTO> parseAttachments(String json) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readValue(json, new TypeReference<List<ImageDTO>>() {
-            });
-        } catch (Exception e) {
-            return List.of();
-        }
-    }
-
-    // ✅ List<ImageDTO> → JSON 문자열 변환첨부파일 저장용)
-    private static String toJson(List<ImageDTO> attachments) {
-        try {
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.writeValueAsString(attachments);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
     // DTO → Entity(게시글) | 작성,수정 시에 DB 저장용
     public static Board toEntity(BoardDTO dto, Member member) {
+        String attachmentsJson = null;
+        try {
+            if (dto.getAttachments() != null && !dto.getAttachments().isEmpty()) {
+                attachmentsJson = new ObjectMapper().writeValueAsString(dto.getAttachments());
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
         return Board.builder()
                 .bno(dto.getBno())
                 .title(dto.getTitle())
                 .content(dto.getContent())
-                .attachmentsJson(toJson(dto.getAttachments())) // ✅ ImageDTO JSON으로
                 .member(member)
+                .attachments(attachmentsJson)
                 .build();
     }
 
@@ -51,9 +39,6 @@ public class BoardMapper {
                 .title(board.getTitle())
                 .nickname(board.getMember().getNickname())
                 .replyCount(replyCount)
-                .attachments(board.getAttachmentsJson() != null
-                        ? parseAttachments(board.getAttachmentsJson())
-                        : List.of())
                 .createdDate(board.getCreatedDate())
                 .build();
     }
@@ -67,9 +52,6 @@ public class BoardMapper {
                 .nickname(board.getMember().getNickname())
                 .memberid(board.getMember().getId())
                 .replyCount(replyCount)
-                .attachments(board.getAttachmentsJson() != null
-                        ? parseAttachments(board.getAttachmentsJson())
-                        : List.of())
                 .createdDate(board.getCreatedDate())
                 .updatedDate(board.getUpdatedDate())
                 .build();

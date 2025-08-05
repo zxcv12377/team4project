@@ -30,6 +30,13 @@ services:
     cap_add:
       - NET_ADMIN # mediasoup에서 필요함
 
+  redis:
+    image: redis:latest
+    container_name: my-redis
+    ports:
+      - "6379:6379"
+    restart: always
+
   rabbitmq:
     image: rabbitmq:3-management
     ports:

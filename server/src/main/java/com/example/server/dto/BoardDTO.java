@@ -3,7 +3,9 @@ package com.example.server.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import jakarta.persistence.Column;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -28,8 +30,11 @@ public class BoardDTO {
     @NotBlank(message = "제목을 입력해 주세요") // 유효성 검사
     private String title;
 
+    private List<ImageDTO> attachments;
+
     // 게시글 내용
-    @NotBlank(message = "내용을 입력해 주세요")
+    @NotNull(message = "내용을 입력해 주세요")
+    @Column(columnDefinition = "TEXT")
     private String content;
     private String email;
 
@@ -48,9 +53,6 @@ public class BoardDTO {
 
     // 게시글 좋아요 수
     private Long boardLikeCount;
-
-    // 프론트에 넘겨줄 이미지 리스트
-    private List<ImageDTO> attachments;
 
     // 게시판 채널 아이디
     private Long channelId;

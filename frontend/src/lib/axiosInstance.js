@@ -15,6 +15,7 @@ const refreshAxios = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
+  withCredentials: true,
 });
 
 // ✅ 상태 변수
