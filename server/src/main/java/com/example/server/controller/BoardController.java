@@ -3,9 +3,11 @@ package com.example.server.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -16,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.server.dto.BoardViewResponseDTO;
 import com.example.server.dto.BoardDTO;
 import com.example.server.dto.PageRequestDTO;
 import com.example.server.dto.PageResultDTO;
@@ -23,6 +26,7 @@ import com.example.server.entity.Member;
 import com.example.server.repository.MemberRepository;
 import com.example.server.security.CustomMemberDetails;
 import com.example.server.service.BoardService;
+import org.springframework.http.ResponseCookie;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -80,11 +84,28 @@ public class BoardController {
     }
 
     @GetMapping("/read/{bno}")
-    public ResponseEntity<?> read(@PathVariable Long bno) {
+    public ResponseEntity<?> read(@PathVariable Long bno,
+            @CookieValue(name = "viewedBoards", required = false) String viewedBoardsCookie) {
         log.info("게시글 조회 요청 bno: {}", bno);
 
-        BoardDTO dto = boardService.getRow(bno);
-        return ResponseEntity.ok(dto);
+        BoardViewResponseDTO viewResponse = boardService.getRow(bno, viewedBoardsCookie);
+
+        // 쿠키를 갱신해야 하는 경우
+        if (viewResponse.getNewCookieValue() != null) {
+            ResponseCookie cookie = ResponseCookie.from("viewedBoards", viewResponse.getNewCookieValue())
+                    .path("/")
+                    .maxAge(60 * 60 * 24) // 24시간
+                    .sameSite("None")
+                    .secure(true)
+                    .build();
+
+            return ResponseEntity.ok()
+                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                    .body(viewResponse.getBoardDTO());
+        }
+
+        // 쿠키 갱신이 필요 없는 경우
+        return ResponseEntity.ok(viewResponse.getBoardDTO());
     }
 
     @PutMapping("/update/{bno}")

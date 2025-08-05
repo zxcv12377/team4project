@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
+import { clsx } from "clsx";
 import axiosInstance from "../lib/axiosInstance";
 import ReplyList from "./replyList";
 
@@ -17,13 +18,27 @@ const BoardDetail = () => {
   const currentUser = JSON.parse(localStorage.getItem("user"));
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
+  useEffect(() => {
+    if (post) {
+      setLikeCount(post.boardLikeCount);
+      setLike(!!post.like);
+    }
+  });
+
+  const fetchPost = async () => {
+    try {
+      const res = await axiosInstance.get(`/boards/read/${bno}`);
+      setPost(res.data);
+    } catch (err) {
+      console.error("게시글 조회 실패:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   /* ─── 게시글 조회 ───────────────────────────────── */
   useEffect(() => {
-    axiosInstance
-      .get(`/boards/read/${bno}`)
-      .then((res) => setPost(res.data))
-      .catch((err) => console.error("게시글 조회 실패:", err))
-      .finally(() => setLoading(false));
+    fetchPost();
   }, [bno]);
 
   if (loading) return <div className="mt-10 text-center text-gray-500">⏳ 게시글을 불러오는 중입니다...</div>;
@@ -61,13 +76,15 @@ const BoardDetail = () => {
   const boardLike = async () => {
     try {
       const res = await axiosInstance.post(`/boards/${post.bno}/like`);
-      const {liked, likeCount} = res.data;
+      const { liked, likeCount } = res.data;
       setLike(liked);
       setLikeCount(likeCount);
       alert(liked ? "추천 완료" : "추천 취소");
     } catch (error) {
-      console.error("추천 에러 : ",error);
+      console.error("추천 에러 : ", error);
       alert("추천 처리 중 오류가 발생했습니다.");
+    } finally {
+      fetchPost();
     }
   };
 
@@ -120,8 +137,14 @@ const BoardDetail = () => {
           )}
         </div>
         <div className="flex justify-center">
-          <button className="px-4 py-3 bg-gray-500 text-red-200 rounded hover:bg-gray-600 rounded-full" onClick={boardLike}>
-            VERY! 
+          <button
+            className={clsx(
+              "flex items-center space-x-2 px-4 py-3 rounded-full hover:bg-gray-600",
+              like ? "bg-red-500 text-white" : "bg-gray-500 text-red-200"
+            )}
+            onClick={boardLike}
+          >
+            VERY!
             <div className="text-white">{likeCount}</div>
           </button>
         </div>

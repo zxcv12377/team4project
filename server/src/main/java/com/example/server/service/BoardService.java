@@ -1,8 +1,10 @@
 package com.example.server.service;
 
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -16,6 +18,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import com.example.server.dto.BoardDTO;
+import com.example.server.dto.BoardViewResponseDTO;
 import com.example.server.dto.ImageDTO;
 import com.example.server.dto.PageRequestDTO;
 import com.example.server.dto.PageResultDTO;
@@ -23,17 +26,18 @@ import com.example.server.entity.Board;
 import com.example.server.entity.BoardChannel;
 import com.example.server.entity.BoardLike;
 import com.example.server.entity.Member;
+import com.example.server.entity.BoardViewLog;
 import com.example.server.entity.Reply;
 import com.example.server.repository.BoardChannelRepository;
 import com.example.server.repository.BoardLikeRepository;
 import com.example.server.repository.BoardRepository;
+import com.example.server.repository.BoardViewLogRepository;
 import com.example.server.repository.MemberRepository;
 import com.example.server.repository.ReplyRepository;
 import com.example.server.security.CustomMemberDetails;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -48,6 +52,7 @@ public class BoardService {
     private final ReplyRepository replyRepository;
     private final BoardChannelRepository boardChannelRepository;
     private final BoardLikeRepository boardLikeRepository;
+    private final BoardViewLogRepository boardViewLogRepository;
 
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
@@ -77,6 +82,8 @@ public class BoardService {
 
         if (existing.isPresent()) { // 취소
             boardLikeRepository.delete(existing.get());
+            board.setBoardLikeCount(board.getBoardLikeCount() - 1);
+            boardRepository.save(board);
             return false;
         } else { // 등록
             BoardLike like = BoardLike.builder()
@@ -84,6 +91,8 @@ public class BoardService {
                     .member(member)
                     .build();
             boardLikeRepository.save(like);
+            board.setBoardLikeCount(board.getBoardLikeCount() + 1);
+            boardRepository.save(board);
             return true;
         }
     }
@@ -171,18 +180,55 @@ public class BoardService {
     }
 
     @Transactional
-    public BoardDTO getRow(Long bno) {
-        // 1) 조회
-        Board board = boardRepository.findById(bno).orElseThrow();
-        board.increaseViewCount();
-        Object[] result = boardRepository.getBoardRow(bno);
-        return entityToDto((Board) result[0], (Member) result[1], (Long) result[2]);
-    }
+    public BoardViewResponseDTO getRow(Long bno, String viewedBoardsCookie) {
+        Board board = boardRepository.findById(bno)
+                .orElseThrow(() -> new NoSuchElementException("게시글을 찾을 수 없습니다. bno=" + bno));
 
-    @Transactional
-    public void increaseLike(Long bno) {
-        Board board = boardRepository.findById(bno).orElseThrow();
-        board.increaseBoardLikeCount();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String newCookieValue = null;
+
+        // 1. 로그인 사용자 처리
+        if (authentication != null && authentication.isAuthenticated()
+                && authentication.getPrincipal() instanceof CustomMemberDetails) {
+            CustomMemberDetails userDetails = (CustomMemberDetails) authentication.getPrincipal();
+            Member member = memberRepository.findById(userDetails.getId())
+                    .orElseThrow(() -> new NoSuchElementException("사용자를 찾을 수 없습니다. ID: " + userDetails.getId()));
+
+            if (!boardViewLogRepository.existsByBoardAndMember(board, member)) {
+                board.increaseViewCount(); // 조회수 증가
+                BoardViewLog viewLog = BoardViewLog.builder().board(board).member(member).build();
+                boardViewLogRepository.save(viewLog); // 조회 기록 저장
+            }
+        }
+        // 2. 비로그인 사용자 처리 (쿠키 기반)
+        else {
+            boolean alreadyViewed = false;
+            String bnoStr = String.valueOf(bno);
+
+            if (viewedBoardsCookie != null && !viewedBoardsCookie.isBlank()) {
+                // 쿠키 값에 현재 게시글 ID가 있는지 확인
+                if (viewedBoardsCookie.contains("[" + bnoStr + "]")) {
+                    alreadyViewed = true;
+                }
+            }
+
+            if (!alreadyViewed) {
+                board.increaseViewCount(); // 조회수 증가
+                // 컨트롤러에서 쿠키를 생성할 수 있도록 새로운 쿠키 값을 준비
+                newCookieValue = (viewedBoardsCookie == null ? "" : viewedBoardsCookie) + "[" + bnoStr + "]";
+            }
+        }
+
+        Object[] result = boardRepository.getBoardRow(bno);
+        BoardDTO boardDTO;
+        if (result == null) {
+            // getBoardRow가 결과를 못찾는 경우 (삭제 직후 등)
+            boardDTO = entityToDto(board, board.getMember(), 0L);
+        } else {
+            boardDTO = entityToDto((Board) result[0], (Member) result[1], (Long) result[2]);
+        }
+
+        return new BoardViewResponseDTO(boardDTO, newCookieValue);
     }
 
     public List<BoardDTO> getBoardsByChannel(Long channelId) {
