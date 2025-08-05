@@ -109,6 +109,94 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
         }
 
         @Override
+        public Page<Object[]> getBoardListByChannel(
+                        Long channelId,
+                        String type,
+                        String keyword,
+                        Pageable pageable) {
+                QBoard board = QBoard.board;
+                QMember member = QMember.member;
+                QReply reply = QReply.reply;
+                QBoardChannel channel = QBoardChannel.boardChannel;
+
+                // 댓글 수 별칭 및 서브쿼리
+                NumberPath<Long> replyCountAlias = Expressions.numberPath(Long.class, "replyCount");
+                Expression<Long> replyCountExpr = ExpressionUtils.as(
+                                JPAExpressions
+                                                .select(reply.count())
+                                                .from(reply)
+                                                .where(reply.board.eq(board)),
+                                replyCountAlias);
+
+                // 기본 SELECT + JOIN
+                JPQLQuery<Tuple> query = from(board)
+                                .leftJoin(board.member, member)
+                                .leftJoin(board.channel, channel)
+                                .select(
+                                                board.bno,
+                                                board.title,
+                                                board.createdDate,
+                                                member.nickname,
+                                                replyCountExpr,
+                                                board.viewCount,
+                                                board.boardLikeCount,
+                                                channel.id,
+                                                channel.name);
+
+                // 1) 채널 필터
+                query.where(board.channel.id.eq(channelId));
+
+                // 2) 검색 타입/키워드 조건
+                if (type != null && keyword != null && !keyword.isBlank()) {
+                        BooleanBuilder builder = new BooleanBuilder();
+                        if (type.contains("t"))
+                                builder.or(board.title.containsIgnoreCase(keyword));
+                        if (type.contains("c"))
+                                builder.or(board.content.containsIgnoreCase(keyword));
+                        if (type.contains("w"))
+                                builder.or(member.nickname.containsIgnoreCase(keyword));
+                        query.where(builder);
+                }
+
+                // 3) GROUP BY (Oracle 대응)
+                query.groupBy(
+                                board.bno,
+                                board.title,
+                                board.createdDate,
+                                member.nickname,
+                                board.viewCount,
+                                board.boardLikeCount,
+                                channel.id,
+                                channel.name);
+
+                // 4) 페이징 적용 & 조회
+                List<Tuple> fetchList = getQuerydsl()
+                                .applyPagination(pageable, query)
+                                .fetch();
+
+                // 5) Tuple → Object[] 변환
+                List<Object[]> results = fetchList.stream()
+                                .map(t -> new Object[] {
+                                                t.get(board.bno),
+                                                t.get(board.title),
+                                                t.get(board.createdDate),
+                                                t.get(member.nickname),
+                                                t.get(replyCountAlias),
+                                                t.get(board.viewCount),
+                                                t.get(board.boardLikeCount),
+                                                t.get(channel.id),
+                                                t.get(channel.name)
+                                })
+                                .collect(Collectors.toList());
+
+                // 6) Page 객체로 리턴
+                return PageableExecutionUtils.getPage(
+                                results,
+                                pageable,
+                                query::fetchCount);
+        }
+
+        @Override
         public Object[] getBoardRow(Long bno) {
                 QBoard board = QBoard.board;
                 QMember member = QMember.member;

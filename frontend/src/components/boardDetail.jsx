@@ -61,18 +61,6 @@ const BoardDetail = () => {
   // const updated = fmt(post.updatedDate);
   // const isModified = post.createdDate !== post.updatedDate;
 
-  /* ─── 헬퍼 ──────────────────────────────────────── */
-  const goList = () => navigate(`/channels/${channelId}`);
-  const goUpdate = () => navigate(`/channels/${channelId}/update/${post.bno}`);
-
-  const handleDelete = () => {
-    if (!window.confirm("정말 삭제하시겠습니까?")) return;
-    axiosInstance
-      .delete(`/boards/delete/${post.bno}`)
-      .then(goList)
-      .catch((err) => console.error("삭제 실패:", err));
-  };
-
   const boardLike = async () => {
     try {
       const res = await axiosInstance.post(`/boards/${post.bno}/like`);
@@ -103,7 +91,16 @@ const BoardDetail = () => {
       {/* {isModified && <div className="mb-4 text-sm text-gray-400">수정일: {updated}</div>} */}
 
       <article
-        className="prose prose-img:rounded-lg prose-img:shadow text-gray-900 max-w-none text-lg mb-8"
+        className="h-[30rem]
+        prose 
+        prose-img:rounded-lg 
+        prose-img:shadow
+         text-gray-900 
+         max-w-none 
+         text-lg 
+         mb-8
+          overflow-auto
+           whitespace-pre-wrap"
         dangerouslySetInnerHTML={{ __html: post.content }}
       />
 
@@ -129,16 +126,26 @@ const BoardDetail = () => {
         </section>
       )}
 
-      <div className="flex justify-end gap-2 mb-6">
-        <button
-          onClick={() => navigate("/boards")}
-          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-        >
-          목록
-        </button>
-
+      <div className="flex gap-2 mb-6">
+        <div className="flex-1 text-left">
+          <button
+            onClick={() => navigate("/boards")}
+            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          >
+            목록
+          </button>
+        </div>
+        <div className="flex-1 text-center">
+          <button
+            className="px-4 py-3 bg-gray-500 text-red-200 rounded hover:bg-gray-600 rounded-full"
+            onClick={boardLike}
+          >
+            VERY!
+            <div className="text-white">{likeCount}</div>
+          </button>
+        </div>
         {currentUser?.id === post.memberid && (
-          <>
+          <div className="flex-1 text-right space-x-2">
             <button
               onClick={() => navigate(`/channels/${channelId}/update/${post.bno}`)}
               className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
@@ -158,17 +165,8 @@ const BoardDetail = () => {
             >
               삭제
             </button>
-          </>
+          </div>
         )}
-        <div className="flex justify-center">
-          <button
-            className="px-4 py-3 bg-gray-500 text-red-200 rounded hover:bg-gray-600 rounded-full"
-            onClick={boardLike}
-          >
-            VERY!
-            <div className="text-white">{likeCount}</div>
-          </button>
-        </div>
       </div>
 
       <ReplyList bno={post.bno} />
