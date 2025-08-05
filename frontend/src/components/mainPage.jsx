@@ -1,59 +1,3 @@
-// src/pages/MainPage.jsx
-// import React, { useEffect, useState, useRef } from "react";
-// import { useNavigate } from "react-router-dom";
-// import axiosInstance from "../lib/axiosInstance";
-
-// function timeAgo(isoDate) {
-//   const diff = (Date.now() - new Date(isoDate)) / 1000;
-//   if (diff < 60) return `${Math.floor(diff)}초 전`;
-//   if (diff < 3600) return `${Math.floor(diff / 60)}분 전`;
-//   if (diff < 86400) return `${Math.floor(diff / 3600)}시간 전`;
-//   return `${Math.floor(diff / 86400)}일 전`;
-// }
-
-// export default function MainPage() {
-//   const [sections, setSections] = useState([]);
-//   const navigate = useNavigate();
-//   const scrollRefs = useRef({});
-
-//   useEffect(() => {
-//     axiosInstance
-//       .get("/board-channels")
-//       .then((res) => res.data)
-//       .then((channels) =>
-//         // 각 채널별 게시글 불러오기
-//         Promise.all(
-//           channels.map((ch) => axiosInstance.get(`/boards/channel/${ch.id}`)
-//           .then((r) => ({ ...ch, posts: r.data })))
-//         )
-//       )
-//       .then((chWithPosts) => {
-//         // 1) 공지사항 & 문의하기 제외
-//         const filtered = chWithPosts.filter((c) => c.name !== "공지사항" && c.name !== "문의하기");
-
-//         // 2) ‘최고딸기’와 ‘전체 게시판’ 찾아 고정
-//         const best = filtered.find((c) => c.name === "최고딸기");
-
-//         // 3) 나머지 채널에 viewCount 합산 후 정렬
-//         const remaining = filtered
-//           .filter((c) => c.name !== "최고딸기")
-//           .map((c) => ({
-//             ...c,
-//             totalViews: c.posts.reduce((sum, p) => sum + (p.viewCount || 0), 0),
-//           }))
-//           .sort((a, b) => b.totalViews - a.totalViews)
-//           .slice(0, 4); // 상위 4개
-
-//         // 4) 최종 배열 구성
-//         const finalSections = [];
-//         if (best) finalSections.push(best);
-//         finalSections.push(...remaining);
-
-//         setSections(finalSections);
-//       })
-//       .catch(console.error);
-//   }, []);
-
 import React, { useEffect, useState, useRef, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import axiosInstance from "../lib/axiosInstance";
@@ -70,11 +14,13 @@ function timeAgo(isoDate) {
 const fetchMainPageData = async () => {
   // 1. 채널 목록 가져오기
   const { data: channels } = await axiosInstance.get("/board-channels");
+  console.log("채널 목록:", channels);
 
   // 2. 각 채널의 게시물 정보 병렬로 가져오기
   const channelsWithPosts = await Promise.all(
     channels.map(async (channel) => {
       const { data: posts } = await axiosInstance.get(`/boards/channel/${channel.id}`);
+      console.log(`채널 ${channel.name}의 게시물 목록:`, posts);
       return { ...channel, posts };
     })
   );

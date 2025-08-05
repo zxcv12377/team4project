@@ -49,6 +49,10 @@ public class BoardService {
     private final BoardChannelRepository boardChannelRepository;
     private final BoardLikeRepository boardLikeRepository;
 
+    private static final Long TOP_STRAWBERRY_CHANNEL_ID = 3L;
+    // 좋아요 기준치
+    private static final Long LIKE_THRESHOLD = 1L;
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     private String toJson(List<ImageDTO> list) {
@@ -186,16 +190,26 @@ public class BoardService {
     }
 
     public List<BoardDTO> getBoardsByChannel(Long channelId) {
+        List<Board> boards;
 
-        BoardChannel channel = boardChannelRepository.findById(channelId)
-                .orElseThrow(() -> new NoSuchElementException("채널 없음 id=" + channelId));
-
-        List<Board> boards = "전체게시판".equals(channel.getName())
-                ? boardRepository.findAll()
-                : boardRepository.findByChannelId(channelId);
-
+        if (TOP_STRAWBERRY_CHANNEL_ID.equals(channelId)) {
+            // 1) 최고딸기 채널: 좋아요가 기준 이상인 글만
+            boards = boardRepository
+                    .findByBoardLikeCount(LIKE_THRESHOLD);
+        } else {
+            // 2) 일반 채널: 채널ID 로 뽑고 최신순 정렬
+            boards = boardRepository
+                    .findByChannelId(channelId);
+        }
+        if (boards.isEmpty()) {
+            throw new NoSuchElementException("해당 채널에 게시글이 없습니다.");
+        }
         return boards.stream()
-                .map(b -> entityToDto(b, b.getMember(), null))
+                .map(b -> {
+                    Member member = b.getMember();
+                    Long replyCount = replyRepository.countByBoard(b);
+                    return entityToDto(b, member, replyCount);
+                })
                 .collect(Collectors.toList());
     }
 
