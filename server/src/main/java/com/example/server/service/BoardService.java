@@ -219,18 +219,52 @@ public class BoardService {
         return new BoardViewResponseDTO(boardDTO, newCookieValue);
     }
 
-    public List<BoardDTO> getBoardsByChannel(Long channelId) {
+    public PageResultDTO<BoardDTO> getBoardsByChannel(Long channelId, PageRequestDTO pageRequestDTO) {
 
         BoardChannel channel = boardChannelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("채널 없음 id=" + channelId));
 
-        List<Board> boards = "전체게시판".equals(channel.getName())
-                ? boardRepository.findAll()
-                : boardRepository.findByChannelId(channelId);
+        // 2) Pageable 생성 (페이지 번호는 0부터)
+        Pageable pageable = PageRequest.of(
+                pageRequestDTO.getPage() - 1,
+                pageRequestDTO.getSize(),
+                Sort.by("bno").descending());
 
-        return boards.stream()
-                .map(b -> entityToDto(b, b.getMember(), null))
-                .collect(Collectors.toList());
+        // 3) Repository 호출: 전체게시판이면 채널 필터 없이, 아니면 channelId 조건 추가
+        Page<Object[]> result;
+        if ("전체게시판".equals(channel.getName())) {
+            result = boardRepository.getBoardList(
+                    pageRequestDTO.getType(),
+                    pageRequestDTO.getKeyword(),
+                    pageable);
+        } else {
+            result = boardRepository.getBoardListByChannel(
+                    channelId,
+                    pageRequestDTO.getType(),
+                    pageRequestDTO.getKeyword(),
+                    pageable);
+        }
+
+        // 4) Object[] → DTO 변환 함수
+        Function<Object[], BoardDTO> fn = en -> BoardDTO.builder()
+                .bno((Long) en[0])
+                .title((String) en[1])
+                .createdDate((LocalDateTime) en[2])
+                .nickname((String) en[3])
+                .replyCount((Long) en[4])
+                .viewCount((Long) en[5])
+                .boardLikeCount((Long) en[6])
+                .channelId((Long) en[7])
+                .channelName((String) en[8])
+                .build();
+
+        // 5) PageResultDTO 빌드하여 리턴
+        return PageResultDTO.<BoardDTO>withAll()
+                .dtoList(result.map(fn).getContent())
+                .totalCount(result.getTotalElements())
+                .pageRequestDTO(pageRequestDTO)
+                .build();
+
     }
 
     public List<BoardDTO> getBoardsByWriterEmail(String email) {

@@ -33,9 +33,8 @@ export default function BoardList() {
     const fetchBoards = async () => {
       try {
         setLoading(true);
-        const { data } = await axiosInstance.get("/boards/list", {
-          params: { page, size: 15 },
-        });
+        const { data } = await axiosInstance.get(`/boards/channel/${channelId}?page=${page}&size=15`);
+        console.log(data);
         setPosts(data.dtoList || []);
         setTotalPages(data.totalPage || 1);
       } catch (err) {

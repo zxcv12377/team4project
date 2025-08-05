@@ -3,6 +3,7 @@ package com.example.server.controller;
 import java.util.List;
 import java.util.Map;
 
+import org.hibernate.query.Page;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -42,8 +43,10 @@ public class BoardController {
     private final MemberRepository memberRepository;
 
     @GetMapping("/channel/{channelId}")
-    public ResponseEntity<List<BoardDTO>> listByChannel(@PathVariable Long channelId) {
-        List<BoardDTO> list = boardService.getBoardsByChannel(channelId);
+    public ResponseEntity<PageResultDTO<BoardDTO>> listByChannel(@PathVariable Long channelId,
+            @ModelAttribute PageRequestDTO pageRequestDTO) {
+
+        PageResultDTO<BoardDTO> list = boardService.getBoardsByChannel(channelId, pageRequestDTO);
         return ResponseEntity.ok(list);
     }
 
