@@ -9,7 +9,7 @@ const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 
 export default function BoardCreate() {
   const editorRef = useRef();
-  const navigate = useNavigate();
+  const Navigate = useNavigate();
   const { channelId: paramChannelId } = useParams(); // /channels/:channelId/create
 
   const [channels, setChannels] = useState([]);

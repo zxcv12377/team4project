@@ -83,7 +83,6 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                 board.title,
                                 board.createdDate,
                                 member.nickname,
-                                board.attachmentsJson,
                                 board.viewCount,
                                 board.boardLikeCount,
                                 channel.id,
