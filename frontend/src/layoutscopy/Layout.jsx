@@ -5,7 +5,7 @@ import Sidebar1 from "./Sidebar1";
 import Sidebar2 from "./Sidebar2";
 import Sidebar3 from "./Sidebar3";
 import Sidebar4 from "./Sidebar4";
-import { useState, useEffect,useContext } from "react";
+import { useState, useEffect, useContext } from "react";
 import { Outlet } from "react-router-dom";
 import NotificationCenter from "./../components/notification/NotificationCenter";
 import { WebSocketContext } from "../context/WebSocketContext";
@@ -20,9 +20,9 @@ export default function MainLayout() {
   const token = user?.token || localStorage.getItem("token");
   const { subscribe, send, connected } = useContext(WebSocketContext);
 
-
   console.log("▶️ MainLayout user:", user);
   console.log("▶️ MainLayout token:", user?.token);
+
   useEffect(() => {
     const sd = localStorage.getItem("selectedDM") === "true";
     setSelectedDM(sd);
@@ -58,6 +58,12 @@ export default function MainLayout() {
     localStorage.setItem("selectedRoomId", String(id));
     localStorage.setItem("friendMode", "false");
   }
+  function handleSelectVoiceChannel(id) {
+    setSelectedRoomId(id);
+    setFriendMode(false);
+    localStorage.setItem("selectedRoomId", String(id));
+    localStorage.setItem("friendMode", "false");
+  }
   function handleSelectFriendPanel() {
     setSelectedRoomId(null);
     setFriendMode(true);
@@ -83,13 +89,14 @@ export default function MainLayout() {
       </header> */}
 
       <div className="flex flex-1 min-h-0">
-        <Sidebar1 onSelectDM={handleSelectDM} onSelectServer={handleSelectServer} />
+        <Sidebar1 onSelectDM={handleSelectDM} onSelectServer={handleSelectServer} serverId={selectedServerId} />
         <Sidebar2
           dmMode={selectedDM}
           serverId={selectedServerId}
           onSelectFriendPanel={handleSelectFriendPanel}
           onSelectDMRoom={handleSelectDMRoom}
           onSelectChannel={handleSelectChannel}
+          onSelectVoiceChannel={handleSelectVoiceChannel}
         />
         <Sidebar3
           dmMode={selectedDM}

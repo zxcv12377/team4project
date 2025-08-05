@@ -2,7 +2,7 @@ import * as mediasoupClient from "mediasoup-client";
 import { useEffect, useRef, useState } from "react";
 import { socket } from "../lib/socket";
 
-export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
+export function useVoiceChat(roomId, member, { onSpeakingUsersChange, onParticipantsChange } = {}) {
   const [joined, setJoined] = useState(false);
 
   const analyserRef = useRef(null);
@@ -21,6 +21,19 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
     if (!roomId || !member) return;
 
     let cancelled = false;
+
+    // 입장 직전에 리스너 등록
+    socket.on("voiceRoomParticipants", (list) => {
+      if (cancelled) return;
+      // console.log("👥 voiceRoomParticipants recv:", list);
+      onParticipantsChange?.(list);
+    });
+
+    socket.on("speaking-users", (list) => {
+      if (cancelled) return;
+      onSpeakingUsersChange?.(list);
+    });
+
     // 8. 다른 사람의 오디오 수신 준비
     const handleNewProducer = async ({ producerId, socketId }) => {
       console.log("새로운 producer 수신:", producerId, socketId);
@@ -135,12 +148,13 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
     const start = async () => {
       if (!member) return;
       // 1. 채널 입장 / 서버에 socket 등록
+      console.log("→ joiningRoom with member:", member);
       socket.emit(
         "joinRoom",
         {
           roomId,
           member: {
-            memberId: member.mno,
+            memberId: member.memberId,
             name: member.name,
             profile: member.profile || "",
           },
@@ -241,11 +255,6 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
             animationIdRef.current = requestAnimationFrame(checkSpeaking);
           };
           checkSpeaking();
-
-          // 9. 다른 사용자 speaking 수신
-          socket.on("speaking-users", (list) => {
-            onSpeakingUsersChange?.(list);
-          });
         } catch (err) {
           console.error("🚫 VoiceChat 오류 발생:", err);
         }
@@ -262,9 +271,10 @@ export function useVoiceChat(roomId, member, onSpeakingUsersChange) {
       }
       cancelled = true;
       setJoined(false);
-      socket.emit("leaveRoom", roomId);
+      socket.emit("leaveRoom", { roomId, memberId: member.memberId });
       socket.off("newProducer", handleNewProducer);
       socket.off("speaking-users");
+      socket.off("voiceRoomParticipants");
 
       streamRef.current?.getTracks().forEach((t) => t.stop());
       streamRef.current = null;

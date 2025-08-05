@@ -23,6 +23,7 @@ import com.example.server.entity.Board;
 import com.example.server.entity.BoardChannel;
 import com.example.server.entity.BoardLike;
 import com.example.server.entity.Member;
+import com.example.server.entity.Reply;
 import com.example.server.repository.BoardChannelRepository;
 import com.example.server.repository.BoardLikeRepository;
 import com.example.server.repository.BoardRepository;
@@ -85,6 +86,14 @@ public class BoardService {
             boardLikeRepository.save(like);
             return true;
         }
+    }
+
+    // 추천 수 조회
+    @Transactional
+    public Long getLikeCount(Long bno) {
+        Board board = boardRepository.findById(bno)
+                .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
+        return boardLikeRepository.countByBoard(board);
     }
 
     public Long create(BoardDTO dto) {

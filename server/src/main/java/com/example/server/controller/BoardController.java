@@ -20,6 +20,8 @@ import com.example.server.dto.BoardDTO;
 import com.example.server.dto.PageRequestDTO;
 import com.example.server.dto.PageResultDTO;
 import com.example.server.entity.Member;
+import com.example.server.repository.MemberRepository;
+import com.example.server.security.CustomMemberDetails;
 import com.example.server.service.BoardService;
 
 import jakarta.validation.Valid;
@@ -33,6 +35,7 @@ import lombok.extern.log4j.Log4j2;
 public class BoardController {
 
     private final BoardService boardService;
+    private final MemberRepository memberRepository;
 
     @GetMapping("/channel/{channelId}")
     public ResponseEntity<List<BoardDTO>> listByChannel(@PathVariable Long channelId) {
@@ -41,9 +44,15 @@ public class BoardController {
     }
 
     @PostMapping("/{bno}/like")
-    public ResponseEntity<?> toggleLike(@PathVariable Long bno, @AuthenticationPrincipal Member member) {
+    public ResponseEntity<?> toggleLike(@PathVariable Long bno,
+            @AuthenticationPrincipal CustomMemberDetails currentMember) {
+        Member member = memberRepository.findById(currentMember.getId())
+                .orElseThrow(() -> new IllegalArgumentException("로그인이 필요합니다."));
         boolean liked = boardService.toggleBoardLike(bno, member);
-        return ResponseEntity.ok(Map.of("liked", liked));
+        long likeCount = boardService.getLikeCount(bno);
+        return ResponseEntity.ok(Map.of(
+                "liked", liked,
+                "likeCount", likeCount));
     }
 
     @PostMapping("/")

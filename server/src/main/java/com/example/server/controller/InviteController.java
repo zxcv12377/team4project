@@ -18,8 +18,11 @@ import com.example.server.entity.Invite;
 import com.example.server.security.CustomMemberDetails;
 import com.example.server.service.InviteService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @RestController
 @RequestMapping("/api/invites")
 @RequiredArgsConstructor
@@ -34,11 +37,26 @@ public class InviteController {
             @RequestBody InviteRequestDTO dto,
             @AuthenticationPrincipal CustomMemberDetails user // JWT 인증
     ) {
-        Invite invite = inviteService.createInvite(user.getId(), dto);
-        return ResponseEntity.ok(Map.of(
-                "inviteCode", invite.getCode(),
-                "expireAt", invite.getExpireAt(),
-                "maxUses", invite.getMaxUses()));
+        log.info("📩 초대코드 생성 요청: userId={}, serverId={}, expireAt={}, maxUses={}, memo={}",
+                user.getId(), dto.getServerId(), dto.getExpireAt(), dto.getMaxUses(), dto.getMemo());
+
+        try {
+            Invite invite = inviteService.createInvite(user.getId(), dto);
+
+            log.info("✅ 초대코드 생성 성공: code={}, serverId={}, createdBy={}",
+                    invite.getCode(), invite.getServer().getId(), invite.getCreator().getId());
+
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("inviteCode", invite.getCode());
+            response.put("expireAt", invite.getExpireAt());
+            response.put("maxUses", invite.getMaxUses());
+
+            return ResponseEntity.ok(response);
+
+        } catch (Exception e) {
+            log.warn("❌ 초대코드 생성 실패: {}", e.getMessage(), e);
+            return ResponseEntity.badRequest().body("초대코드 생성 중 오류 발생: " + e.getMessage());
+        }
     }
 
     // 초대코드로 정보 조회

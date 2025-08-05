@@ -1,18 +1,28 @@
-import { useEffect, useMemo, useRef, useState, useCallback  } from "react";
+import { useEffect, useMemo, useRef, useState, useCallback } from "react";
 import { useUserContext } from "@/context/UserContext";
 import { useVoiceChat } from "../hooks/useVoiceChat";
 import VoiceChannelOuter from "../components/voice/VoiceChannelOuter";
 import axiosInstance from "../lib/axiosInstance";
 import { useRealtime } from "@/context/RealtimeContext";
 import { useSocket } from "@/context/WebSocketContext";
+import { clsx } from "clsx";
+import { Fragment } from "react";
 
-export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSelectDMRoom, onSelectChannel }) {
+export default function Sidebar2({
+  dmMode,
+  serverId,
+  onSelectFriendPanel,
+  onSelectDMRoom,
+  onSelectChannel,
+  onSelectVoiceChannel,
+}) {
   const { user } = useUserContext();
   const currentUserId = user?.id;
   const { subscribe } = useSocket();
   const [friends, setFriends] = useState([]);
   const [channels, setChannels] = useState([]);
   const [showCreate, setShowCreate] = useState(false);
+  const [showVoiceCreate, setShowVoiceCreate] = useState(false);
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState("TEXT");
   const [inviteCode, setInviteCode] = useState("");
@@ -20,79 +30,99 @@ export default function Sidebar2({ dmMode, serverId, onSelectFriendPanel, onSele
   const [currentVoiceRoomId, setCurrentVoiceRoomId] = useState(null);
   const [roomId, setRoomId] = useState(0);
   const { state, dispatch, ready, refreshDmRooms } = useRealtime();
+  const [participants, setParticipants] = useState([]);
+  const [speakingUsers, setSpeakingUsers] = useState([]);
   const dmRooms = state.dmRooms;
-  const initialLoadRef = useRef(false);
-  
-useEffect(() => {
-  console.log("🔥 DM Rooms 응답:", dmRooms);
-}, [dmRooms]);
-  
-useEffect(() => {
-  console.log("⚠️ refresh 조건 체크:", {
-    dmMode,
-    userId: user?.id,
-    ready,
-  });
-}, [dmMode, user?.id, ready]);
-  
-useEffect(() => {
-  if (dmMode && user?.id && ready) {
-    console.log("🔄 DM 목록 초기 로딩");
-    refreshDmRooms?.();
-  }
-}, [dmMode, user?.id, ready]);
+
+  const uploadURL = import.meta.env.VITE_FILE_UPLOAD_URL;
 
   useEffect(() => {
-  if (!dmMode || !ready) return;
+    console.log("🔥 DM Rooms 응답:", dmRooms);
+  }, [dmRooms]);
 
-  const subscriptions = [];
+  useEffect(() => {
+    console.log("⚠️ refresh 조건 체크:", {
+      dmMode,
+      userId: user?.id,
+      ready,
+    });
+  }, [dmMode, user?.id, ready]);
 
-  dmRooms.forEach((room) => {
-    const topic = `/topic/chatroom.${room.id}`;
-    const sub = subscribe(
-      topic,
-     async (payload) => {
-        console.log("💬 새 메시지 도착:", payload);
-        const matched = dmRooms.find((r) => r.id === payload.roomId);
-        if (!matched?.visible) {
-          console.log("🆕 숨겨진 DM 방에서 수신 → DM 목록 새로고침 시도");
-          await refreshDmRooms?.();
+  useEffect(() => {
+    if (dmMode && user?.id && ready) {
+      console.log("🔄 DM 목록 초기 로딩");
+      refreshDmRooms?.();
+    }
+  }, [dmMode, user?.id, ready]);
+
+  useEffect(() => {
+    if (!dmMode || !ready) return;
+
+    const subscriptions = [];
+
+    dmRooms.forEach((room) => {
+      const topic = `/topic/chatroom.${room.id}`;
+      const sub = subscribe(
+        topic,
+        async (payload) => {
+          console.log("💬 새 메시지 도착:", payload);
+          const matched = dmRooms.find((r) => r.id === payload.roomId);
+          if (!matched?.visible) {
+            console.log("🆕 숨겨진 DM 방에서 수신 → DM 목록 새로고침 시도");
+            await refreshDmRooms?.();
+          }
+        },
+        {
+          dmMode: true,
+          refreshDmRooms,
         }
-      },
-      {
-        dmMode: true,
-        refreshDmRooms,
-      }
-    );
-    subscriptions.push(sub);
-  });
+      );
+      subscriptions.push(sub);
+    });
 
-  return () => {
-    subscriptions.forEach((s) => s.unsubscribe?.());
-  };
-}, [dmMode, ready, dmRooms]);
+    return () => {
+      subscriptions.forEach((s) => s.unsubscribe?.());
+    };
+  }, [dmMode, ready, dmRooms]);
 
   const memoizedMember = useMemo(
     () => ({
       memberId: user?.id,
-      name: user?.name,
-      profile: user?.profile,
+      name: user?.nickname,
+      profile: user?.profileimg,
     }),
-    [user?.id, user?.name, user?.profile]
+    [user?.id, user?.nickname, user?.profileimg]
   );
-  
-  const { joined } = useVoiceChat(currentVoiceRoomId, memoizedMember);
-  
+
+  // console.log(user);
+  // const memoizedMember = useMemo(
+  //   () => ({
+  //     memberId: user?.id,
+  //     name: user?.name,
+  //     profile: user?.profile,
+  //   }),
+  //   [user?.id, user?.name, user?.profile]
+  // );
+
+  const { joined } = useVoiceChat(currentVoiceRoomId, memoizedMember, {
+    onParticipantsChange: (list) => {
+      setParticipants(list);
+    },
+    onSpeakingUsersChange: (list) => {
+      setSpeakingUsers(list);
+    },
+  });
+
   const fetchChannels = useCallback(() => {
     axiosInstance
-    .get(`/servers/${serverId}/channels`)
-    .then((res) => setChannels(Array.isArray(res.data) ? res.data : []))
-    .catch(() => setChannels([]));
-  }, [serverId]); 
-  
-    const textChannels = channels.filter((ch) => (ch?.type || "").toUpperCase().trim() === "TEXT");
-    const voiceChannels = channels.filter((ch) => (ch?.type || "").toUpperCase().trim() === "VOICE");
-  
+      .get(`/servers/${serverId}/channels`)
+      .then((res) => setChannels(Array.isArray(res.data) ? res.data : []))
+      .catch(() => setChannels([]));
+  }, [serverId]);
+
+  const textChannels = channels.filter((ch) => (ch?.type || "").toUpperCase().trim() === "TEXT");
+  const voiceChannels = channels.filter((ch) => (ch?.type || "").toUpperCase().trim() === "VOICE");
+
   useEffect(() => {
     if (dmMode) {
       axiosInstance
@@ -106,7 +136,6 @@ useEffect(() => {
     if (!dmMode && serverId) fetchChannels();
     else setChannels([]);
   }, [dmMode, serverId, fetchChannels]);
-
 
   function handleCreateChannel() {
     if (!newName.trim()) return;
@@ -132,12 +161,43 @@ useEffect(() => {
     }
   }
 
+  function handleCreateVoiceChannel() {
+    if (!newName.trim()) return;
+    if (!serverId) {
+      alert("serverId가 비어있음. 서버를 선택해주세요.");
+      return;
+    }
+    if (!dmMode) {
+      axiosInstance
+        .post(`/chatrooms`, {
+          name: newName,
+          type: newType,
+          description: "",
+          serverId,
+          roomType: "SERVER",
+        })
+        .then(() => {
+          setShowVoiceCreate(false);
+          setNewName("");
+          setNewType("VOICE");
+          fetchChannels();
+        });
+    }
+  }
+
   function handleDeleteChannel(channelId) {
     if (!window.confirm("정말 삭제할까요?")) return;
     axiosInstance.delete(`/chatrooms/${channelId}`).then(fetchChannels);
   }
 
   function handleInviteCode(serverId) {
+    console.log("🔍 Invite 요청 serverId:", serverId);
+    console.log("📦 현재 토큰:", localStorage.getItem("token"));
+    if (!serverId) {
+      alert("serverId가 없습니다. 초대코드를 생성할 수 없습니다.");
+      return;
+    }
+
     axiosInstance
       .post(`/invites`, {
         serverId,
@@ -162,15 +222,13 @@ useEffect(() => {
   function handleDeleteDmRoom(roomId) {
     if (!window.confirm("이 DM방을 목록에서 삭제하시겠습니까?")) return;
 
-   axiosInstance.delete(`/dm/room/${roomId}/hide/${currentUserId}`).then(() => {
-  const updatedRooms = dmRooms.map((room) =>
-    room.id === roomId ? { ...room, visible: false } : room
-  );
-  dispatch({
-    type: "SET_DM_ROOMS",
-    payload: updatedRooms,
-  });
-});
+    axiosInstance.delete(`/dm/room/${roomId}/hide/${currentUserId}`).then(() => {
+      const updatedRooms = dmRooms.map((room) => (room.id === roomId ? { ...room, visible: false } : room));
+      dispatch({
+        type: "SET_DM_ROOMS",
+        payload: updatedRooms,
+      });
+    });
   }
 
   const handleJoinVoiceChannel = async (channelId) => {
@@ -178,6 +236,7 @@ useEffect(() => {
       if (!channelId) return;
       setRoomId(channelId);
       setCurrentVoiceRoomId(channelId);
+      console.log(participants);
     } catch (err) {
       console.error("마이크 접근 실패:", err);
       alert("마이크 장치를 확인해주세요.");
@@ -206,39 +265,63 @@ useEffect(() => {
           </button>
         </div>
         <ul className="px-2 flex-1 overflow-y-auto">
-          {!ready && <li className="px-3 py-2 text-zinc-500 text-sm">연결 중...</li>}
-          {ready && dmRooms.filter(room => room.visible).length === 0 && (
-            <li className="px-3 py-2 text-zinc-500 text-sm">DM 목록이 없습니다</li>
-          )}
-          {dmRooms?.filter((room) => room.visible).map((room) => (
-            <li
-              key={room.id}
-              className="px-3 py-2 rounded group flex text-white items-center justify-between hover:bg-zinc-800 cursor-pointer transition"
-              onClick={() => onSelectDMRoom(room.id)}
-            >
-              <span className="text-base truncate flex-1">{room?.name || "이름없음"}</span>
-              <button
-                className="dm-delete-btn text-zinc-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition ml-2 flex-shrink-0"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteDmRoom(room.id);
-                }}
-                title="DM 삭제"
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+          {!ready && (
+            <li key="dm-loading" className="px-3 py-2 text-zinc-500 text-sm">
+              연결 중...
             </li>
-          ))}
+          )}
+          {ready && dmRooms.filter((room) => room.visible).length === 0 && (
+            <li key="dm-empty" className="px-3 py-2 text-zinc-500 text-sm">
+              DM 목록이 없습니다
+            </li>
+          )}
+          {dmRooms
+            ?.filter((room) => room.visible)
+            .map((room) => (
+              <li
+                key={room.id}
+                className="px-3 py-2 rounded group flex text-white items-center justify-between hover:bg-zinc-800 cursor-pointer transition"
+                onClick={() => onSelectDMRoom(room.id)}
+              >
+                <span className="text-base truncate flex-1">{room?.name || "이름없음"}</span>
+                <button
+                  className="dm-delete-btn text-zinc-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition ml-2 flex-shrink-0"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteDmRoom(room.id);
+                  }}
+                  title="DM 삭제"
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-4 w-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </li>
+            ))}
         </ul>
       </div>
     );
   }
 
   return (
-    <div className="w-[260px] min-w-[200px] max-w-[320px] h-full bg-[#2b2d31] flex flex-col border-r border-[#232428]">
+    <div className="w-[280px] min-w-[280px] max-w-[280px] h-full bg-[#2b2d31] flex flex-col border-r border-[#232428]">
       <div className="flex-1 flex flex-col">
+        <button
+          className="text-xs bg-zinc-700 text-white rounded px-2 py-2 ml-1"
+          onClick={(e) => {
+            e.stopPropagation();
+            handleInviteCode(serverId);
+          }}
+        >
+          서버 초대
+        </button>
         <div className="flex items-center justify-between px-4 mt-4 mb-1">
           <span className="text-xs text-zinc-400 font-bold">텍스트 채널</span>
           <button
@@ -253,7 +336,11 @@ useEffect(() => {
           </button>
         </div>
         <ul className="mb-3 px-2">
-          {textChannels.length === 0 && <div className="text-zinc-500 px-2 py-2">없음</div>}
+          {textChannels.length === 0 && (
+            <li key="empty-text" className="text-zinc-500 px-2 py-2">
+              없음
+            </li>
+          )}
           {textChannels.map((ch, i) => (
             <li
               key={ch.id ?? `textch-${i}`}
@@ -274,15 +361,6 @@ useEffect(() => {
               >
                 －
               </button>
-              <button
-                className="text-xs bg-zinc-700 text-white rounded px-2 py-0.5 ml-1"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleInviteCode(serverId);
-                }}
-              >
-                초대
-              </button>
             </li>
           ))}
         </ul>
@@ -293,7 +371,7 @@ useEffect(() => {
             className="text-xs text-[#3ba55d] hover:text-white bg-[#232428] rounded px-2 py-1 ml-2"
             onClick={() => {
               setNewType("VOICE");
-              setShowCreate(true);
+              setShowVoiceCreate(true);
             }}
             title="음성 채널 생성"
           >
@@ -301,29 +379,50 @@ useEffect(() => {
           </button>
         </div>
         <ul className="px-2">
-          {voiceChannels.length === 0 && <div className="text-zinc-500 px-2 py-2">없음</div>}
+          {voiceChannels.length === 0 && <li className="text-zinc-500 px-2 py-2">없음</li>}
+
           {voiceChannels.map((ch, i) => (
-            <li
-              key={ch.id ?? `voicech-${i}`}
-              className="flex items-center gap-2 px-2 py-2 rounded hover:bg-zinc-800 group cursor-pointer transition"
-              onClick={() => {
-                onSelectChannel?.(ch.id);
-                handleJoinVoiceChannel(ch.id);
-              }}
-            >
-              <span>🔊</span>
-              <span className="flex-1">{ch?.name || "이름없음"}</span>
-              <button
-                className="text-xs text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleDeleteChannel(ch.id);
+            <Fragment key={ch.id ?? `voicech-${i}`}>
+              {/* 1) 채널 아이템 */}
+              <li
+                className={clsx(
+                  "flex items-center gap-2 px-2 py-2 rounded hover:bg-zinc-800 cursor-pointer transition",
+                  currentVoiceRoomId === ch.id && "bg-zinc-700"
+                )}
+                onClick={() => {
+                  onSelectVoiceChannel(ch.id);
+                  handleJoinVoiceChannel(ch.id);
                 }}
-                title="채널 삭제"
               >
-                －
-              </button>
-            </li>
+                <span>🔊</span>
+                <span className="flex-1">{ch.name || "이름없음"}</span>
+                <button
+                  className="text-xs text-zinc-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteChannel(ch.id);
+                  }}
+                  title="채널 삭제"
+                >
+                  －
+                </button>
+              </li>
+
+              {/* 2) 참가자 목록 (채널 아래) */}
+              {currentVoiceRoomId === ch.id && participants.length > 0 && (
+                <ul className="pl-6 space-y-1">
+                  {participants.map((p) => (
+                    <li
+                      key={p.memberId}
+                      className="flex items-center gap-2 px-2 py-1 rounded hover:bg-zinc-800 cursor-pointer transition"
+                    >
+                      <img src={`${uploadURL}/${p.profile}`} alt="" className="w-8 h-8 rounded-full object-cover" />
+                      <span className="flex-1">{p.name}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Fragment>
           ))}
         </ul>
       </div>
@@ -343,6 +442,28 @@ useEffect(() => {
                 생성
               </button>
               <button onClick={() => setShowCreate(false)} className="flex-1 bg-zinc-700 text-white rounded py-1">
+                취소
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showVoiceCreate && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-40">
+          <div className="bg-zinc-900 p-4 rounded w-80 flex flex-col gap-2">
+            <div className="text-white font-bold mb-2">음성 채널 개설</div>
+            <input
+              className="p-2 rounded text-black"
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="채널명"
+            />
+            <div className="flex gap-2 mt-2">
+              <button onClick={handleCreateVoiceChannel} className="flex-1 bg-blue-600 text-white rounded py-1">
+                생성
+              </button>
+              <button onClick={() => setShowVoiceCreate(false)} className="flex-1 bg-zinc-700 text-white rounded py-1">
                 취소
               </button>
             </div>

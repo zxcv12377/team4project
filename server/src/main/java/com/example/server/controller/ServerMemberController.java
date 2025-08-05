@@ -3,6 +3,7 @@ package com.example.server.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -14,6 +15,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.server.dto.ServerMemberResponseDTO;
 import com.example.server.entity.enums.ServerRole;
+import com.example.server.security.CustomMemberDetails;
 import com.example.server.service.ServerMemberService;
 
 import lombok.RequiredArgsConstructor;
@@ -68,5 +70,14 @@ public class ServerMemberController {
         if (role == null)
             return ResponseEntity.notFound().build();
         return ResponseEntity.ok(role);
+    }
+
+    // 서버 탈퇴
+    @DeleteMapping("/leave")
+    public ResponseEntity<?> leaveServer(
+            @PathVariable Long serverId,
+            @AuthenticationPrincipal CustomMemberDetails principal) {
+        serverMemberService.leaveServer(serverId, principal.getId());
+        return ResponseEntity.ok("서버에서 탈퇴했습니다.");
     }
 }

@@ -11,6 +11,8 @@ const BoardDetail = () => {
   /* ─── 상태 ──────────────────────────────────────── */
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [like, setLike] = useState(false);
+  const [likeCount, setLikeCount] = useState(0);
 
   const currentUser = JSON.parse(localStorage.getItem("user"));
   const baseURL = import.meta.env.VITE_API_BASE_URL;
@@ -41,8 +43,8 @@ const BoardDetail = () => {
       : "날짜 없음";
 
   const created = fmt(post.createdDate);
-  const updated = fmt(post.updatedDate);
-  const isModified = post.createdDate !== post.updatedDate;
+  // const updated = fmt(post.updatedDate);
+  // const isModified = post.createdDate !== post.updatedDate;
 
   /* ─── 헬퍼 ──────────────────────────────────────── */
   const goList = () => navigate(`/channels/${channelId}`);
@@ -56,6 +58,19 @@ const BoardDetail = () => {
       .catch((err) => console.error("삭제 실패:", err));
   };
 
+  const boardLike = async () => {
+    try {
+      const res = await axiosInstance.post(`/boards/${post.bno}/like`);
+      const {liked, likeCount} = res.data;
+      setLike(liked);
+      setLikeCount(likeCount);
+      alert(liked ? "추천 완료" : "추천 취소");
+    } catch (error) {
+      console.error("추천 에러 : ",error);
+      alert("추천 처리 중 오류가 발생했습니다.");
+    }
+  };
+
   /* ─── 렌더 ──────────────────────────────────────── */
   return (
     <div className="mx-auto mt-24 max-w-3xl rounded-lg bg-white p-6 shadow-md">
@@ -65,14 +80,16 @@ const BoardDetail = () => {
 
       <div className="mb-1 text-sm text-gray-600">
         작성자: {post.nickname || "알 수 없음"}
-        {" | 조회수: "}
+        {"  |  조회수: "}
         {post.viewCount ?? 0}
-        {" | 작성일: "}
+        {"  |  작성일: "}
         {created}
       </div>
-      {isModified && <div className="mb-4 text-sm text-gray-400">수정일: {updated}</div>}
+      {/* {isModified && <div className="mb-4 text-sm text-gray-400">수정일: {updated}</div>} */}
 
-      <div className="mb-6 whitespace-pre-wrap text-lg text-gray-900">{post.content}</div>
+      <div className="mb-6 whitespace-pre-wrap text-lg text-gray-900 h-[50rem] overflow-y-auto mt-6 border-t-2 pt-6">
+        {post.content}
+      </div>
 
       {Array.isArray(post.attachments) && post.attachments.length > 0 && (
         <div className="mb-6 grid grid-cols-3 gap-2">
@@ -85,21 +102,29 @@ const BoardDetail = () => {
       )}
 
       {/* 버튼 영역 */}
-      <div className="mb-6 flex gap-2">
-        <button onClick={goList} className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
-          목록
-        </button>
+      <div className="grid grid-cols-3 items-center py-4 bg-white rounded-lg">
+        <div className="flex space-x-2">
+          <button onClick={goList} className="rounded bg-blue-500 px-4 py-2 text-white hover:bg-blue-600">
+            목록
+          </button>
 
-        {currentUser?.id === post.memberid && (
-          <>
-            <button onClick={goUpdate} className="rounded bg-yellow-500 px-4 py-2 text-white hover:bg-yellow-600">
-              수정
-            </button>
-            <button onClick={handleDelete} className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600">
-              삭제
-            </button>
-          </>
-        )}
+          {currentUser?.id === post.memberid && (
+            <>
+              <button onClick={goUpdate} className="rounded bg-yellow-500 px-4 py-2 text-white hover:bg-yellow-600">
+                수정
+              </button>
+              <button onClick={handleDelete} className="rounded bg-red-500 px-4 py-2 text-white hover:bg-red-600">
+                삭제
+              </button>
+            </>
+          )}
+        </div>
+        <div className="flex justify-center">
+          <button className="px-4 py-3 bg-gray-500 text-red-200 rounded hover:bg-gray-600 rounded-full" onClick={boardLike}>
+            VERY! 
+            <div className="text-white">{likeCount}</div>
+          </button>
+        </div>
       </div>
 
       <ReplyList bno={post.bno} />

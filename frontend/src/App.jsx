@@ -52,29 +52,29 @@ function App() {
     setIsLoading(false);
   }, []);
 
-  const handleLogin = async (token) => {
-    try {
-      localStorage.setItem("token", token);
-      setToken(token);
+  // const handleLogin = async (token) => {
+  //   try {
+  //     localStorage.setItem("token", token);
+  //     setToken(token);
 
-      const res = await axiosInstance.get("members/me");
-      const full = { ...res.data, token };
-      localStorage.setItem("user", JSON.stringify(full));
-      setUser(full);
+  //     const res = await axiosInstance.get("members/me");
+  //     const full = { ...res.data, token };
+  //     localStorage.setItem("user", JSON.stringify(full));
+  //     setUser(full);
 
-      window.location.href = "/";
-    } catch (e) {
-      console.error("로그인 처리 중 오류", e);
-    }
-  };
+  //     window.location.href = "/";
+  //   } catch (e) {
+  //     console.error("로그인 처리 중 오류", e);
+  //   }
+  // };
 
-  const handleLogout = () => {
-    ws.disconnect(); // ✅ 위에서 생성한 ws 활용
-    localStorage.clear();
-    setToken(null);
-    setUser(null);
-    window.location.href = "/";
-  };
+  // const handleLogout = () => {
+  //   ws.disconnect(); // ✅ 위에서 생성한 ws 활용
+  //   localStorage.clear();
+  //   setToken(null);
+  //   setUser(null);
+  //   window.location.href = "/";
+  // };
 
   if (isLoading) return <div>Loading...</div>;
   return (
