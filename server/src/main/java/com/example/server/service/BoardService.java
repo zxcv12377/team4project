@@ -62,14 +62,14 @@ public class BoardService {
 
         if (existing.isPresent()) { // 추천 취소
             boardLikeRepository.delete(existing.get());
-            // return false;
+            return false;
         } else { // 등록
             BoardLike like = BoardLike.builder()
                     .board(board)
                     .member(member)
                     .build();
             boardLikeRepository.save(like);
-            // return true;
+            return true;
         }
 
         // ✅ 캐시 필드 업데이트
