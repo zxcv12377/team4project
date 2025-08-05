@@ -49,7 +49,7 @@ public class BoardController {
         Member member = memberRepository.findById(currentMember.getId())
                 .orElseThrow(() -> new IllegalArgumentException("로그인이 필요합니다."));
         boolean liked = boardService.toggleBoardLike(bno, member);
-        long likeCount = boardService.getLikeCount(bno);
+        long likeCount = boardService.getLikeCount(bno); // 실시간 추천 수
         return ResponseEntity.ok(Map.of(
                 "liked", liked,
                 "likeCount", likeCount));

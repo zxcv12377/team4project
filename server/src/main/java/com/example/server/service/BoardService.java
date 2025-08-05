@@ -51,21 +51,29 @@ public class BoardService {
 
     @Transactional
     public boolean toggleBoardLike(Long bno, Member member) {
-        Board board = boardRepository.findById(bno).orElseThrow();
+        Board board = boardRepository.findById(bno).orElseThrow(() -> new IllegalArgumentException("게시글 없음"));
 
         Optional<BoardLike> existing = boardLikeRepository.findByBoardAndMember(board, member);
 
-        if (existing.isPresent()) { // 취소
+        if (existing.isPresent()) { // 추천 취소
             boardLikeRepository.delete(existing.get());
-            return false;
+            // return false;
         } else { // 등록
             BoardLike like = BoardLike.builder()
                     .board(board)
                     .member(member)
                     .build();
             boardLikeRepository.save(like);
-            return true;
+            // return true;
         }
+
+        // ✅ 캐시 필드 업데이트
+        long updatedCount = boardLikeRepository.countByBoard(board);
+        board.setBoardLikeCount(updatedCount);
+        boardRepository.save(board); // 필드 저장
+
+        return existing.isEmpty(); // true면 추천됨
+
     }
 
     // 추천 수 조회
