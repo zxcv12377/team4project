@@ -19,8 +19,9 @@ const fetchMainPageData = async () => {
   // 2. 각 채널의 게시물 정보 병렬로 가져오기
   const channelsWithPosts = await Promise.all(
     channels.map(async (channel) => {
-      const { data: posts } = await axiosInstance.get(`/boards/channel/${channel.id}`);
-      console.log(`채널 ${channel.name}의 게시물 목록:`, posts);
+      const { data: postsResponse } = await axiosInstance.get(`/boards/channel/${channel.id}`);
+      console.log(`채널 ${channel.name}의 게시물 목록:`, postsResponse);
+      const posts = Array.isArray(postsResponse) ? postsResponse : postsResponse.dtoList || postsResponse.content || [];
       return { ...channel, posts };
     })
   );
