@@ -72,12 +72,12 @@ public class BoardService {
             return true;
         }
 
-        // ✅ 캐시 필드 업데이트
-        long updatedCount = boardLikeRepository.countByBoard(board);
-        board.setBoardLikeCount(updatedCount);
-        boardRepository.save(board); // 필드 저장
+        // // // ✅ 캐시 필드 업데이트
+        // long updatedCount = boardLikeRepository.countByBoard(board);
+        // board.setBoardLikeCount(updatedCount);
+        // boardRepository.save(board); // 필드 저장
 
-        return existing.isEmpty(); // true면 추천됨
+        // return existing.isEmpty(); // true면 추천됨
 
     }
 
