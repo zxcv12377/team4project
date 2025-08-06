@@ -52,16 +52,22 @@ public class BoardService {
     private final BoardLikeRepository boardLikeRepository;
     private final BoardViewLogRepository boardViewLogRepository;
 
+    private static final Long TOP_STRAWBERRY_CHANNEL_ID = 3L;
+    // 좋아요 기준치
+    private static final Long LIKE_THRESHOLD = 1L;
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
     public boolean toggleBoardLike(Long bno, Member member) {
-        Board board = boardRepository.findById(bno).orElseThrow(() -> new IllegalArgumentException("게시글 없음"));
+        Board board = boardRepository.findById(bno).orElseThrow();
 
         Optional<BoardLike> existing = boardLikeRepository.findByBoardAndMember(board, member);
 
-        if (existing.isPresent()) { // 추천 취소
+        if (existing.isPresent()) { // 취소
             boardLikeRepository.delete(existing.get());
+            board.setBoardLikeCount(board.getBoardLikeCount() - 1);
+            boardRepository.save(board);
             return false;
         } else { // 등록
             BoardLike like = BoardLike.builder()
@@ -69,6 +75,8 @@ public class BoardService {
                     .member(member)
                     .build();
             boardLikeRepository.save(like);
+            board.setBoardLikeCount(board.getBoardLikeCount() + 1);
+            boardRepository.save(board);
             return true;
         }
 

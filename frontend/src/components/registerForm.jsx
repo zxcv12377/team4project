@@ -51,96 +51,80 @@ function RegisterForm({ onSwitchToLogin }) {
   };
 
   return (
-    <div className="relative mx-auto" style={{ width: 1200, height: 800 }}>
-      {/* 1. 프레임 이미지 */}
-      <img
-        src="/strawberry-frame.png"
-        alt="strawberry frame"
-        className="absolute inset-0 w-full h-full z-0 pointer-events-none"
-      />
+    <div>
+      <h2 className="text-2xl font-bold text-purple-600 mb-2">회원가입</h2>
 
-      {/* 2. 폼 중앙 배치 */}
-      <div
-        className="absolute left-1/2 top-1/2 z-10 flex flex-col space-y-4 items-center px-6"
-        style={{
-          width: 400,
-          transform: "translate(-50%, -50%)",
-        }}
-      >
-        <h2 className="text-2xl font-bold text-purple-600 mb-2">회원가입</h2>
-
-        {step === "input" ? (
-          <>
-            <input
-              name="email"
-              type="email"
-              placeholder="이메일"
-              className="w-full px-3 py-2 border rounded text-black"
-              value={formData.email}
-              onChange={handleChange}
-              required
-            />
-            <input
-              name="nickname"
-              placeholder="닉네임"
-              className="w-full px-3 py-2 border rounded text-black"
-              value={formData.nickname}
-              onChange={handleChange}
-              required
-            />
-            <input
-              name="password"
-              type="password"
-              placeholder="비밀번호"
-              className="w-full px-3 py-2 border rounded text-black"
-              value={formData.password}
-              onChange={handleChange}
-              required
-            />
-            <button
-              onClick={requestEmailVerification}
-              className="w-full bg-purple-500 text-white py-2 rounded hover:bg-purple-600"
-            >
-              이메일 인증 요청
-            </button>
-          </>
-        ) : (
-          <>
-            <input
-              name="token"
-              placeholder="인증 코드"
-              className="w-full px-3 py-2 border rounded text-black"
-              value={formData.token}
-              onChange={handleChange}
-              required
-            />
-            <button
-              onClick={handleRegister}
-              disabled={loading}
-              className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 disabled:opacity-50"
-            >
-              {loading ? "가입 중..." : "회원가입 완료"}
-            </button>
-          </>
-        )}
-
-        <div className="text-sm text-gray-600 mt-2">
-          {/* 여기서 navigate 사용 */}
-          <a href="/passwordreset" onClick={goToPasswordReset} className="hover:underline">
-            비밀번호 찾기
-          </a>
-          <span className="mx-2">|</span>
-          <a
-            href="/login"
-            onClick={(e) => {
-              e.preventDefault();
-              onSwitchToLogin?.();
-            }}
-            className="hover:underline"
+      {step === "input" ? (
+        <>
+          <input
+            name="email"
+            type="email"
+            placeholder="이메일"
+            className="w-full px-3 py-2 border rounded text-black"
+            value={formData.email}
+            onChange={handleChange}
+            required
+          />
+          <input
+            name="nickname"
+            placeholder="닉네임"
+            className="w-full px-3 py-2 border rounded text-black"
+            value={formData.nickname}
+            onChange={handleChange}
+            required
+          />
+          <input
+            name="password"
+            type="password"
+            placeholder="비밀번호"
+            className="w-full px-3 py-2 border rounded text-black"
+            value={formData.password}
+            onChange={handleChange}
+            required
+          />
+          <button
+            onClick={requestEmailVerification}
+            className="w-full bg-purple-500 text-white py-2 rounded hover:bg-purple-600"
           >
-            로그인
-          </a>
-        </div>
+            이메일 인증 요청
+          </button>
+        </>
+      ) : (
+        <>
+          <input
+            name="token"
+            placeholder="인증 코드"
+            className="w-full px-3 py-2 border rounded text-black"
+            value={formData.token}
+            onChange={handleChange}
+            required
+          />
+          <button
+            onClick={handleRegister}
+            disabled={loading}
+            className="w-full bg-purple-600 text-white py-2 rounded hover:bg-purple-700 disabled:opacity-50"
+          >
+            {loading ? "가입 중..." : "회원가입 완료"}
+          </button>
+        </>
+      )}
+
+      <div className="text-sm text-gray-600 mt-2 items-center">
+        {/* 여기서 navigate 사용 */}
+        <a href="/passwordreset" onClick={goToPasswordReset} className="hover:underline">
+          비밀번호 찾기
+        </a>
+        <span className="mx-2">|</span>
+        <a
+          href="/login"
+          onClick={(e) => {
+            e.preventDefault();
+            onSwitchToLogin?.();
+          }}
+          className="hover:underline"
+        >
+          로그인
+        </a>
       </div>
     </div>
   );

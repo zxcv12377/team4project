@@ -7,6 +7,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import com.example.server.entity.Board;
 import com.example.server.entity.Member;
 import com.example.server.entity.Reply;
 
@@ -22,6 +23,8 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
 
     // List<Reply> findByBnoAndLikeCountGreaterThanOrderByLikeCountDesc(Long bno,
     // int count);
+
+    long countByBoard(Board board);
 
     @Query("SELECT r FROM Reply r LEFT JOIN r.likes l WHERE r.board.bno = :bno GROUP BY r ORDER BY COUNT(l) DESC")
     List<Reply> findTop3BestReplies(@Param("bno") Long bno);

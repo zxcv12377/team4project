@@ -14,19 +14,14 @@ function timeAgo(isoDate) {
 const fetchMainPageData = async () => {
   // 1. 채널 목록 가져오기
   const { data: channels } = await axiosInstance.get("/board-channels");
-  console.log(channels);
+  console.log("채널 목록:", channels);
 
   // 2. 각 채널의 게시물 정보 병렬로 가져오기
   const channelsWithPosts = await Promise.all(
     channels.map(async (channel) => {
-      // 1) 올바른 엔드포인트
-      const { data: pageResult } = await axiosInstance.get(
-        `/boards/channel/${channel.id}`,
-        { params: { page: 1, size: 8 } } // 필요하면 페이징 파라미터도
-      );
-      // 2) dtoList 로 실제 배열 추출, 기본 빈 배열 보장
-      const posts = Array.isArray(pageResult.dtoList) ? pageResult.dtoList : [];
-
+      const { data: postsResponse } = await axiosInstance.get(`/boards/channel/${channel.id}`);
+      console.log(`채널 ${channel.name}의 게시물 목록:`, postsResponse);
+      const posts = Array.isArray(postsResponse) ? postsResponse : postsResponse.dtoList || postsResponse.content || [];
       return { ...channel, posts };
     })
   );
@@ -78,13 +73,13 @@ export default function MainPage() {
   }
 
   return (
-    <div className="p-6 w-1/2 mx-auto grid grid-cols-2 grid-rows-3 divide-x divide-y border border-gray-200 bg-white">
+    <div className="p-6 w-1/2 mx-auto grid grid-cols-2 grid-rows-3 border border-gray-200 bg-white">
       {sections.map((sec) => (
-        <div key={sec.id} className="p-4 flex flex-col border">
-          <div className="flex items-center justify-between mb-2 bg-gray-100">
+        <div key={sec.id} className="p-4 flex flex-col border-t border-gray-300">
+          <div className="flex items-center justify-between mb-2 bg-gray-100 border-t-2 border-red-300">
             <h3
               onClick={() => navigate(`/channels/${sec.id}`)}
-              className="text-lg font-semibold cursor-pointer hover:text-blue-600 truncate"
+              className="p-2 text-lg font-semibold cursor-pointer hover:text-blue-600 truncate"
             >
               {sec.name}
             </h3>
