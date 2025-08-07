@@ -28,6 +28,7 @@ import AdminPage from "./components/admin/adminPage";
 import BoardChannelList from "./components/boardChannelList";
 import CreateBoardChannel from "./components/admin/createBoardChannel";
 import BoardSearch from "./components/boardSearch";
+import VerryconForm from "./components/verryconForm";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -110,6 +111,7 @@ function App() {
                     <Route path="/admin" element={<AdminPage />} />
                     <Route path="/admin/members" element={<MemberMaintenance />} />
                     <Route path="/admin/boardChannels/create" element={<CreateBoardChannel />} />
+                    <Route path="/admin/verrycon/uploads" element={<VerryconForm />} />
                     {/* 검색 */}
                     <Route path="/boards/search" element={<BoardSearch />} />
                   </Route>

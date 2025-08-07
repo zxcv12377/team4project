@@ -27,6 +27,11 @@ export default function AdminPage() {
             채널 삭제
           </Link>
         </li>
+        <li>
+          <Link to="/admin/verrycon/uploads" className="text-blue-600 hover:underline">
+            베리콘 업로드
+          </Link>
+        </li>
       </ul>
     </div>
   );

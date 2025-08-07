@@ -35,8 +35,6 @@
          <groupId>org.springframework.boot</groupId>
          <artifactId>spring-boot-starter-actuator</artifactId>
       </dependency>
-
-
       <dependency>
          <groupId>net.coobird</groupId>
          <artifactId>thumbnailator</artifactId>
@@ -48,10 +46,10 @@
          <version>8.0.33</version>
       </dependency>
       <dependency>
-  <groupId>org.apache.commons</groupId>
-  <artifactId>commons-text</artifactId>
-  <version>1.10.0</version>
-</dependency>
+         <groupId>org.apache.commons</groupId>
+         <artifactId>commons-text</artifactId>
+         <version>1.10.0</version>
+      </dependency>
 
 
     <!-- JWT (JJWT 라이브러리) -->

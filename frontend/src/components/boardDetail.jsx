@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { clsx } from "clsx";
 import axiosInstance from "../lib/axiosInstance";
 import ReplyList from "./replyList";
-import BoardList from "./boardList";
 import { useUserContext } from "../context/UserContext";
+import BoardListByDetail from "./boardListByDetail";
 
 const BoardDetail = () => {
   /* ─── URL 파라미터 ──────────────────────────────── */
@@ -186,7 +185,7 @@ const BoardDetail = () => {
         </div>
 
         <ReplyList bno={post.bno} />
-        <BoardList />
+        <BoardListByDetail />
       </div>
     </>
   );

@@ -3,7 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../lib/axiosInstance";
 import { useUserContext } from "../context/UserContext";
 
-export default function BoardList() {
+export default function BoardListByDetail() {
   const { channelId } = useParams(); // /channels/:channelId
 
   const [posts, setPosts] = useState([]);
@@ -83,12 +83,6 @@ export default function BoardList() {
 
   return (
     <>
-      <div className="max-w-6xl mx-auto shadow-inner shadow-slate-800 rounded-xl min-h-44">
-        <div className="flex justify-start min-h-40 items-center">
-          <img src="" alt="banner" className="w-[10rem] min-h-40 object-cover p-2" />
-          <div className="w-full min-h-40 p-2">나야나</div>
-        </div>
-      </div>
       <div className="min-h-screen">
         <main className="max-w-6xl mx-auto p-6 pt-10">
           {/* 🔹 상단 등록 버튼 */}
