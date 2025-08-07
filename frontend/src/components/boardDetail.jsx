@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { clsx } from "clsx";
 import axiosInstance from "../lib/axiosInstance";
 import ReplyList from "./replyList";
+import BoardList from "./boardList";
 
 const BoardDetail = () => {
   /* ─── URL 파라미터 ──────────────────────────────── */
@@ -97,19 +98,20 @@ const BoardDetail = () => {
   };
   /* ─── 렌더 ──────────────────────────────────────── */
   return (
-    <div className="max-w-5xl mx-auto mt-24 p-6 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
-      <h2 className="text-2xl font-bold text-blue-700 mb-4">
-        📄 {post.title}
-        <span className="ml-2 text-sm text-gray-500">[{post.bno}]</span>
-      </h2>
+    <>
+      <div className="max-w-6xl pt-10 l mx-auto mt-24 p-6 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">
+        <h2 className="text-2xl font-bold text-blue-700 mb-4">
+          📄 {post.title}
+          <span className="ml-2 text-sm text-gray-500">[{post.bno}]</span>
+        </h2>
 
-      <div className="text-sm text-gray-600 mb-1">
-        작성자: {post.nickname || "알 수 없음"} | 조회수: {post.viewCount ?? 0} | 작성일:{" "}
-        {formattedDate(post.createdDate)}
-      </div>
+        <div className="text-sm text-gray-600 mb-1">
+          작성자: {post.nickname || "알 수 없음"} | 조회수: {post.viewCount ?? 0} | 작성일:{" "}
+          {formattedDate(post.createdDate)}
+        </div>
 
-      <article
-        className="h-[30rem]
+        <article
+          className="h-[30rem]
         prose 
         prose-img:rounded-lg 
         prose-img:shadow
@@ -119,68 +121,70 @@ const BoardDetail = () => {
          mb-8
           overflow-auto
            whitespace-pre-wrap"
-        dangerouslySetInnerHTML={{ __html: post.content }}
-      />
+          dangerouslySetInnerHTML={{ __html: post.content }}
+        />
 
-      {post.attachments?.length > 0 && (
-        <section className="mb-8">
-          <h3 className="font-semibold text-gray-700 mb-2">📎 첨부 이미지</h3>
-          <div className="flex flex-wrap gap-4">
-            {post.attachments.map((img, idx) => {
-              const fullThumb = img.thumbnailUrl?.startsWith("http")
-                ? img.thumbnailUrl
-                : `${baseImageUrl}${img.thumbnailUrl}`;
-              return (
-                <img
-                  key={idx}
-                  src={fullThumb}
-                  alt={`첨부 이미지 ${idx + 1}`}
-                  className="w-32 h-32 object-cover rounded shadow"
-                />
-              );
-            })}
+        {post.attachments?.length > 0 && (
+          <section className="mb-8">
+            <h3 className="font-semibold text-gray-700 mb-2">📎 첨부 이미지</h3>
+            <div className="flex flex-wrap gap-4">
+              {post.attachments.map((img, idx) => {
+                const fullThumb = img.thumbnailUrl?.startsWith("http")
+                  ? img.thumbnailUrl
+                  : `${baseImageUrl}${img.thumbnailUrl}`;
+                return (
+                  <img
+                    key={idx}
+                    src={fullThumb}
+                    alt={`첨부 이미지 ${idx + 1}`}
+                    className="w-32 h-32 object-cover rounded shadow"
+                  />
+                );
+              })}
+            </div>
+          </section>
+        )}
+
+        {/* 추천 및 버튼 그룹 */}
+        <div className="flex justify-between items-center mb-6">
+          <div className="text-sm text-gray-700">
+            추천 수: <span className="font-bold text-pink-500">{likeCount}</span>
           </div>
-        </section>
-      )}
 
-      {/* 추천 및 버튼 그룹 */}
-      <div className="flex justify-between items-center mb-6">
-        <div className="text-sm text-gray-700">
-          추천 수: <span className="font-bold text-pink-500">{likeCount}</span>
+          <div className="flex gap-2">
+            <button
+              onClick={boardLike}
+              className={`px-4 py-2 rounded-full transition ${
+                like ? "bg-pink-500 text-white hover:bg-pink-600" : "bg-gray-300 text-gray-800 hover:bg-gray-400"
+              }`}
+            >
+              {like ? "❤️ 추천 취소" : "👍 추천하기"}
+            </button>
+
+            <button
+              onClick={() => navigate(`/channels/${channelId}`)}
+              className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+            >
+              목록
+            </button>
+
+            {currentUser?.id === post.memberid && (
+              <>
+                <button onClick={goUpdate} className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+                  수정
+                </button>
+                <button onClick={handleDelete} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                  삭제
+                </button>
+              </>
+            )}
+          </div>
         </div>
 
-        <div className="flex gap-2">
-          <button
-            onClick={boardLike}
-            className={`px-4 py-2 rounded-full transition ${
-              like ? "bg-pink-500 text-white hover:bg-pink-600" : "bg-gray-300 text-gray-800 hover:bg-gray-400"
-            }`}
-          >
-            {like ? "❤️ 추천 취소" : "👍 추천하기"}
-          </button>
-
-          <button
-            onClick={() => navigate("/boards")}
-            className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-          >
-            목록
-          </button>
-
-          {currentUser?.id === post.memberid && (
-            <>
-              <button onClick={goUpdate} className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
-                수정
-              </button>
-              <button onClick={handleDelete} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
-                삭제
-              </button>
-            </>
-          )}
-        </div>
+        <ReplyList bno={post.bno} />
+        <BoardList />
       </div>
-
-      <ReplyList bno={post.bno} />
-    </div>
+    </>
   );
 };
 

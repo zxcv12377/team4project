@@ -219,7 +219,43 @@ public class BoardService {
         return new BoardViewResponseDTO(boardDTO, newCookieValue);
     }
 
+    public PageResultDTO<BoardDTO> getBestBoards(PageRequestDTO pageRequestDTO, int minLike) {
+        // Pageable: 좋아요 내림차순 + 작성일 내림차순
+        Pageable pageable = PageRequest.of(
+                pageRequestDTO.getPage() - 1,
+                pageRequestDTO.getSize(),
+                Sort.by("bno").descending());
+
+        // 채널 조건 없이, getBoardList 쿼리에서 정렬 기준만 반영
+        Page<Object[]> result = boardRepository.getBestAllBoards(
+                pageRequestDTO.getType(),
+                pageRequestDTO.getKeyword(),
+                pageable,
+                minLike);
+
+        Function<Object[], BoardDTO> fn = en -> BoardDTO.builder()
+                .bno((Long) en[0])
+                .title((String) en[1])
+                .createdDate((LocalDateTime) en[2])
+                .nickname((String) en[3])
+                .replyCount((Long) en[4])
+                .viewCount((Long) en[5])
+                .boardLikeCount((Long) en[6])
+                .channelId((Long) en[7])
+                .channelName((String) en[8])
+                .build();
+
+        // 5) PageResultDTO 빌드하여 리턴
+        return PageResultDTO.<BoardDTO>withAll()
+                .dtoList(result.map(fn).getContent())
+                .totalCount(result.getTotalElements())
+                .pageRequestDTO(pageRequestDTO)
+                .build();
+    }
+
     public PageResultDTO<BoardDTO> getBoardsByChannel(Long channelId, PageRequestDTO pageRequestDTO) {
+
+        // 1) 채널 조회
 
         BoardChannel channel = boardChannelRepository.findById(channelId)
                 .orElseThrow(() -> new NoSuchElementException("채널 없음 id=" + channelId));

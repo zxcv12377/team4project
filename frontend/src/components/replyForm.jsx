@@ -1,19 +1,24 @@
 import React, { useState, useRef } from "react";
 import axiosInstance from "../lib/axiosInstance";
+import BoardList from "./boardList";
 
 const emojis = ["😀", "😂", "😍", "🔥", "😢", "👍", "👎", "💯"];
 
 export default function ReplyForm({ bno, parentRno = null, onSubmit }) {
+  const [emoticonOpen, setEmoticonOpen] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [veryConOpen, setVeryConOpen] = useState(false);
   const [content, setContent] = useState("");
   const [isFocused, setIsFocused] = useState(false);
-  const fileInputRef = useRef();
   const textareaRef = useRef(); // 커서 위치 추적용 ref
+
   const token = localStorage.getItem("token");
   const showButton = isFocused || content.length > 0;
 
   // 🔒 로그인하지 않은 사용자 → 입력창 대신 안내 메시지
   if (!token) {
-    return (// border border-gray-200 rounded-2xl shadow-md
+    return (
+      // border border-gray-200 rounded-2xl shadow-md
       <div className="bg-white w-full max-w-3xl mx-auto p-6 text-center">
         <h3 className="text-xl font-semibold text-gray-800 mb-4">댓글 작성</h3>
         <p className="text-gray-600">
@@ -47,81 +52,106 @@ export default function ReplyForm({ bno, parentRno = null, onSubmit }) {
     }
   };
 
+  // 이모지 삽입
   const insertAtCursor = (text) => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-
-    const newText = content.slice(0, start) + text + content.slice(end);
-    setContent(newText);
-    //이모지 삽입 후 커서 이동
+    const ta = textareaRef.current;
+    if (!ta) return;
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const before = content.slice(0, start);
+    const after = content.slice(end);
+    setContent(before + text + after);
+    // 커서 위치 복원
     setTimeout(() => {
-      textarea.focus();
-      textarea.selectionStart = textarea.selectionEnd = start + text.length;
+      ta.focus();
+      const newPos = start + text.length;
+      ta.setSelectionRange(newPos, newPos);
     }, 0);
   };
 
-  const handleImageUpload = async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const base64 = reader.result; // ✅ data:image/png;base64,... 형태
-      insertAtCursor(`<img src="${base64}" alt="image" />`);
-    };
-    reader.readAsDataURL(file); // ✅ base64로 읽음
-  };
-
   return (
-    <form
-      onSubmit={handleSubmit}
-      className="bg-white w-full max-w-3xl mx-auto p-6"
-    >
-      <h3 className="text-xl font-semibold text-gray-800 mb-4">댓글 작성</h3>
+    <div>
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white w-full max-w-6xl mx-auto p-6 border-t-2 border-red-400 border-b-2"
+      >
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">댓글 작성</h3>
 
-      <div className="relative mb-4">
-        <textarea
-          ref={textareaRef} // ref 연결
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="댓글을 입력하세요"
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          className="w-full min-h-[90px] resize-none rounded-lg border border-gray-300 p-4 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-400"
-        />
-        {showButton && (
+        <div className="relative mb-4">
+          <textarea
+            ref={textareaRef} // ref 연결
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="댓글을 입력하세요"
+            onFocus={() => setIsFocused(true)}
+            onBlur={() => setIsFocused(false)}
+            className="w-full min-h-[90px] resize-none rounded-lg border border-gray-300 p-4 text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder:text-gray-400"
+          />
+          {/* {showButton && (
+          )} */}
+        </div>
+
+        <div className="relative inline-block w-full">
+          <button
+            type="button"
+            onClick={() => {
+              setEmoticonOpen((v) => !v);
+              setEmojiOpen(true);
+            }}
+            className="ml-1 px-3 py-1 text-sm border rounded-md"
+          >
+            📷 이모티콘
+          </button>
           <button
             type="submit"
-            className="absolute right-4 top-3 px-4 py-1.5 rounded-lg bg-indigo-500 text-sm text-white hover:bg-indigo-600 transition"
+            className="absolute right-0 top-1/2 transform -translate-y-1/2 px-4 py-1.5 rounded-lg bg-indigo-500 text-sm text-white hover:bg-indigo-600 transition"
           >
             등록
           </button>
-        )}
-      </div>
-
-      <div className="flex flex-wrap items-center gap-2 text-xl">
-        {emojis.map((emoji) => (
-          <button
-            key={emoji}
-            type="button"
-            onClick={() => insertAtCursor(emoji)}
-            className="hover:scale-110 transition"
-          >
-            {emoji}
-          </button>
-        ))}
-        <button
-          type="button"
-          onClick={() => fileInputRef.current.click()}
-          className="ml-1 px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-100"
-        >
-          📷 이미지 첨부
-        </button>
-        <input type="file" accept="image/*" ref={fileInputRef} hidden onChange={handleImageUpload} />
-      </div>
-    </form>
+          {/* 이모티콘 창 */}
+          {emoticonOpen && (
+            <div className="mt-2 absolute top-full left-0 w-[40rem] bg-white border rounded-lg shadow-lg z-50 ">
+              <div className="bg-gray-300 w-full h-10 flex justify-start">
+                <button
+                  type="button"
+                  className="w-[5rem] hover:bg-gray-400"
+                  onClick={() => {
+                    setEmojiOpen(true);
+                    setVeryConOpen(false);
+                  }}
+                >
+                  이모지
+                </button>
+                <button
+                  type="button"
+                  className="w-[5rem] hover:bg-gray-400"
+                  onClick={() => {
+                    setEmojiOpen(false);
+                    setVeryConOpen(true);
+                  }}
+                >
+                  베리콘
+                </button>
+              </div>
+              {emojiOpen && (
+                <div>
+                  {emojis.map((e) => (
+                    <button
+                      type="button"
+                      key={e}
+                      onClick={() => insertAtCursor(e)}
+                      className="hover:scale-110 transition text-2xl p-1"
+                    >
+                      {e}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {veryConOpen && <div>베리콘</div>}
+            </div>
+          )}
+        </div>
+      </form>
+    </div>
   );
 }

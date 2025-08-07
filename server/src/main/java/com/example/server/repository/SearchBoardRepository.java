@@ -9,4 +9,8 @@ public interface SearchBoardRepository {
     Object[] getBoardRow(Long mno);
 
     Page<Object[]> getBoardListByChannel(Long channelId, String type, String keyword, Pageable pageable);
+
+    Page<Object[]> getBestAllBoards(String type, String keyword, Pageable pageable,
+            int minlike);
+
 }

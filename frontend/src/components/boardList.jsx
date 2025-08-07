@@ -16,6 +16,8 @@ export default function BoardList() {
   const headers = { Authorization: `Bearer ${token}` };
   const baseURL = import.meta.env.VITE_API_BASE_URL;
 
+  const BEST_CHANNEL_ID = 1;
+
   // 채널 이름 로딩
   useEffect(() => {
     if (!channelId) {
@@ -33,10 +35,18 @@ export default function BoardList() {
     const fetchBoards = async () => {
       try {
         setLoading(true);
-        const { data } = await axiosInstance.get(`/boards/channel/${channelId}?page=${page}&size=15`);
-        console.log(data);
-        setPosts(data.dtoList || []);
-        setTotalPages(data.totalPage || 1);
+        // const isBest = chanIdNum === BEST_CHANNEL_ID;
+        if (channelId === "3") {
+          const { data } = await axiosInstance.get(`/boards/best/channel?page=${page}&size=15`);
+          console.log("베스트 게시판", data, channelId);
+          setPosts(data.dtoList || []);
+          setTotalPages(data.totalPage || 1);
+        } else {
+          const { data } = await axiosInstance.get(`/boards/channel/${channelId}?page=${page}&size=15`);
+          console.log("채널 게시판", data, channelId);
+          setPosts(data.dtoList || []);
+          setTotalPages(data.totalPage || 1);
+        }
       } catch (err) {
         console.error("게시글 로딩 실패:", err);
       } finally {
@@ -46,28 +56,6 @@ export default function BoardList() {
 
     fetchBoards();
   }, [channelId, page]);
-
-  // 📡 게시글 목록 API 호출
-  const boardList = async () => {
-    try {
-      const res = channelId
-        ? await axiosInstance.get(`/boards/channel/${channelId}?page=${page}&size=10`, { headers })
-        : await axiosInstance.get(`/boards/list?page=${page}&size=15`, { headers });
-
-      const data = res.data;
-      if (Array.isArray(data)) {
-        setPosts(data);
-        setTotalPages(1);
-      } else {
-        setPosts(data.dtoList || []);
-        setTotalPages(data.totalPage || 1);
-      }
-    } catch (err) {
-      console.error("게시글 로딩 실패:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // 📆 작성일 포맷: 오늘이면 시:분, 아니면 날짜
   const formatDate = (dateString) => {
@@ -93,7 +81,6 @@ export default function BoardList() {
   const combinedPosts = [...noticePosts, ...normalPosts];
 
   return (
-    // ✅ 전체 배경 연노랑색으로 통일
     <div className="min-h-screen pt-24 bg-consilk">
       <main className="max-w-6xl mx-auto p-6 pt-10">
         {/* 🔹 상단 등록 버튼 */}
@@ -109,7 +96,9 @@ export default function BoardList() {
         )}
 
         {/* 채널 이름 */}
-        <h2 className="text-[20px] font-semibold mb-4">{channelName}</h2>
+        <h2 className="text-[20px] font-semibold mb-4 border-t-2 border-b-2 border-red-300 pl-6 pt-2 pb-2">
+          {channelName} 채널
+        </h2>
 
         {/* 🔹 게시글 테이블 감싼 카드 형태 (하얀 배경 박스) */}
         <div className="bg-white rounded-xl shadow-md p-6 border">
