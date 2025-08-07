@@ -37,8 +37,8 @@ export default function ReplyList({ bno }) {
   const renderReply = (reply) => <ReplyItem key={reply.rno} reply={reply} bno={bno} refresh={fetchReplies} />;
 
   return (
-    <section className="w-full max-w-3xl mx-auto bg-white border rounded-2xl shadow p-6">
-      <h3 className="text-xl font-semibold text-gray-800 mb-6">댓글 {totalCount}개</h3>
+    <section className="w-full max-w-6xl mx-auto bg-gray-50">
+      <h3 className="text-xl font-semibold text-gray-800 mb-6 border-b-4 border-red-400 pb-4">댓글 {totalCount}개</h3>
       <div className="mt-8 space-y-6">
         {bestReplies.map((r) => (
           <div key={r.rno} className="bg-yellow-50 border border-yellow-200 rounded-xl p-4">

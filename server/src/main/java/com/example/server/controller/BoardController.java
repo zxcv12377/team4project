@@ -50,6 +50,13 @@ public class BoardController {
         return ResponseEntity.ok(list);
     }
 
+    @GetMapping("/best/channel")
+    public ResponseEntity<PageResultDTO<BoardDTO>> bestListByChannel(@ModelAttribute PageRequestDTO pageRequestDTO) {
+
+        PageResultDTO<BoardDTO> list = boardService.getBestBoards(pageRequestDTO, 1);
+        return ResponseEntity.ok(list);
+    }
+
     @PostMapping("/{bno}/like")
     public ResponseEntity<?> toggleLike(@PathVariable Long bno,
             @AuthenticationPrincipal CustomMemberDetails currentMember) {

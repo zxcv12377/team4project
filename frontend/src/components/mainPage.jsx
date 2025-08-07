@@ -19,9 +19,16 @@ const fetchMainPageData = async () => {
   // 2. 각 채널의 게시물 정보 병렬로 가져오기
   const channelsWithPosts = await Promise.all(
     channels.map(async (channel) => {
-      const { data: postsResponse } = await axiosInstance.get(`/boards/channel/${channel.id}`);
-      console.log(`채널 ${channel.name}의 게시물 목록:`, postsResponse);
-      const posts = Array.isArray(postsResponse) ? postsResponse : postsResponse.dtoList || postsResponse.content || [];
+      // 베스트 게시판은 일반 채널이랑 다른 주소를 가짐
+      const listUrl = channel.id === 3 ? "/boards/best/channel" : `/boards/channel/${channel.id}`;
+
+      const { data: pageResult } = await axiosInstance.get(
+        listUrl,
+        { params: { page: 1, size: 8 } } // 필요하면 페이징 파라미터도
+      );
+      // dtoList 로 실제 배열 추출, 기본 빈 배열 보장
+      const posts = Array.isArray(pageResult.dtoList) ? pageResult.dtoList : [];
+
       return { ...channel, posts };
     })
   );
@@ -54,13 +61,17 @@ export default function MainPage() {
   const sections = useMemo(() => {
     if (!rawSections || rawSections.length === 0) return [];
 
-    const filtered = rawSections.filter((c) => c.name !== "공지사항" && c.name !== "문의하기");
-    const best = filtered.find((c) => c.name === "최고딸기");
+    const filtered = rawSections.filter(
+      // 공지사항, 문의하기, 전체게시판은 메인페이지에 띄우지 않음
+      (c) => c.name !== "공지사항" && c.name !== "문의하기" && c.name !== "전체게시판"
+    );
+    // 메인 페이지에 최초는 무조건 베스트 게시판
+    const best = filtered.find((c) => c.name === "최고딸기 게시판");
     const remaining = filtered
-      .filter((c) => c.name !== "최고딸기")
+      .filter((c) => c.name !== "최고딸기 게시판")
       .map((c) => ({ ...c, totalViews: c.posts.reduce((sum, p) => sum + (p.viewCount || 0), 0) }))
       .sort((a, b) => b.totalViews - a.totalViews)
-      .slice(0, 4);
+      .slice(0, 8);
 
     const finalSections = [];
     if (best) finalSections.push(best);
@@ -73,63 +84,54 @@ export default function MainPage() {
   }
 
   return (
-    <div className="p-6 w-1/2 mx-auto grid grid-cols-2 grid-rows-3 border border-gray-200 bg-white">
-      {sections.map((sec) => (
-        <div key={sec.id} className="p-4 flex flex-col border-t border-gray-300">
-          <div className="flex items-center justify-between mb-2 bg-gray-100 border-t-2 border-red-300">
-            <h3
-              onClick={() => navigate(`/channels/${sec.id}`)}
-              className="p-2 text-lg font-semibold cursor-pointer hover:text-blue-600 truncate"
-            >
-              {sec.name}
-            </h3>
-            <div className="flex space-x-1">
-              <button
-                onClick={() =>
-                  scrollRefs.current[sec.id]?.scrollBy({
-                    left: -200,
-                    behavior: "smooth",
-                  })
-                }
-                className="p-1 rounded hover:bg-gray-100"
-              >
-                ‹
-              </button>
-              <button
-                onClick={() =>
-                  scrollRefs.current[sec.id]?.scrollBy({
-                    left: +200,
-                    behavior: "smooth",
-                  })
-                }
-                className="p-1 rounded hover:bg-gray-100"
-              >
-                ›
-              </button>
+    <>
+      {/* 배너 */}
+      <div className="mx-auto max-w-[50%] h-[8rem] bg-red-50 mb-4 rounded-xl">
+        <img src="" alt="banner" className="w-full h-full object-cover" />
+      </div>
+      {/* 메인 채널 */}
+      <div className="p-6 w-1/2 mx-auto grid grid-cols-2 grid-rows-3 border border-gray-200 bg-white">
+        {sections.map((sec, idx) => (
+          <div
+            key={sec.id}
+            className={
+              idx % 2 === 0 ? "p-4 flex flex-col border-gray-300" : "p-4 flex flex-col border-l border-gray-300"
+            }
+          >
+            <div className={idx % 2 === 0 && idx !== 0 ? "border-r border-black" : ""}>
+              {idx}/{sec.id}
             </div>
-          </div>
+            <div className="flex items-center justify-between mb-2 bg-gray-100 border-t-2 border-red-300">
+              <h3
+                onClick={() => navigate(`/channels/${sec.id}`)}
+                className="p-2 text-lg font-semibold cursor-pointer hover:text-blue-600 truncate"
+              >
+                {sec.name} 채널
+              </h3>
+            </div>
 
-          <ul ref={(el) => (scrollRefs.current[sec.id] = el)} className="flex-1 overflow-y-auto space-y-1 pr-2">
-            {sec.posts
-              .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))
-              .slice(0, 8)
-              .map((post) => (
-                <li
-                  key={post.bno}
-                  onClick={() => navigate(`/channels/${sec.id}/${post.bno}`)}
-                  className="flex justify-between items-center cursor-pointer hover:bg-gray-50 rounded px-1 py-0.5"
-                >
-                  <span className="text-sm text-gray-800 truncate">
-                    [{post.bno}] {post.title}
-                  </span>
-                  <span className="ml-2 text-xs text-gray-500 whitespace-nowrap">
-                    {timeAgo(post.createdDate)} [{post.viewCount || 0}]
-                  </span>
-                </li>
-              ))}
-          </ul>
-        </div>
-      ))}
-    </div>
+            <ul ref={(el) => (scrollRefs.current[sec.id] = el)} className="flex-1 overflow-y-auto space-y-1 pr-2">
+              {sec.posts
+                .sort((a, b) => new Date(b.createdDate) - new Date(a.createdDate))
+                .slice(0, 8)
+                .map((post) => (
+                  <li
+                    key={post.bno}
+                    onClick={() => navigate(`/channels/${sec.id}/${post.bno}`)}
+                    className="flex justify-between items-center cursor-pointer hover:bg-gray-50 rounded px-1 py-0.5"
+                  >
+                    <span className="text-sm text-gray-800 truncate">
+                      [{post.bno}] {post.title}
+                    </span>
+                    <span className="ml-2 text-xs text-gray-500 whitespace-nowrap">
+                      {timeAgo(post.createdDate)} [{post.viewCount || 0}]
+                    </span>
+                  </li>
+                ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </>
   );
 }

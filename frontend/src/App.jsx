@@ -91,23 +91,30 @@ function App() {
                   </Route>
                   <Route path="/" element={<Navigate to="/MainPage" replace />} />
                   <Route element={<Navbar />}>
+                    {/* 메인 페이지 */}
                     <Route path="/MainPage" element={<MainPage />} />
+                    {/* 채널 */}
                     <Route path="/boardChannels" element={<BoardChannelList />}></Route>
-
+                    {/* 댓글 */}
                     <Route path="/reply" element={<ReplyList />} />
-                    <Route path="/UpdateProfile" element={<UpdateMyProfile />} />
+                    {/* 게시판 */}
                     <Route path="/channels/:channelId" element={<BoardList />} />
                     <Route path="/channels/:channelId/create" element={<BoardCreate />} />
                     <Route path="/channels/:channelId/:bno" element={<BoardDetail />} />
                     <Route path="/channels/:channelId/update/:bno" element={<BoardModify />} />
+                    {/* 마이 페이지 */}
                     <Route path="/profile" element={<MyProfile />} />
                     <Route path="/myboard" element={<MyBoard />} />
                     <Route path="/myreply" element={<MyReply />} />
+                    <Route path="/UpdateProfile" element={<UpdateMyProfile />} />
+                    {/* 어드민 페이지 */}
                     <Route path="/admin" element={<AdminPage />} />
                     <Route path="/admin/members" element={<MemberMaintenance />} />
                     <Route path="/admin/boardChannels/create" element={<CreateBoardChannel />} />
+                    {/* 검색 */}
                     <Route path="/boards/search" element={<BoardSearch />} />
                   </Route>
+                  {/* 비밀번호 찾기, 비밀번호 재설정 */}
                   <Route path="/passwordreset" element={<ForgotPasswordPage />} />
                   <Route path="/passwordreset/confirm" element={<ResetPasswordPage />} />
                   <Route path="/admin/channels/edit/:id" element={<BoardChannelEdit />} />
