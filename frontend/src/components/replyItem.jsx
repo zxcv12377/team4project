@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import ReplyForm from "./replyForm";
 import axiosInstance from "../lib/axiosInstance";
+import { useUserContext } from "../context/UserContext";
 
 export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
   const [editing, setEditing] = useState(false);
   const [editedText, setEditedText] = useState(reply.text);
+  const { user } = useUserContext();
 
   // 로그인한 사용자 정보 가져오기
-  const currentUser = JSON.parse(localStorage.getItem("user")); // user = { id, nickname, ... }
+  // const currentUser = JSON.parse(localStorage.getItem("user")); // user = { id, nickname, ... }
+  const isAdmin = user?.roles?.includes("ADMIN");
 
   const handleLike = async () => {
     try {
@@ -101,7 +104,7 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
             </button>
 
             {/* ✅ [수정] 자신의 댓글일 때만 수정/삭제 버튼 표시 */}
-            {currentUser?.id === reply.writerId && !editing && (
+            {(isAdmin || user?.id === reply.writerId) && !editing && (
               <div className="flex gap-2 text-xs">
                 <button onClick={() => setEditing(true)} className="text-green-600 hover:underline">
                   수정

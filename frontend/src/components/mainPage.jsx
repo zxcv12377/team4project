@@ -86,11 +86,11 @@ export default function MainPage() {
   return (
     <>
       {/* 배너 */}
-      <div className="mx-auto max-w-[50%] h-[8rem] bg-red-50 mb-4 rounded-xl">
-        <img src="" alt="banner" className="w-full h-full object-cover" />
+      <div className="mx-auto max-w-6xl h-[8rem] bg-red-50 mb-4 rounded-xl border-t-2 border-b-2 border-red-300 ">
+        <img src="likedis.png" alt="banner" className="w-full h-full object-cover rounded-xl" />
       </div>
       {/* 메인 채널 */}
-      <div className="p-6 w-1/2 mx-auto grid grid-cols-2 grid-rows-3 border border-gray-200 bg-white">
+      <div className="p-6 max-w-6xl mx-auto grid grid-cols-2 grid-rows-3 border border-gray-200 bg-white">
         {sections.map((sec, idx) => (
           <div
             key={sec.id}
@@ -98,9 +98,6 @@ export default function MainPage() {
               idx % 2 === 0 ? "p-4 flex flex-col border-gray-300" : "p-4 flex flex-col border-l border-gray-300"
             }
           >
-            <div className={idx % 2 === 0 && idx !== 0 ? "border-r border-black" : ""}>
-              {idx}/{sec.id}
-            </div>
             <div className="flex items-center justify-between mb-2 bg-gray-100 border-t-2 border-red-300">
               <h3
                 onClick={() => navigate(`/channels/${sec.id}`)}

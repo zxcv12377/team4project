@@ -1,9 +1,10 @@
 package com.example.server.controller;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.Map;
 
-import org.hibernate.query.Page;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -41,6 +42,9 @@ public class BoardController {
 
     private final BoardService boardService;
     private final MemberRepository memberRepository;
+
+    @Value("${env.is-prod}")
+    private String chkProd;
 
     @GetMapping("/channel/{channelId}")
     public ResponseEntity<PageResultDTO<BoardDTO>> listByChannel(@PathVariable Long channelId,
@@ -94,28 +98,30 @@ public class BoardController {
     }
 
     @GetMapping("/read/{bno}")
-    public ResponseEntity<?> read(@PathVariable Long bno,
-            @CookieValue(name = "viewedBoards", required = false) String viewedBoardsCookie) {
-        log.info("게시글 조회 요청 bno: {}", bno);
+    public ResponseEntity<BoardDTO> read(
+            @PathVariable Long bno,
+            @CookieValue(name = "viewedBoards", required = false, defaultValue = "") String viewedBoardsCookie) {
+        BoardViewResponseDTO viewRes = boardService.getRow(bno, viewedBoardsCookie);
 
-        BoardViewResponseDTO viewResponse = boardService.getRow(bno, viewedBoardsCookie);
+        if (viewRes.getNewCookieValue() != null) {
+            // 개발환경은 HTTP라 secure=false,
+            // 배포환경(HTTPS)에서는 secure=true 로 분기
+            boolean isProd = !"local".equalsIgnoreCase(chkProd);
 
-        // 쿠키를 갱신해야 하는 경우
-        if (viewResponse.getNewCookieValue() != null) {
-            ResponseCookie cookie = ResponseCookie.from("viewedBoards", viewResponse.getNewCookieValue())
+            ResponseCookie cookie = ResponseCookie.from("viewedBoards", viewRes.getNewCookieValue())
                     .path("/")
-                    .maxAge(60 * 60 * 24) // 24시간
-                    .sameSite("None")
-                    .secure(true)
+                    .maxAge(Duration.ofDays(1))
+                    .httpOnly(true)
+                    .sameSite(isProd ? "None" : "Lax")
+                    .secure(isProd)
                     .build();
 
             return ResponseEntity.ok()
                     .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(viewResponse.getBoardDTO());
+                    .body(viewRes.getBoardDTO());
         }
 
-        // 쿠키 갱신이 필요 없는 경우
-        return ResponseEntity.ok(viewResponse.getBoardDTO());
+        return ResponseEntity.ok(viewRes.getBoardDTO());
     }
 
     @PutMapping("/update/{bno}")

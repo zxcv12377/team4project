@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import axiosInstance from "../lib/axiosInstance";
 import ReplyList from "./replyList";
 import BoardList from "./boardList";
+import { useUserContext } from "../context/UserContext";
 
 const BoardDetail = () => {
   /* ─── URL 파라미터 ──────────────────────────────── */
@@ -14,10 +15,11 @@ const BoardDetail = () => {
   const [loading, setLoading] = useState(true);
   const [like, setLike] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
+  const { user } = useUserContext();
 
-  const currentUser = JSON.parse(localStorage.getItem("user"));
   const baseImageUrl = import.meta.env.VITE_IMAGE_BASE_URL;
   const baseURL = import.meta.env.VITE_API_BASE_URL;
+  const isAdmin = user?.roles?.includes("ADMIN");
 
   useEffect(() => {
     if (post) {
@@ -45,6 +47,8 @@ const BoardDetail = () => {
       .then((res) => {
         setPost(res.data);
         setLikeCount(res.data.boardLikeCount || 0); //boardLikeCount 값을 likeCount 상태로 별도 추출하여 저장함
+        console.log("user", user?.id);
+        console.log("res", res.data.memberid);
       })
       .catch((err) => console.error("게시글 조회 실패:", err))
       .finally(() => setLoading(false));
@@ -168,7 +172,7 @@ const BoardDetail = () => {
               목록
             </button>
 
-            {currentUser?.id === post.memberid && (
+            {(isAdmin || user?.id === post.memberid) && (
               <>
                 <button onClick={goUpdate} className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
                   수정

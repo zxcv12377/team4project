@@ -37,12 +37,10 @@ public class Reply extends Base {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_rno", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private Reply parent;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "member_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
-    @OnDelete(action = OnDeleteAction.CASCADE)
     private Member member;
 
     @Column(nullable = false)

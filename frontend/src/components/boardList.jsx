@@ -83,101 +83,111 @@ export default function BoardList() {
   const combinedPosts = [...noticePosts, ...normalPosts];
 
   return (
-    <div className="min-h-screen pt-24 bg-consilk">
-      <main className="max-w-6xl mx-auto p-6 pt-10">
-        {/* 🔹 상단 등록 버튼 */}
-        {token && channelId !== "1" && channelId !== "3" && channelId !== "4" && channelId && (
-          <div className="flex justify-end mb-4">
-            <button
-              className="rounded bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600"
-              onClick={() => navigate(`/channels/${channelId}/create`)}
-            >
-              게시글 등록
-            </button>
-          </div>
-        )}
-        {token && channelId === "1" && channelId && isAdmin && (
-          <div className="flex justify-end mb-4">
-            <button
-              className="rounded bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600"
-              onClick={() => navigate(`/channels/${channelId}/create`)}
-            >
-              게시글 등록
-            </button>
-          </div>
-        )}
-
-        {/* 채널 이름 */}
-        <h2 className="text-[20px] font-semibold mb-4 border-t-2 border-b-2 border-red-300 pl-6 pt-2 pb-2">
-          {channelName} 채널
-        </h2>
-
-        {/* 🔹 게시글 테이블 감싼 카드 형태 (하얀 배경 박스) */}
-        <div className="bg-white rounded-xl shadow-md p-6 border">
-          <div className="overflow-x-auto rounded-lg">
-            <table className="w-full text-sm text-left text-gray-700">
-              <thead className="bg-gray-100 text-gray-800">
-                <tr>
-                  <th className="px-3 py-2 w-[5%] text-center">번호</th>
-                  <th className="px-3 py-2 w-[45%]">제목</th>
-                  <th className="px-3 py-2 w-[15%] text-center">작성자</th>
-                  <th className="px-3 py-2 w-[15%] text-center">작성일</th>
-                  <th className="px-3 py-2 w-[10%] text-center">조회수</th>
-                  <th className="px-3 py-2 w-[10%] text-center">좋아요</th>
-                </tr>
-              </thead>
-              <tbody>
-                {combinedPosts.map((post, index) => {
-                  const isNotice = post.notice === true || post.title?.startsWith("[공지]");
-                  // 페이지네이션 번호 계산 로직 수정: 현재 페이지와 전체 페이지 수를 고려하여 정확한 번호 부여
-                  // 공지글이 아닌 경우에만 실제 번호를 계산하고, 공지글은 "공지"로 표시
-                  const displayIndex = isNotice ? "공지" : (totalPages - page) * 15 + (combinedPosts.length - index);
-
-                  return (
-                    <tr
-                      key={post.bno}
-                      onClick={() => navigate(`/channels/${channelId}/${post.bno}`)}
-                      className={`cursor-pointer hover:bg-gray-50 transition ${
-                        isNotice ? "bg-yellow-100 font-semibold" : "bg-white"
-                      }`}
-                    >
-                      <td className="px-3 py-3 text-center align-middle">{displayIndex}</td>
-                      <td className="px-3 py-3">
-                        {/* 제목에 썸네일 관련 로직이 있었으나, 테이블 구조에 맞게 제거했습니다. */}
-                        <div className="text-xl font-bold text-black leading-snug mb-2 line-clamp-2">{post.title}</div>
-                      </td>
-                      <td className="px-3 py-3 text-center align-middle">{post.nickname || "익명"}</td>
-                      <td className="px-3 py-3 text-center align-middle">{formatDate(post.createdDate)}</td>
-                      <td className="px-3 py-3 text-center align-middle">{post.viewCount || 0}</td>
-                      <td className="px-3 py-3 text-center align-middle">{post.boardLikeCount || 0}</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
+    <>
+      <div className="max-w-6xl mx-auto shadow-inner shadow-slate-800 rounded-xl min-h-44">
+        <div className="flex justify-start min-h-40 items-center">
+          <img src="" alt="" className="w-[10rem] min-h-40 object-cover p-2" />
+          <div className="w-full min-h-40 p-2">나야나</div>
         </div>
-
-        {/* 게시글이 없을 때 메시지 */}
-        {posts.length === 0 && !loading && <div className="text-center mt-6 text-gray-500">게시글이 없습니다.</div>}
-
-        {/* 페이지네이션 */}
-        {totalPages > 1 && ( // totalPages가 1보다 클 때만 페이지네이션 표시
-          <div className="flex justify-center mt-6 gap-2">
-            {Array.from({ length: totalPages }, (_, i) => (
+      </div>
+      <div className="min-h-screen">
+        <main className="max-w-6xl mx-auto p-6 pt-10">
+          {/* 🔹 상단 등록 버튼 */}
+          {token && channelId !== "1" && channelId !== "3" && channelId && (
+            <div className="flex justify-end mb-4">
               <button
-                key={i}
-                onClick={() => setPage(i + 1)}
-                className={`px-3 py-1 rounded border text-sm ${
-                  page === i + 1 ? "bg-blue-500 text-white font-bold" : "bg-white text-gray-700 hover:bg-gray-100"
-                }`}
+                className="rounded bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600"
+                onClick={() => navigate(`/channels/${channelId}/create`)}
               >
-                {i + 1}
+                게시글 등록
               </button>
-            ))}
+            </div>
+          )}
+          {token && channelId === "1" && channelId && isAdmin && (
+            <div className="flex justify-end mb-4">
+              <button
+                className="rounded bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600"
+                onClick={() => navigate(`/channels/${channelId}/create`)}
+              >
+                게시글 등록
+              </button>
+            </div>
+          )}
+
+          {/* 채널 이름 */}
+          <h2 className="text-[20px] font-semibold mb-4 border-t-2 border-b-2 border-red-300 pl-6 pt-2 pb-2">
+            {channelName} 채널
+          </h2>
+
+          {/* 🔹 게시글 테이블 감싼 카드 형태 (하얀 배경 박스) */}
+          <div className="bg-white rounded-xl shadow-md p-6 border">
+            <div className="overflow-x-auto rounded-lg">
+              <table className="w-full text-sm text-left text-gray-700">
+                <thead className="bg-gray-100 text-gray-800">
+                  <tr>
+                    <th className="px-3 py-2 w-[5%] text-center">번호</th>
+                    <th className="px-3 py-2 w-[45%]">제목</th>
+                    <th className="px-3 py-2 w-[15%] text-center">작성자</th>
+                    <th className="px-3 py-2 w-[15%] text-center">작성일</th>
+                    <th className="px-3 py-2 w-[10%] text-center">조회수</th>
+                    <th className="px-3 py-2 w-[10%] text-center">좋아요</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {combinedPosts.map((post, index) => {
+                    const isNotice = post.notice === true || post.title?.startsWith("[공지]");
+                    // 페이지네이션 번호 계산 로직 수정: 현재 페이지와 전체 페이지 수를 고려하여 정확한 번호 부여
+                    // 공지글이 아닌 경우에만 실제 번호를 계산하고, 공지글은 "공지"로 표시
+                    const displayIndex = isNotice ? "공지" : (totalPages - page) * 15 + (combinedPosts.length - index);
+
+                    return (
+                      <tr
+                        key={post.bno}
+                        onClick={() => navigate(`/channels/${channelId}/${post.bno}`)}
+                        className={`cursor-pointer hover:bg-gray-50 transition ${
+                          isNotice ? "bg-yellow-100 font-semibold" : "bg-white"
+                        }`}
+                      >
+                        <td className="px-3 py-3 text-center align-middle">{displayIndex}</td>
+                        <td className="px-3 py-3">
+                          {/* 제목에 썸네일 관련 로직이 있었으나, 테이블 구조에 맞게 제거했습니다. */}
+                          <div className="text-xl font-bold text-black leading-snug mb-2 line-clamp-2">
+                            {post.title}
+                          </div>
+                        </td>
+                        <td className="px-3 py-3 text-center align-middle">{post.nickname || "익명"}</td>
+                        <td className="px-3 py-3 text-center align-middle">{formatDate(post.createdDate)}</td>
+                        <td className="px-3 py-3 text-center align-middle">{post.viewCount || 0}</td>
+                        <td className="px-3 py-3 text-center align-middle">{post.boardLikeCount || 0}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
           </div>
-        )}
-      </main>
-    </div>
+
+          {/* 게시글이 없을 때 메시지 */}
+          {posts.length === 0 && !loading && <div className="text-center mt-6 text-gray-500">게시글이 없습니다.</div>}
+
+          {/* 페이지네이션 */}
+          {totalPages > 1 && ( // totalPages가 1보다 클 때만 페이지네이션 표시
+            <div className="flex justify-center mt-6 gap-2">
+              {Array.from({ length: totalPages }, (_, i) => (
+                <button
+                  key={i}
+                  onClick={() => setPage(i + 1)}
+                  className={`px-3 py-1 rounded border text-sm ${
+                    page === i + 1 ? "bg-blue-500 text-white font-bold" : "bg-white text-gray-700 hover:bg-gray-100"
+                  }`}
+                >
+                  {i + 1}
+                </button>
+              ))}
+            </div>
+          )}
+        </main>
+      </div>
+    </>
   );
 }

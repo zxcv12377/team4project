@@ -54,7 +54,9 @@ public class Board extends Base {
 
     @OneToMany(mappedBy = "board", cascade = CascadeType.ALL)
     private List<Reply> replies;
+
     @ManyToOne(fetch = FetchType.LAZY)
+    @OnDelete(action = OnDeleteAction.CASCADE)
     private BoardChannel channel;
 
     @Column(columnDefinition = "TEXT")

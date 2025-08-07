@@ -169,8 +169,12 @@ public class ReplyService {
                 if (!isWriter && !isAdmin) {
                         throw new SecurityException("삭제 권한이 없습니다.");
                 }
+                if (reply.getParent() != null) {
+                        replyRepository.updateDeletedReplies();
+                } else {
+                        replyRepository.delete(reply);
+                }
 
-                replyRepository.delete(reply);
         }
 
         // 댓글 추천
