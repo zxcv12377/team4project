@@ -52,6 +52,10 @@ public class BoardService {
     private final BoardLikeRepository boardLikeRepository;
     private final BoardViewLogRepository boardViewLogRepository;
 
+    private static final Long TOP_STRAWBERRY_CHANNEL_ID = 3L;
+    // 좋아요 기준치
+    private static final Long LIKE_THRESHOLD = 1L;
+
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
