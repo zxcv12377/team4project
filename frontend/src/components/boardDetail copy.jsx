@@ -5,7 +5,7 @@ import axiosInstance from "../lib/axiosInstance";
 import ReplyList from "./replyList";
 
 const BoardDetail = () => {
-  const { channelId, bno } = useParams();
+  const { channelId, bno } = useParams(); // /channels/:channelId/:bno
   const navigate = useNavigate();
 
   const [post, setPost] = useState(null);
@@ -13,23 +13,15 @@ const BoardDetail = () => {
   const [like, setLike] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
 
-  // ✅ 사용자 정보 안전 파싱
-  const rawUser = localStorage.getItem("user");
-  const currentUser = rawUser && rawUser !== "null" ? JSON.parse(rawUser) : null;
-
+  const currentUser = JSON.parse(localStorage.getItem("user"));
   const baseImageUrl = import.meta.env.VITE_IMAGE_BASE_URL;
 
-  // ✅ 권한 조건
-  const isLoggedIn = !!currentUser;
-  const isAuthor = currentUser?.id === post?.memberid;
-  const isAdmin = currentUser?.role === "ADMIN";
-  const canEditOrDelete = isLoggedIn && (isAuthor || isAdmin);
-
-  console.log("삭제권한 ", canEditOrDelete);
-  console.log("삭제권한 isLoggedIn", isLoggedIn);
-  console.log("삭제권한 isAuthor", isAuthor);
-  console.log("삭제권한 isAdmin", isAdmin);
-  console.log("삭제권한  currentUser?.role", currentUser?.role);
+  useEffect(() => {
+    if (post) {
+      setLikeCount(post.boardLikeCount || 0);
+      setLike(!!post.like);
+    }
+  }, [post]);
 
   useEffect(() => {
     axiosInstance
@@ -37,7 +29,6 @@ const BoardDetail = () => {
       .then((res) => {
         setPost(res.data);
         setLikeCount(res.data.boardLikeCount || 0);
-        setLike(!!res.data.like);
       })
       .catch((err) => console.error("게시글 조회 실패:", err))
       .finally(() => setLoading(false));
@@ -109,7 +100,6 @@ const BoardDetail = () => {
         dangerouslySetInnerHTML={{ __html: post.content }}
       />
 
-      {/* 첨부 이미지 */}
       {post.attachments?.length > 0 && (
         <section className="mb-8">
           <h3 className="font-semibold text-gray-700 mb-2">📎 첨부 이미지</h3>
@@ -138,26 +128,22 @@ const BoardDetail = () => {
           목록
         </button>
 
-        {/* 중앙: 추천 */}
-        <div className="flex flex-col items-center justify-center">
-          {isLoggedIn ? (
-            <button
-              onClick={boardLike}
-              className={clsx(
-                "w-24 h-24 flex flex-col items-center justify-center rounded-full font-semibold text-sm text-center transition whitespace-nowrap",
-                like ? "bg-pink-500 text-white hover:bg-pink-600" : "bg-gray-300 text-gray-800 hover:bg-gray-400"
-              )}
-            >
-              <span>{like ? "추천 취소❤️" : "추천하기 👍"}</span>
-              <span className="text-xl font-bold mt-1">{likeCount}</span>
-            </button>
-          ) : (
-            <div className="text-sm text-gray-400 text-center mt-2">추천은 로그인 후 이용하실 수 있습니다.</div>
-          )}
-        </div>
+        {/* 중앙: 추천 (로그인한 사용자만) */}
+        {currentUser && (
+          <button
+            onClick={boardLike}
+            className={clsx(
+              "w-24 h-24 flex flex-col items-center justify-center rounded-full font-semibold text-sm text-center transition whitespace-nowrap",
+              like ? "bg-pink-500 text-white hover:bg-pink-600" : "bg-gray-300 text-gray-800 hover:bg-gray-400"
+            )}
+          >
+            <span>{like ? "추천 취소❤️" : "추천하기 👍"}</span>
+            <span className="text-xl font-bold mt-1">{likeCount}</span>
+          </button>
+        )}
 
         {/* 오른쪽: 수정/삭제 (작성자 본인 or 관리자) */}
-        {canEditOrDelete && (
+        {currentUser && (currentUser.id === post.memberid || currentUser.role === "ADMIN") && (
           <div className="flex gap-2">
             <button onClick={goUpdate} className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
               수정

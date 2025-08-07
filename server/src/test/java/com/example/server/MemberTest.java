@@ -29,7 +29,7 @@ class MemberTest {
     void createAdminMember() {
         // given
         Member admin = Member.builder()
-                .email("admin@test.com")
+                .email("admin@yoo.com")
                 .nickname("관리자")
                 .password(passwordEncoder.encode("1111"))
                 // Immutable Set.of(...) 대신 modifiable HashSet 사용 → 추후 권한 추가 시 안전

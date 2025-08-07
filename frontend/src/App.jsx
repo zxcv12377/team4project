@@ -28,6 +28,7 @@ import AdminPage from "./components/admin/adminPage";
 import BoardChannelList from "./components/boardChannelList";
 import CreateBoardChannel from "./components/admin/createBoardChannel";
 import BoardSearch from "./components/boardSearch";
+import BoardChannelEdit from "./components/BoardChannelEdit";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -109,6 +110,7 @@ function App() {
                   </Route>
                   <Route path="/passwordreset" element={<ForgotPasswordPage />} />
                   <Route path="/passwordreset/confirm" element={<ResetPasswordPage />} />
+                  <Route path="/admin/channels/edit/:id" element={<BoardChannelEdit />} />
                 </Routes>
               </BrowserRouter>
             </RealtimeProvider>

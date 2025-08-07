@@ -52,10 +52,6 @@ public class BoardService {
     private final BoardLikeRepository boardLikeRepository;
     private final BoardViewLogRepository boardViewLogRepository;
 
-    private static final Long TOP_STRAWBERRY_CHANNEL_ID = 3L;
-    // 좋아요 기준치
-    private static final Long LIKE_THRESHOLD = 1L;
-
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
@@ -79,14 +75,6 @@ public class BoardService {
             boardRepository.save(board);
             return true;
         }
-
-        // // // ✅ 캐시 필드 업데이트
-        // long updatedCount = boardLikeRepository.countByBoard(board);
-        // board.setBoardLikeCount(updatedCount);
-        // boardRepository.save(board); // 필드 저장
-
-        // return existing.isEmpty(); // true면 추천됨
-
     }
 
     // 추천 수 조회

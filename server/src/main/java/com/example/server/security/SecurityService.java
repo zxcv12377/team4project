@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.server.entity.Board;
 import com.example.server.entity.Member;
+import com.example.server.entity.enums.MemberRole;
 import com.example.server.repository.MemberRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,13 @@ public class SecurityService {
 
     // 작성자 권한 검증
     public void checkBoardOwnership(Board board, Member currentUser) {
+
+        // 관리자일 경우 권한 통과
+        if (currentUser.getRoles().contains(MemberRole.ADMIN)) {
+            return;
+        }
+
+        // 작성자 본인만 허용
         if (!board.getMember().getEmail().equals(currentUser.getEmail())) {
             throw new SecurityException("작성자만 수정/삭제할 수 있습니다.");
         }
