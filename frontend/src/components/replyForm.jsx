@@ -13,7 +13,7 @@ export default function ReplyForm({ bno, parentRno = null, onSubmit }) {
   const textareaRef = useRef(); // 커서 위치 추적용 ref
 
   const token = localStorage.getItem("token");
-  const showButton = isFocused || content.length > 0;
+  // const showButton = isFocused || content.length > 0;
 
   // 🔒 로그인하지 않은 사용자 → 입력창 대신 안내 메시지
   if (!token) {

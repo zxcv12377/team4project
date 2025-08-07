@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../lib/axiosInstance";
+import { useUserContext } from "../context/UserContext";
 
 export default function BoardList() {
   const { channelId } = useParams(); // /channels/:channelId
@@ -10,13 +11,14 @@ export default function BoardList() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [channelName, setChannelName] = useState("전체 게시판");
+  const { user } = useUserContext();
   const navigate = useNavigate();
 
   const token = localStorage.getItem("token");
-  const headers = { Authorization: `Bearer ${token}` };
   const baseURL = import.meta.env.VITE_API_BASE_URL;
+  const isAdmin = user?.roles?.includes("ADMIN");
 
-  const BEST_CHANNEL_ID = 1;
+  const DT_CHANNEL_ID = 1;
 
   // 채널 이름 로딩
   useEffect(() => {
@@ -84,7 +86,17 @@ export default function BoardList() {
     <div className="min-h-screen pt-24 bg-consilk">
       <main className="max-w-6xl mx-auto p-6 pt-10">
         {/* 🔹 상단 등록 버튼 */}
-        {token && channelId && (
+        {token && channelId !== "1" && channelId !== "3" && channelId !== "4" && channelId && (
+          <div className="flex justify-end mb-4">
+            <button
+              className="rounded bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600"
+              onClick={() => navigate(`/channels/${channelId}/create`)}
+            >
+              게시글 등록
+            </button>
+          </div>
+        )}
+        {token && channelId === "1" && channelId && isAdmin && (
           <div className="flex justify-end mb-4">
             <button
               className="rounded bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600"

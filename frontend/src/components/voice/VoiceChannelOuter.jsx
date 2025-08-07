@@ -14,7 +14,7 @@ const LeaveVoiceButton = ({ roomId, member, joined, onLeave }) => {
     <div>
       {joined && (
         <div className="flex justify-center gap-2 px-2 py-2 rounded hover:bg-red-600 group cursor-pointer bg-red-500 mb-2">
-          <button onClick={handleLeave} className="text-center">
+          <button onClick={handleLeave} className="text-center w-full">
             나가기
           </button>
         </div>
