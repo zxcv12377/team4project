@@ -28,7 +28,6 @@ const fetchMainPageData = async () => {
       );
       // dtoList 로 실제 배열 추출, 기본 빈 배열 보장
       const posts = Array.isArray(pageResult.dtoList) ? pageResult.dtoList : [];
-      // const posts = Array.isArray(postsResponse) ? postsResponse : postsResponse.dtoList || postsResponse.content || [];
 
       return { ...channel, posts };
     })
