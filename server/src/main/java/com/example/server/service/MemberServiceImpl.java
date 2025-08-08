@@ -5,17 +5,24 @@ import com.example.server.dto.MemberResponseDTO;
 import com.example.server.entity.Member;
 import com.example.server.mapper.MemberMapper;
 import com.example.server.repository.BoardLikeRepository;
+import com.example.server.repository.BoardRepository;
 import com.example.server.repository.BoardViewLogRepository;
+import com.example.server.repository.ChannelMemberRepository;
+import com.example.server.repository.ChatMessageRepository;
+import com.example.server.repository.ChatRoomMemberRepository;
 import com.example.server.repository.EmailVerificationTokenRepository;
 import com.example.server.repository.MemberRepository;
 import com.example.server.repository.ReplyLikeRepository;
 import com.example.server.repository.ReplyRepository;
+import com.example.server.repository.ServerMemberRepository;
+import com.example.server.repository.voiceChat.VoiceChatLogRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -36,6 +43,15 @@ public class MemberServiceImpl implements MemberService {
     private final ReplyLikeRepository replyLikeRepository;
     private final BoardViewLogRepository boardViewLogRepository;
     private final ReplyRepository replyRepository;
+    private final ChatRoomMemberRepository chatRoomMemberRepository;
+    private final ChannelMemberRepository channelMemberRepository;
+    private final ServerMemberRepository serverMemberRepository;
+    private final ChatMessageRepository chatMessageRepository;
+    private final VoiceChatLogRepository voiceChatLogRepository;
+    private final BoardRepository boardRepository;
+
+    private static final String GHOST_EMAIL = "deleted@local";
+    private static final String GHOST_NICK = "탈퇴한 사용자";
 
     // 회원 가입시 이메일 중복여부 확인
     @Override
@@ -88,10 +104,26 @@ public class MemberServiceImpl implements MemberService {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
         //
-        boardLikeRepository.setMemberToNullByMemberId(member.getId());
-        replyLikeRepository.setMemberToNullByMemberId(member.getId());
-        boardViewLogRepository.setMemberToNullByMemberId(member.getId());
-        replyRepository.setMemberToNullByMemberId(member.getId());
+        Long ghostId = ensureGhostMember();
+
+        if (member.getId().equals(ghostId)) {
+            throw new IllegalStateException("고스트 계정은 삭제할 수 없습니다.");
+        }
+        Long memberId = member.getId();
+        // 1) 멤버십/조인 제거
+        chatRoomMemberRepository.deleteMemberships(memberId);
+        channelMemberRepository.deleteMemberships(memberId);
+        serverMemberRepository.deleteMemberships(memberId);
+
+        // 2) 참여데이터 보존: member_id = NULL
+        boardLikeRepository.nullMemberByMemberId(memberId);
+        replyLikeRepository.nullMemberByMemberId(memberId);
+        boardViewLogRepository.nullMemberByMemberId(memberId);
+
+        // 3) 콘텐츠/로그 재할당 (작성자/발신자 → 고스트)
+        chatMessageRepository.reassignSender(ghostId, memberId);
+        replyRepository.reassignAuthor(ghostId, memberId);
+        boardRepository.reassignAuthor(ghostId, memberId);
 
         tokenRepository.deleteByEmail(member.getEmail());
         memberRepository.delete(member);
@@ -157,5 +189,21 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new RuntimeException("회원이 존재하지 않습니다."));
         tokenRepository.deleteByEmail(member.getEmail());
         memberRepository.delete(member);
+    }
+
+    @Override
+    public Long ensureGhostMember() {
+        return memberRepository.findIdByEmail(GHOST_EMAIL)
+                .orElseGet(() -> {
+                    Member ghost = Member.builder()
+                            .email(GHOST_EMAIL)
+                            .password("{noop}N/A")
+                            .nickname("탈퇴한 사용자")
+                            .ghost(true) // ← 기본 롤 부여 우회
+                            // .roles(new HashSet<>()) // 굳이 안 넣어도 됨(Builder.Default 사용)
+                            .build();
+                    memberRepository.save(ghost);
+                    return ghost.getId();
+                });
     }
 }

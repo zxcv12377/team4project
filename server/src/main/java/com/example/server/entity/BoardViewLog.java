@@ -26,7 +26,7 @@ public class BoardViewLog {
     private Board board;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "member_id", nullable = true)
     private Member member;
 
     @Column(name = "viewed_at", nullable = false)

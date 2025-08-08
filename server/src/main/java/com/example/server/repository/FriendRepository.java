@@ -5,6 +5,7 @@ import com.example.server.entity.Member;
 import com.example.server.entity.enums.FriendStatus;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -60,4 +61,8 @@ public interface FriendRepository extends JpaRepository<Friend, Long> {
   List<String> findAllFriendEmailsForNotify(@Param("email") String email);
 
   // 상태 기준(신청, 수락 등) 전체 조회 등 자유롭게 추가 가능함
+
+  @Modifying(clearAutomatically = true, flushAutomatically = true)
+  @Query("delete from Friend f where f.memberA.id = :memberId or f.memberB.id = :memberId")
+  int deleteAllRelations(@Param("memberId") Long memberId);
 }

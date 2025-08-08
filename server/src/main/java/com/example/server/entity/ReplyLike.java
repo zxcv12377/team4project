@@ -39,7 +39,7 @@ public class ReplyLike {
     private Reply reply;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", nullable = false)
+    @JoinColumn(name = "member_id", nullable = true)
     private Member member;
 
     // private LocalDateTime likedAt;

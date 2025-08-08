@@ -71,15 +71,16 @@ public class Member extends Base {
     @Enumerated(EnumType.STRING)
     private Set<MemberRole> roles = new HashSet<>();
 
+    private boolean ghost;
+
     // 기본 권한 부여 메서드(db 저장 전 호출)
     // 회원가입 시 기본적으로 USER 권한을 부여
     @PrePersist
     public void setDefaultRoleIfEmpty() {
-        if (roles.isEmpty()) {
+        if (roles == null)
+            roles = new HashSet<>(); // ← NPE 방지
+        if (roles.isEmpty() && !ghost) { // ← 고스트엔 기본 롤 부여 금지
             roles.add(MemberRole.USER);
-        }
-        if (profileimg == null) {
-            profileimg = "default.png";
         }
     }
 

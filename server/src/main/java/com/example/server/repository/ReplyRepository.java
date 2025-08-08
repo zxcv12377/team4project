@@ -40,4 +40,8 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
     boolean existsByParentRno(Long parentRno);
 
     long countByParentRno(Long parentRno);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Reply r set r.member.id = :ghostId where r.member.id = :memberId")
+    int reassignAuthor(@Param("ghostId") Long ghostId, @Param("memberId") Long memberId);
 }
