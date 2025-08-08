@@ -23,20 +23,39 @@ public class VerryConController {
     private final VerryConService verryConService;
 
     @GetMapping
-    public List<VerryConResponseDTO> getAll() {
-        return verryConService.getAllVerryCons();
+    public List<VerryConResponseDTO> getAll(String category) {
+        return verryConService.getAllVerryCons(category);
     }
 
-    @PostMapping("/upload")
-    @PreAuthorize("hasRole('ADMIN')") // Spring Security에서 관리자 권한 제한
-    public ResponseEntity<?> uploadAkakon(
-            @RequestParam("name") String name,
-            @RequestParam("file") MultipartFile file) {
+    @GetMapping("/")
+    public List<VerryConResponseDTO> getVerry(@RequestParam("categoryName") String categoryName) {
+
+        return verryConService.getVerryconByCategory(categoryName);
+    }
+
+    @PostMapping("/upload-multiple")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<?> uploadMultipleVerryCons(
+            @RequestParam("categoryName") String categoryName,
+            @RequestParam("files") List<MultipartFile> files) {
         try {
-            VerryConResponseDTO saved = verryConService.uploadVerryCon(name, file);
-            return ResponseEntity.ok(saved);
+            List<VerryConResponseDTO> savedFiles = verryConService.uploadMultipleVerryCons(categoryName, files);
+            return ResponseEntity.ok(savedFiles);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("업로드 실패: " + e.getMessage());
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }
+
+// @PostMapping("/upload")
+// @PreAuthorize("hasRole('ADMIN')") // Spring Security에서 관리자 권한 제한
+// public ResponseEntity<?> uploadAkakon(
+// @RequestParam("name") String name,
+// @RequestParam("file") MultipartFile file) {
+// try {
+// VerryConResponseDTO saved = verryConService.uploadVerryCon(name, file);
+// return ResponseEntity.ok(saved);
+// } catch (Exception e) {
+// return ResponseEntity.badRequest().body("업로드 실패: " + e.getMessage());
+// }
+// }

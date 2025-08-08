@@ -12,6 +12,7 @@ import com.example.server.repository.BoardRepository;
 import com.example.server.repository.ReplyLikeRepository;
 import com.example.server.repository.ReplyRepository;
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
@@ -159,22 +160,49 @@ public class ReplyService {
         }
 
         // 댓글 삭제
+        @Transactional
         public void delete(Long rno, Member currentUser) {
-                Reply reply = replyRepository.findById(rno)
+                Reply target = replyRepository.findById(rno)
                                 .orElseThrow(() -> new IllegalArgumentException("댓글을 찾을 수 없습니다."));
 
-                boolean isWriter = reply.getMember().getId().equals(currentUser.getId());
+                boolean isWriter = target.getMember() != null &&
+                                target.getMember().getId().equals(currentUser.getId());
                 boolean isAdmin = currentUser.getRoles().contains(MemberRole.ADMIN);
-
-                if (!isWriter && !isAdmin) {
+                if (!isWriter && !isAdmin)
                         throw new SecurityException("삭제 권한이 없습니다.");
-                }
-                if (reply.getParent() != null) {
-                        replyRepository.updateDeletedReplies();
-                } else {
-                        replyRepository.delete(reply);
-                }
 
+                boolean hasChildren = replyRepository.existsByParentRno(rno);
+
+                if (hasChildren) {
+                        // 부모/대댓글 모두 내용만 숨김
+                        target.softDelete();
+                        // 여기서는 물리 삭제 없음
+                } else {
+                        // 잎이면 물리 삭제
+                        Reply parent = target.getParent(); // delete 전에 참조 잡아두기
+                        replyRepository.delete(target);
+                        replyRepository.flush(); // 쿼리에서 자식 수 정확히 보이게
+
+                        // 소프트삭제된 조상 중 리프가 된 것들 연쇄 삭제
+                        pruneSoftDeletedAncestors(parent);
+                }
+        }
+
+        @Transactional
+        private void pruneSoftDeletedAncestors(Reply node) {
+                while (node != null) {
+                        Long nodeId = node.getRno(); // delete 전에 id 보관
+                        Reply parent = node.getParent(); // 다음 단계 올라갈 부모 캐싱
+
+                        boolean hasChildren = replyRepository.existsByParentRno(nodeId);
+                        if (!hasChildren && node.isDeleted()) {
+                                replyRepository.delete(node);
+                                replyRepository.flush(); // 다음 existsByParentRno 정확히 반영
+                                node = parent; // 계속 위로
+                        } else {
+                                break; // 자식이 남았거나 소프트삭제가 아니면 중단
+                        }
+                }
         }
 
         // 댓글 추천

@@ -84,7 +84,8 @@ public class SecurityConfig {
                                                                 "/api/replies/**",
                                                                 "/api/members/check-nickname",
                                                                 "/api/members/find-id",
-                                                                "/api/servers") // 서버 검색
+                                                                "/api/servers",
+                                                                "/api/verrycons/**") // 서버 검색
                                                 .permitAll()
 
                                                 // .requestMatchers("/api/chatrooms/**").authenticated() // 채팅 rest api

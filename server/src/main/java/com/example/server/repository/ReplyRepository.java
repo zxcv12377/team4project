@@ -36,4 +36,8 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
     @Modifying
     @Query("UPDATE Reply r SET r.text = '삭제된 댓글입니다' WHERE r.deleted = true")
     void updateDeletedReplies();
+
+    boolean existsByParentRno(Long parentRno);
+
+    long countByParentRno(Long parentRno);
 }

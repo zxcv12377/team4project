@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class VerryConResponseDTO {
     private Long id;
-    private String name;
     private String imagePath;
+    private String categoryName;
 }
