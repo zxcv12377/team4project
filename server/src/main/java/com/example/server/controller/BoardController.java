@@ -7,6 +7,7 @@ import java.util.Map;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -22,9 +23,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.server.dto.BoardViewResponseDTO;
 import com.example.server.dto.BoardDTO;
+import com.example.server.dto.BoardPinRequestDTO;
 import com.example.server.dto.PageRequestDTO;
 import com.example.server.dto.PageResultDTO;
 import com.example.server.entity.Member;
+import com.example.server.entity.enums.PinScope;
 import com.example.server.repository.MemberRepository;
 import com.example.server.security.CustomMemberDetails;
 import com.example.server.service.BoardService;
@@ -146,6 +149,35 @@ public class BoardController {
         String email = authentication.getName();
         List<BoardDTO> myBoards = boardService.getBoardsByWriterEmail(email);
         return ResponseEntity.ok(myBoards);
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{bno}/pin")
+    public ResponseEntity<Void> pin(
+            @PathVariable Long bno,
+            @RequestBody BoardPinRequestDTO req) {
+        // scope 누락 방지
+        if (req.getScope() == null) {
+            req.setScope(PinScope.NONE);
+        }
+
+        // NONE이면 곧바로 해제
+        if (req.getScope() == PinScope.NONE) {
+            boardService.unpinBoard(bno);
+        } else {
+            // order null이면 0으로 (원하면 UI에서 제어)
+            Integer order = (req.getOrder() != null ? req.getOrder() : 0);
+            boardService.pinBoard(bno, req.getScope(), order);
+        }
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PreAuthorize("hasRole('ADMIN')")
+    @DeleteMapping("/{bno}/pin")
+    public ResponseEntity<Void> unpin(@PathVariable Long bno) {
+        boardService.unpinBoard(bno);
+        return ResponseEntity.ok().build();
     }
 
 }

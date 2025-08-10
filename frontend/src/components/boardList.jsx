@@ -17,7 +17,11 @@ export default function BoardList() {
   const token = localStorage.getItem("token");
   const isAdmin = user?.roles?.includes("ADMIN");
 
-  const DT_CHANNEL_ID = 1;
+  const DT_CHANNEL_ID = 1; // 사용 중이면 유지
+  const isPinned = (item) => {
+    // 서버가 내려준 pinned/pinScope 사용
+    return Boolean(item?.pinned) || (item?.pinScope && item.pinScope !== "NONE");
+  };
 
   // 채널 이름 로딩
   useEffect(() => {
@@ -36,15 +40,12 @@ export default function BoardList() {
     const fetchBoards = async () => {
       try {
         setLoading(true);
-        // const isBest = chanIdNum === BEST_CHANNEL_ID;
         if (channelId === "3") {
           const { data } = await axiosInstance.get(`/boards/best/channel?page=${page}&size=15`);
-          console.log("베스트 게시판", data, channelId);
           setPosts(data.dtoList || []);
           setTotalPages(data.totalPage || 1);
         } else {
           const { data } = await axiosInstance.get(`/boards/channel/${channelId}?page=${page}&size=15`);
-          console.log("채널 게시판", data, channelId);
           setPosts(data.dtoList || []);
           setTotalPages(data.totalPage || 1);
         }
@@ -76,7 +77,7 @@ export default function BoardList() {
     return <div className="text-center mt-6 text-gray-500">📦 게시글을 불러오는 중입니다...</div>;
   }
 
-  // 📌 공지글 상단 정렬 처리
+  // 📌 공지글 상단 정렬 처리 (기존 로직 유지)
   const noticePosts = posts.filter((post) => post.notice === true || post.title?.startsWith("[공지]"));
   const normalPosts = posts.filter((post) => !(post.notice === true || post.title?.startsWith("[공지]")));
   const combinedPosts = [...noticePosts, ...normalPosts];
@@ -118,7 +119,7 @@ export default function BoardList() {
             {channelName} 채널
           </h2>
 
-          {/* 🔹 게시글 테이블 감싼 카드 형태 (하얀 배경 박스) */}
+          {/* 🔹 게시글 테이블 */}
           <div className="bg-white rounded-xl shadow-md p-6 border">
             <div className="overflow-x-auto rounded-lg">
               <table className="w-full text-sm text-left text-gray-700">
@@ -134,24 +135,39 @@ export default function BoardList() {
                 </thead>
                 <tbody>
                   {combinedPosts.map((post, index) => {
-                    const isNotice = post.notice === true || post.title?.startsWith("[공지]");
-                    // 페이지네이션 번호 계산 로직 수정: 현재 페이지와 전체 페이지 수를 고려하여 정확한 번호 부여
-                    // 공지글이 아닌 경우에만 실제 번호를 계산하고, 공지글은 "공지"로 표시
-                    const displayIndex = isNotice ? "공지" : (totalPages - page) * 15 + (combinedPosts.length - index);
+                    const notice = post.notice === true || post.title?.startsWith("[공지]");
+                    const pinned = isPinned(post);
+
+                    // 번호: 공지 > "공지", 고정 > "고정", 나머지 계산
+                    const displayIndex = notice
+                      ? "공지"
+                      : pinned
+                      ? "고정"
+                      : (totalPages - page) * 15 + (combinedPosts.length - index);
+
+                    // 행 스타일: 공지(노랑) > 고정(회색) > 일반(흰색)
+                    const rowClass = notice
+                      ? "bg-yellow-100 font-semibold"
+                      : pinned
+                      ? "bg-gray-200 text-gray-600"
+                      : "bg-white";
 
                     return (
                       <tr
                         key={post.bno}
                         onClick={() => navigate(`/channels/${channelId}/${post.bno}`)}
-                        className={`cursor-pointer hover:bg-gray-50 transition ${
-                          isNotice ? "bg-yellow-100 font-semibold" : "bg-white"
-                        }`}
+                        className={`cursor-pointer hover:bg-gray-50 transition ${rowClass}`}
                       >
                         <td className="px-3 py-3 text-center align-middle">{displayIndex}</td>
                         <td className="px-3 py-3">
-                          {/* 제목에 썸네일 관련 로직이 있었으나, 테이블 구조에 맞게 제거했습니다. */}
-                          <div className="text-xl font-bold text-black leading-snug mb-2 line-clamp-2">
+                          <div className="text-xl font-bold leading-snug mb-2 line-clamp-2">
                             {post.title}
+                            {/* 📌 고정 배지 */}
+                            {pinned && (
+                              <span className="ml-2 inline-flex items-center rounded px-2 py-0.5 text-xs border">
+                                📌 {post.pinScope === "GLOBAL" ? "전역" : "채널"}
+                              </span>
+                            )}
                           </div>
                         </td>
                         <td className="px-3 py-3 text-center align-middle">{post.nickname || "익명"}</td>
@@ -170,7 +186,7 @@ export default function BoardList() {
           {posts.length === 0 && !loading && <div className="text-center mt-6 text-gray-500">게시글이 없습니다.</div>}
 
           {/* 페이지네이션 */}
-          {totalPages > 1 && ( // totalPages가 1보다 클 때만 페이지네이션 표시
+          {totalPages > 1 && (
             <div className="flex justify-center mt-6 gap-2">
               {Array.from({ length: totalPages }, (_, i) => (
                 <button

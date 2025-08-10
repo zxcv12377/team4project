@@ -10,11 +10,14 @@ function timeAgo(isoDate) {
   return `${Math.floor(diff / 86400)}일 전`;
 }
 
+// 전역 고정글 제외 필터 유틸
+const excludeGlobalPins = (arr) =>
+  (Array.isArray(arr) ? arr : []).filter((p) => String(p?.pinScope || "NONE").toUpperCase() !== "GLOBAL");
+
 // 데이터 로딩 및 가공 로직을 분리된 함수로 추출
 const fetchMainPageData = async () => {
   // 1. 채널 목록 가져오기
   const { data: channels } = await axiosInstance.get("/board-channels");
-  console.log("채널 목록:", channels);
 
   // 2. 각 채널의 게시물 정보 병렬로 가져오기
   const channelsWithPosts = await Promise.all(
@@ -22,12 +25,13 @@ const fetchMainPageData = async () => {
       // 베스트 게시판은 일반 채널이랑 다른 주소를 가짐
       const listUrl = channel.id === 3 ? "/boards/best/channel" : `/boards/channel/${channel.id}`;
 
-      const { data: pageResult } = await axiosInstance.get(
-        listUrl,
-        { params: { page: 1, size: 8 } } // 필요하면 페이징 파라미터도
-      );
-      // dtoList 로 실제 배열 추출, 기본 빈 배열 보장
-      const posts = Array.isArray(pageResult.dtoList) ? pageResult.dtoList : [];
+      const { data: pageResult } = await axiosInstance.get(listUrl, {
+        params: { page: 1, size: 8 },
+      });
+
+      // dtoList 로 실제 배열 추출, 전역 고정글 제외
+      const raw = Array.isArray(pageResult.dtoList) ? pageResult.dtoList : [];
+      const posts = excludeGlobalPins(raw); // ✅ 메인에서만 GLOBAL 숨김
 
       return { ...channel, posts };
     })
@@ -49,7 +53,6 @@ export default function MainPage() {
         setRawSections(data);
       } catch (error) {
         console.error("메인 페이지 데이터 로딩 실패:", error);
-        // 에러 상태 처리 (예: 에러 메시지 표시)
       } finally {
         setIsLoading(false);
       }
@@ -57,7 +60,7 @@ export default function MainPage() {
     loadData();
   }, []);
 
-  // 데이터 가공 로직을 useMemo로 감싸서 rawSections가 변경될 때만 재계산
+  // 데이터 가공
   const sections = useMemo(() => {
     if (!rawSections || rawSections.length === 0) return [];
 
@@ -65,6 +68,7 @@ export default function MainPage() {
       // 공지사항, 문의하기, 전체게시판은 메인페이지에 띄우지 않음
       (c) => c.name !== "공지사항" && c.name !== "문의하기" && c.name !== "전체게시판"
     );
+
     // 메인 페이지에 최초는 무조건 베스트 게시판
     const best = filtered.find((c) => c.name === "최고딸기 게시판");
     const remaining = filtered
@@ -80,7 +84,7 @@ export default function MainPage() {
   }, [rawSections]);
 
   if (isLoading) {
-    return <div className="p-6 w-1/2 mx-auto text-center">로딩 중...</div>; // 또는 스켈레톤 UI
+    return <div className="p-6 w-1/2 mx-auto text-center">로딩 중...</div>;
   }
 
   return (

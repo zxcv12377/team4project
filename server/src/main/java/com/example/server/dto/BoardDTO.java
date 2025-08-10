@@ -59,4 +59,9 @@ public class BoardDTO {
 
     private String channelName;
 
+    private Boolean pinned; // true면 고정글
+    private String pinScope; // NONE | CHANNEL | GLOBAL
+    private Integer pinOrder; // 낮을수록 위
+    private LocalDateTime pinnedAt; // 고정 시각
+
 }

@@ -81,7 +81,7 @@ export default function BoardSearch() {
                   onClick={() => navigate(`/channels/${b.channelId}/${b.bno}`)}
                 >
                   <span className="inline-block bg-black text-white text-xs font-semibold px-2 py-0.5 rounded mb-2">
-                    {channelsMap[String(b.channelId)] ?? "알 수 없는 채널"}
+                    채널 : {channelsMap[String(b.channelId)] ?? "알 수 없는 채널"}
                   </span>
                   <h3 className="text-xl font-semibold mb-1">{b.title}</h3>
                   <p className="text-gray-500 text-sm">

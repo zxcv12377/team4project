@@ -13,11 +13,14 @@ import com.example.server.entity.QBoard;
 import com.example.server.entity.QBoardChannel;
 import com.example.server.entity.QMember;
 import com.example.server.entity.QReply;
+import com.example.server.entity.enums.PinScope;
 import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.Tuple;
 import com.querydsl.core.types.Expression;
 import com.querydsl.core.types.ExpressionUtils;
+import com.querydsl.core.types.dsl.CaseBuilder;
 import com.querydsl.core.types.dsl.Expressions;
+import com.querydsl.core.types.dsl.NumberExpression;
 import com.querydsl.core.types.dsl.NumberPath;
 import com.querydsl.jpa.JPAExpressions;
 import com.querydsl.jpa.JPQLQuery;
@@ -61,7 +64,9 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 board.viewCount,
                                                 board.boardLikeCount,
                                                 channel.id,
-                                                channel.name);
+                                                channel.name,
+                                                board.pinned,
+                                                board.pinScope);
 
                 if (type != null && keyword != null && !keyword.isBlank()) {
                         BooleanBuilder builder = new BooleanBuilder();
@@ -84,7 +89,21 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                 board.viewCount,
                                 board.boardLikeCount,
                                 channel.id,
-                                channel.name);
+                                channel.name,
+                                board.pinScope,
+                                board.pinOrder,
+                                board.pinnedAt);
+
+                // 전역 핀 우선 정렬
+                NumberExpression<Integer> rankExprAll = new CaseBuilder()
+                                .when(board.pinScope.eq(PinScope.GLOBAL)).then(0)
+                                .otherwise(1);
+
+                query.orderBy(
+                                rankExprAll.asc(),
+                                board.pinOrder.asc().nullsLast(),
+                                board.pinnedAt.desc().nullsLast(),
+                                board.bno.desc());
                 // 페이징 처리
                 List<Tuple> resultList = getQuerydsl().applyPagination(pageable, query).fetch();
 
@@ -99,7 +118,9 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 t.get(board.viewCount),
                                                 t.get(board.boardLikeCount),
                                                 t.get(channel.id),
-                                                t.get(channel.name)
+                                                t.get(channel.name),
+                                                t.get(board.pinned),
+                                                t.get(board.pinScope)
                                 })
                                 .collect(Collectors.toList());
 
@@ -112,12 +133,13 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                         String type,
                         String keyword,
                         Pageable pageable) {
+
                 QBoard board = QBoard.board;
                 QMember member = QMember.member;
                 QReply reply = QReply.reply;
                 QBoardChannel channel = QBoardChannel.boardChannel;
 
-                // 댓글 수 별칭 및 서브쿼리
+                // 댓글 수 서브쿼리 (기존 스타일 유지)
                 NumberPath<Long> replyCountAlias = Expressions.numberPath(Long.class, "replyCount");
                 Expression<Long> replyCountExpr = ExpressionUtils.as(
                                 JPAExpressions
@@ -126,7 +148,6 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 .where(reply.board.eq(board)),
                                 replyCountAlias);
 
-                // 기본 SELECT + JOIN
                 JPQLQuery<Tuple> query = from(board)
                                 .leftJoin(board.member, member)
                                 .leftJoin(board.channel, channel)
@@ -139,12 +160,16 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 board.viewCount,
                                                 board.boardLikeCount,
                                                 channel.id,
-                                                channel.name);
+                                                channel.name,
+                                                board.pinned,
+                                                board.pinScope);
 
-                // 1) 채널 필터
-                query.where(board.channel.id.eq(channelId));
+                // 1) 채널 글 + 전역 핀 포함
+                query.where(
+                                board.channel.id.eq(channelId)
+                                                .or(board.pinScope.eq(PinScope.GLOBAL)));
 
-                // 2) 검색 타입/키워드 조건
+                // 2) 검색 조건
                 if (type != null && keyword != null && !keyword.isBlank()) {
                         BooleanBuilder builder = new BooleanBuilder();
                         if (type.contains("t"))
@@ -156,7 +181,7 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                         query.where(builder);
                 }
 
-                // 3) GROUP BY (Oracle 대응)
+                // 3) GROUP BY (정렬/선택 컬럼 포함)
                 query.groupBy(
                                 board.bno,
                                 board.title,
@@ -165,15 +190,28 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                 board.viewCount,
                                 board.boardLikeCount,
                                 channel.id,
-                                channel.name);
+                                channel.name,
+                                board.pinScope,
+                                board.pinOrder,
+                                board.pinnedAt);
 
-                // 4) 페이징 적용 & 조회
-                List<Tuple> fetchList = getQuerydsl()
-                                .applyPagination(pageable, query)
-                                .fetch();
+                // 4) 정렬: GLOBAL(0) → CHANNEL(1, 같은 채널일 때) → 일반(2)
+                NumberExpression<Integer> rankExpr = new CaseBuilder()
+                                .when(board.pinScope.eq(PinScope.GLOBAL)).then(0)
+                                .when(board.pinScope.eq(PinScope.CHANNEL).and(board.channel.id.eq(channelId))).then(1)
+                                .otherwise(2);
 
-                // 5) Tuple → Object[] 변환
-                List<Object[]> results = fetchList.stream()
+                query.orderBy(
+                                rankExpr.asc(),
+                                // QueryDSL 버전에 따라 .nullsLast()가 없으면 빼도 됨
+                                board.pinOrder.asc().nullsLast(),
+                                board.pinnedAt.desc().nullsLast(),
+                                board.bno.desc());
+
+                // 페이징 + 매핑
+                List<Tuple> tuples = getQuerydsl().applyPagination(pageable, query).fetch();
+
+                List<Object[]> results = tuples.stream()
                                 .map(t -> new Object[] {
                                                 t.get(board.bno),
                                                 t.get(board.title),
@@ -183,15 +221,13 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 t.get(board.viewCount),
                                                 t.get(board.boardLikeCount),
                                                 t.get(channel.id),
-                                                t.get(channel.name)
+                                                t.get(channel.name),
+                                                t.get(board.pinned),
+                                                t.get(board.pinScope)
                                 })
                                 .collect(Collectors.toList());
 
-                // 6) Page 객체로 리턴
-                return PageableExecutionUtils.getPage(
-                                results,
-                                pageable,
-                                query::fetchCount);
+                return PageableExecutionUtils.getPage(results, pageable, query::fetchCount);
         }
 
         @Override
@@ -229,8 +265,12 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 .from(reply)
                                                 .where(reply.board.eq(board)),
                                 replyCountAlias);
-                JPQLQuery<Tuple> query = from(board).leftJoin(board.member, member).leftJoin(board.channel, channel)
-                                .select(board.bno,
+
+                JPQLQuery<Tuple> query = from(board)
+                                .leftJoin(board.member, member)
+                                .leftJoin(board.channel, channel)
+                                .select(
+                                                board.bno,
                                                 board.title,
                                                 board.createdDate,
                                                 member.nickname,
@@ -238,9 +278,13 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 board.viewCount,
                                                 board.boardLikeCount,
                                                 channel.id,
-                                                channel.name)
+                                                channel.name,
+                                                board.pinned,
+                                                board.pinScope)
+                                // 👍 베스트 조건(좋아요 기준)은 그대로 유지
                                 .where(board.boardLikeCount.goe(minlike));
 
+                // 검색 조건
                 if (type != null && keyword != null && !keyword.isBlank()) {
                         BooleanBuilder builder = new BooleanBuilder();
                         if (type.contains("t"))
@@ -252,7 +296,7 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                         query.where(builder);
                 }
 
-                // 3) GROUP BY (Oracle 대응)
+                // GROUP BY: 정렬/선택 컬럼 포함 (only_full_group_by 대비)
                 query.groupBy(
                                 board.bno,
                                 board.title,
@@ -261,14 +305,27 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                 board.viewCount,
                                 board.boardLikeCount,
                                 channel.id,
-                                channel.name);
+                                channel.name,
+                                board.pinScope,
+                                board.pinOrder,
+                                board.pinnedAt);
 
-                // 4) 페이징 적용 & 조회
-                List<Tuple> fetchList = getQuerydsl()
-                                .applyPagination(pageable, query)
-                                .fetch();
+                // 🔽 전역 핀 우선 정렬 (GLOBAL 먼저), 그다음 pinOrder ASC → pinnedAt DESC → bno DESC
+                NumberExpression<Integer> rankExprAll = new CaseBuilder()
+                                .when(board.pinScope.eq(PinScope.GLOBAL)).then(0)
+                                .otherwise(1);
 
-                // 5) Tuple → Object[] 변환
+                query.orderBy(
+                                rankExprAll.asc(),
+                                // QueryDSL 버전에 따라 .nullsLast() 미지원이면 제거하거나 coalesce 사용
+                                board.pinOrder.asc().nullsLast(),
+                                board.pinnedAt.desc().nullsLast(),
+                                board.bno.desc());
+
+                // 페이징 조회
+                List<Tuple> fetchList = getQuerydsl().applyPagination(pageable, query).fetch();
+
+                // 매핑
                 List<Object[]> results = fetchList.stream()
                                 .map(t -> new Object[] {
                                                 t.get(board.bno),
@@ -279,14 +336,13 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 t.get(board.viewCount),
                                                 t.get(board.boardLikeCount),
                                                 t.get(channel.id),
-                                                t.get(channel.name)
+                                                t.get(channel.name),
+                                                t.get(board.pinned),
+                                                t.get(board.pinScope)
                                 })
                                 .collect(Collectors.toList());
 
-                // 6) Page 객체로 리턴
-                return PageableExecutionUtils.getPage(
-                                results,
-                                pageable,
-                                query::fetchCount);
+                return PageableExecutionUtils.getPage(results, pageable, query::fetchCount);
         }
+
 }
