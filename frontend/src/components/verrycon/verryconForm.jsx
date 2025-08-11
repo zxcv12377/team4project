@@ -1,10 +1,12 @@
 import { useState } from "react";
-import axiosInstance from "../lib/axiosInstance";
+import axiosInstance from "../../lib/axiosInstance";
+import { useNavigate } from "react-router-dom";
 
 export default function VerryconForm() {
   const [categoryName, setCategoryName] = useState("");
   const [files, setFiles] = useState(null);
   const [previews, setPreviews] = useState([]);
+  const navigate = useNavigate();
 
   // const generateSlug = (name) => {
   //   return name
@@ -48,6 +50,7 @@ export default function VerryconForm() {
       setFiles([]);
       setPreviews([]);
       setCategoryName("");
+      navigate("/admin/verrycon");
     } catch (err) {
       console.error(err);
       alert("업로드 실패");
@@ -90,8 +93,14 @@ export default function VerryconForm() {
         {/* 버튼 */}
         <div className="flex justify-center m-5">
           <button
+            className="border border-gray-500 bg-rose-400 hover:bg-rose-500 p-1 rounded-xl text-white mr-5 w-[60px] h-[35px]"
+            onClick={() => navigate("/admin/verrycon")}
+          >
+            취소
+          </button>
+          <button
             type="submit"
-            className="border border-gray-500 bg-rose-400 hover:bg-rose-500 p-2 rounded-xl text-white"
+            className="border border-gray-500 bg-rose-400 hover:bg-rose-500 p-1 rounded-xl text-white w-[60px] h-[35px]"
           >
             업로드
           </button>

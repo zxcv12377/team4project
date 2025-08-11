@@ -19,7 +19,7 @@ export default function Navbar() {
   const [keyword, setKeyword] = useState("");
   const isAdmin = user?.roles?.includes("ADMIN");
 
-  const uploadURL = import.meta.env.VITE_FILE_UPLOAD_URL;
+  const uploadURL = import.meta.env.VITE_FILE_UPLOADS_URL;
 
   useEffect(() => {
     const token = localStorage.getItem("token");

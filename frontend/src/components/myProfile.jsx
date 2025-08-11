@@ -13,12 +13,11 @@ const MyProfile = () => {
 
   const navigate = useNavigate();
 
-  const uploadURL = import.meta.env.VITE_FILE_UPLOAD_URL;
+  const uploadURL = import.meta.env.VITE_FILE_UPLOADS_URL;
 
   useEffect(() => {
     fetchProfile();
     fetchCounts();
-    console.log(uploadURL);
   }, []);
 
   const fetchProfile = async () => {
