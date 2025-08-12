@@ -17,7 +17,7 @@ export default function LoginForm({ onSwitchToRegister, onSwitchToReset }) {
   const [loading, setLoading] = useState(false);
   const [errMsg, setErrMsg] = useState("");
   const navigate = useNavigate();
-  const { setUser } = useUserContext();
+  const { setUser, setToken, onLoginSuccess } = useUserContext();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -25,15 +25,9 @@ export default function LoginForm({ onSwitchToRegister, onSwitchToReset }) {
     setLoading(true);
     try {
       const res = await axiosInstance.post("/members/login", { email, password });
-      const { token } = res.data;
-      localStorage.setItem("token", token);
-
-      const meRes = await axiosInstance.get("/members/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUser(meRes.data);
-      // navigate(-1);
-      window.location.reload();
+      const { token, refreshToken } = res.data;
+     onLoginSuccess({ token, refreshToken });
+      navigate("/");
     } catch (err) {
       console.error(err);
       setErrMsg("이메일 또는 비밀번호를 다시 확인해주세요.");
