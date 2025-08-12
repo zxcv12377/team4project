@@ -237,4 +237,9 @@ public class MemberServiceImpl implements MemberService {
         tokenRepository.deleteByEmail(member.getEmail());
         memberRepository.delete(member);
     }
+
+    @Override
+    public long count() {
+        return memberRepository.count(); // JpaRepository 기본 제공
+    }
 }

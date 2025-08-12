@@ -26,6 +26,13 @@ export default function Navbar() {
   const uploadURL = import.meta.env.VITE_FILE_UPLOADS_URL;
 
   useEffect(() => {
+    document.body.classList.add("with-navbar");
+    return () => {
+      document.body.classList.remove("with-navbar");
+    };
+  }, []);
+
+  useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(token);
 
@@ -88,7 +95,12 @@ export default function Navbar() {
               <Link to="/boardChannels" className="text-gray-700 hover:text-blue-500">
                 채널목록
               </Link>
-              <Link to="/chatting" className="text-gray-700 hover:text-blue-500">
+              <Link
+                to="/chatting"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-700 hover:text-blue-500"
+              >
                 Chatting
               </Link>
               {isAdmin && (
@@ -146,7 +158,12 @@ export default function Navbar() {
               <Link to="/boardChannels" className="text-gray-700 hover:text-blue-500">
                 채널목록
               </Link>
-              <Link to="/chatting" className="text-gray-700 hover:text-blue-500">
+              <Link
+                to="/chatting"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-700 hover:text-blue-500"
+              >
                 Chatting
               </Link>
               {isAdmin && (
