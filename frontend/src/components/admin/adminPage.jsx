@@ -6,7 +6,7 @@ import axiosInstance from "@/lib/axiosInstance";
 
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { LayoutDashboard, Users, FolderPlus, Wrench, MessageSquare, RefreshCw } from "lucide-react";
+import { LayoutDashboard, Users, FolderPlus, Wrench, MessageSquare, RefreshCw, ChevronsRight } from "lucide-react";
 
 export default function AdminPage() {
   // ✅ 모든 훅은 최상단에서 호출
@@ -15,6 +15,7 @@ export default function AdminPage() {
 
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ members: null, channels: null, todayInquiries: null });
+  const [inquiryChannelId, setInquiryChannelId] = useState(null);
   const [err, setErr] = useState(null);
 
   // KST 기준 '오늘' 판정
@@ -83,6 +84,7 @@ export default function AdminPage() {
       const channels = await fetchChannels();
       const channelsCount = channels.length;
       const inquiryIds = channels.filter(isInquiryChannel).map((c) => c.id);
+      setInquiryChannelId(inquiryIds[0] ?? null);
 
       const membersCount = await fetchMembersCount();
       const todayInquiries = await fetchTodayInquiries(inquiryIds);
@@ -144,10 +146,24 @@ export default function AdminPage() {
           <CardContent className="pt-0 text-sm text-muted-foreground">공지사항&문의하기 채널이 포함된 집계</CardContent>
         </Card>
 
-        <Card>
+        <Card className="relative">
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-medium text-muted-foreground">오늘 문의</CardTitle>
+            <CardTitle className="text-base font-medium text-muted-foreground">오늘 작성된 문의글</CardTitle>
             <Num value={stats.todayInquiries} />
+            {/* 문의 채널로 이동 */}
+            {inquiryChannelId && (
+              <Button
+                asChild
+                variant="ghost"
+                size="icon"
+                className="absolute right-2 top-2"
+                title="문의하기 채널로 이동"
+              >
+                <Link to={`/channels/${inquiryChannelId}`}>
+                  <ChevronsRight className="size-4" />
+                </Link>
+              </Button>
+            )}
           </CardHeader>
           <CardContent className="pt-0 text-sm text-muted-foreground">00시 00분 기준</CardContent>
         </Card>
