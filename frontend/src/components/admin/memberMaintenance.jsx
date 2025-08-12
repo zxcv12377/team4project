@@ -33,11 +33,11 @@ export default function MemberMaintenance() {
   }, []);
 
   /* ---------- 삭제 ---------- */
-  const handleDelete = async (id) => {
+  const handleDelete = async (email) => {
     if (!window.confirm("정말로 삭제하시겠습니까?")) return;
     try {
-      await axiosInstance.delete(`/members/admin/${id}`);
-      setMembers((prev) => prev.filter((m) => m.id !== id));
+      await axiosInstance.delete(`/members/admin/${email}`);
+      setMembers((prev) => prev.filter((m) => m.email !== email));
     } catch (err) {
       console.error("회원 삭제 실패", err);
     }
@@ -151,7 +151,7 @@ export default function MemberMaintenance() {
                         variant="destructive"
                         size="sm"
                         className="rounded-md bg-red-500 hover:bg-red-600 text-white"
-                        onClick={() => handleDelete(m.id)}
+                        onClick={() => handleDelete(m.email)}
                       >
                         삭제
                       </Button>

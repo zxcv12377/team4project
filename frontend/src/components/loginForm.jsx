@@ -22,7 +22,8 @@ export default function LoginForm({ onSwitchToRegister }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(meRes.data);
-      navigate("/");
+      // navigate(-1);
+      window.location.reload();
     } catch (err) {
       console.error(err);
       alert("로그인에 실패했습니다.");

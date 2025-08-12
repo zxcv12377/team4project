@@ -128,7 +128,7 @@ public class MemberController {
     @DeleteMapping("/admin/{email}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteMemberByEmail(@PathVariable String email) {
-        memberService.delete(email);
+        memberService.deleteByAdmin(email);
         return ResponseEntity.ok().build();
     }
 }
