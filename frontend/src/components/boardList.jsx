@@ -17,6 +17,7 @@ export default function BoardList() {
   const [banner, setBanner] = useState();
   const [channelName, setChannelName] = useState("전체 게시판");
   const [channelType, setChannelType] = useState(null); // 'INQUIRY' | 'NOTICE' | 'NORMAL'
+  const [hasBanner, setHasBanner] = useState();
 
   const token = typeof window !== "undefined" ? localStorage.getItem("token") : null;
   // 컨텍스트가 아직 준비 안 됐는데 토큰이 있으면, 판단을 미룸
@@ -30,24 +31,32 @@ export default function BoardList() {
   };
   useEffect(() => {
     if (!channelId) return;
-
-    let ignore = false; // 언마운트 안전장치
+    let canceled = false;
 
     (async () => {
       try {
+        // 실제 백엔드 경로에 맞춰 수정: /banners/{id} 일 가능성 큼
         const { data } = await axiosInstance.get(`/banner/${channelId}`);
-        // console.log(data);
-        if (!ignore) {
-          setBanner(data); // setBanner(res) 말고 data만
+        if (!canceled) {
+          setBanner(data); // data 구조가 {path: "..."}인지 확인 필요
+          setHasBanner(!!data?.path);
+          if (data?.path) {
+            console.log(domain_url + (data.path.startsWith("/") ? "" : "/") + data.path);
+          }
         }
       } catch (e) {
-        console.error("GET /banner 실패:", e);
+        console.error("GET /banner 실패:", e?.response?.status, e?.response?.data);
+        if (!canceled) {
+          setBanner(null);
+          setHasBanner(false);
+        }
       }
       // console.log(domain_url + banner.path);
     })();
 
     return () => {
       ignore = true;
+      canceled = true;
     };
   }, [channelId]);
 
@@ -145,7 +154,13 @@ export default function BoardList() {
   return (
     <>
       <div className="relative w-[1200px] h-[200px] mx-auto rounded-xl overflow-hidden">
-        {/* <img src={ banner.paths ? "":`${domain_url}${banner.paths}`} alt="banner" className="absolute inset-0 w-full h-full object-cover" /> */}
+        {hasBanner && banner?.path ? (
+          <img
+            src={`${domain_url}${banner.path.startsWith("/") ? "" : "/"}${banner.path}`}
+            alt="banner"
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+        ) : null}
       </div>
       <div className="min-h-screen">
         <main className="max-w-6xl mx-auto p-6 pt-10">
