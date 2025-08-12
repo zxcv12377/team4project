@@ -90,7 +90,6 @@ public class Board extends Base {
 
     @Column(name = "pinned_at")
     private LocalDateTime pinnedAt; // 고정 시각
-    // 수정 메서드
 
     public void pin(PinScope scope, Integer order) {
         if (scope == null || scope == PinScope.NONE) {

@@ -28,7 +28,7 @@ export default function MyBoard() {
 
   return (
     <div className="max-w-2xl mx-auto mt-10 p-6 bg-yellow-50 rounded-xl border border-yellow-200 shadow-md">
-      <h2 className="text-3xl font-bold mb-6 text-yellow-500 text-center">📝 내가 작성한 게시글</h2>
+      <h2 className="text-3xl font-bold mb-6 text-yellow-500 text-center"> 내가 작성한 게시글</h2>
 
       {posts.length === 0 ? (
         <p className="text-center text-gray-500">작성한 게시글이 없습니다.</p>

@@ -2,6 +2,7 @@ package com.example.server.config;
 
 import com.example.server.entity.BoardChannel;
 import com.example.server.entity.Member;
+import com.example.server.entity.enums.BoardChannelType;
 import com.example.server.entity.enums.MemberRole;
 import com.example.server.repository.BoardChannelRepository;
 import com.example.server.repository.MemberRepository;
@@ -35,14 +36,17 @@ public class DefaultChannelInitializer implements ApplicationRunner {
                                 BoardChannel.builder()
                                                 .name("공지사항")
                                                 .description("시스템 공지 및 업데이트")
+                                                .type(BoardChannelType.NOTICE)
                                                 .build(),
                                 BoardChannel.builder()
                                                 .name("문의하기")
                                                 .description("Q&A, 건의사항")
+                                                .type(BoardChannelType.INQUIRY)
                                                 .build(),
                                 BoardChannel.builder()
                                                 .name("최고딸기 게시판")
                                                 .description("딸기(좋아요)를 많이 받은 게시글 모음")
+                                                .type(BoardChannelType.NORMAL)
                                                 .build());
                 // 관리자 계정 생성
                 String adminEmail = "admin@test.com";

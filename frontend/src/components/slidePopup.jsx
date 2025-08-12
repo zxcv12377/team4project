@@ -1,6 +1,5 @@
 // src/components/slidePopup.jsx
 import React, { useEffect, useRef, useState } from "react";
-import styles from "../styles/login-modal.module.scss";
 
 function SlidePopup({ show, onClose, children }) {
   const popupRef = useRef();
@@ -50,17 +49,11 @@ function SlidePopup({ show, onClose, children }) {
         className={`relative ${show ? "opacity-100" : "opacity-0"} transition-opacity duration-300 ease-out`}
       >
         {/* SCSS 모듈 적용된 모달 프레임 */}
-        <div className={styles.form}>
-          {/* 로그인 패널 (Panel One) */}
-          <div className={`${styles["form-panel"]} ${styles.one}`}>
-            <div className={styles["form-header"]}>
-              <h1>ACCOUNT LOGIN</h1>
-            </div>
-            <div className={styles["form-content"]}>{children}</div>
-          </div>
+        <div>
+          <div>{children}</div>
 
           {/* 닫기 토글 버튼 */}
-          <div className={` ${styles.visible}`} onClick={onClose} />
+          <div onClick={onClose} />
         </div>
       </div>
     </div>

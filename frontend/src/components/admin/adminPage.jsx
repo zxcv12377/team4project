@@ -22,11 +22,7 @@ export default function AdminPage() {
             채널 생성
           </Link>
         </li>
-        <li>
-          <Link to="/admin/boardChannels/delete" className="text-blue-600 hover:underline">
-            채널 삭제
-          </Link>
-        </li>
+
         <li>
           <Link to="/admin/verrycon/uploads" className="text-blue-600 hover:underline">
             베리콘 업로드

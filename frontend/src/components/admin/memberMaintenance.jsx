@@ -15,12 +15,19 @@ export default function MemberMaintenance() {
   const [sortKey, setSortKey] = useState("id");
   const [sortDir, setSortDir] = useState("asc");
 
+  /* ---------- 고스트 판별 유틸 ---------- */
+  const GHOST_EMAIL = "deleted@local";
+  const isGhost = (m) => m?.ghost === true || m?.email === GHOST_EMAIL;
+
   /* ---------- 데이터 로드 ---------- */
   const loadMembers = async () => {
     setLoading(true);
     try {
       const res = await axiosInstance.get("/members/admin/list");
-      setMembers(res.data);
+      const data = Array.isArray(res.data) ? res.data : [];
+      // ✅ 리스트에서 고스트 계정 제외
+      const safe = data.filter((m) => !isGhost(m));
+      setMembers(safe);
     } catch (err) {
       console.error("회원 목록 로딩 실패", err);
     } finally {

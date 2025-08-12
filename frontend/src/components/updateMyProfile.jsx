@@ -132,7 +132,7 @@ const UpdateMyProfile = () => {
   if (!profile) return <div className="text-center mt-10 text-lg">로딩 중... ⏳</div>;
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white shadow-lg rounded-2xl border-2 border-green-500 border-solid space-y-6 mt-10">
+    <div className="max-w-md mx-auto p-6 bg-white shadow-lg rounded-2xl border-2 border-black border-solid space-y-6 mt-10">
       <Link to="/profile">
         <h2 className="text-4xl font-bold text-center text-red-500"> MY PROFILE</h2>
       </Link>
@@ -155,7 +155,7 @@ const UpdateMyProfile = () => {
       </div>
 
       <div className="-mx-6">
-        <hr className="border-t border-green-500 my-6" />
+        <hr className="border-t border-black my-6" />
       </div>
 
       {/* 닉네임 변경 */}
@@ -164,7 +164,7 @@ const UpdateMyProfile = () => {
         <input
           type="text"
           maxLength={8}
-          className="w-full p-2 border border-yellow-400 rounded-lg"
+          className="w-full p-2 border border-black rounded-lg"
           value={nickname}
           onChange={(e) => setNickname(e.target.value)}
         />
@@ -178,7 +178,7 @@ const UpdateMyProfile = () => {
       </div>
 
       <div className="-mx-6">
-        <hr className="border-t border-green-500 my-6" />
+        <hr className="border-t border-black my-6" />
       </div>
 
       {/* 비밀번호 변경 */}
@@ -187,14 +187,14 @@ const UpdateMyProfile = () => {
         <input
           type="password"
           placeholder="현재 비밀번호"
-          className="w-full p-2 border border-green-500 rounded-lg"
+          className="w-full p-2 border border-black rounded-lg"
           value={currentPassword}
           onChange={(e) => setCurrentPassword(e.target.value)}
         />
         <input
           type="password"
           placeholder="새 비밀번호"
-          className="w-full p-2 border border-green-500 rounded-lg"
+          className="w-full p-2 border border-black rounded-lg"
           value={newPassword}
           onChange={(e) => setNewPassword(e.target.value)}
         />
