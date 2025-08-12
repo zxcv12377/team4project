@@ -40,7 +40,7 @@ export default function BoardList() {
       } catch (e) {
         console.error("GET /banner 실패:", e);
       }
-      console.log(domain_url + banner.path);
+      // console.log(domain_url + banner.path);
     })();
 
     return () => {
@@ -110,7 +110,7 @@ export default function BoardList() {
   return (
     <>
       <div className="relative w-[1200px] h-[200px] mx-auto rounded-xl overflow-hidden">
-        <img src={`${domain_url}${banner.path}`} alt="banner" className="absolute inset-0 w-full h-full object-cover" />
+        {/* <img src={ banner.paths ? "":`${domain_url}${banner.paths}`} alt="banner" className="absolute inset-0 w-full h-full object-cover" /> */}
       </div>
       <div className="min-h-screen">
         <main className="max-w-6xl mx-auto p-6 pt-10">

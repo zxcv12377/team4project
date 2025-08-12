@@ -9,19 +9,14 @@ export default function LoginForm({ onSwitchToRegister }) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
-  const { setUser } = useUserContext();
+  const { setUser, setToken, onLoginSuccess } = useUserContext();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const res = await axiosInstance.post("/members/login", { email, password });
-      const { token } = res.data;
-      localStorage.setItem("token", token);
-
-      const meRes = await axiosInstance.get("/members/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUser(meRes.data);
+      const { token, refreshToken } = res.data;
+     onLoginSuccess({ token, refreshToken });
       navigate("/");
     } catch (err) {
       console.error(err);

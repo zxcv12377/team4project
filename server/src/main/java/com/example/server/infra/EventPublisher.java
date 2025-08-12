@@ -11,6 +11,7 @@ import org.springframework.stereotype.Component;
 
 import com.example.server.dto.FriendEvent;
 import com.example.server.dto.StatusChangeEvent;
+import com.example.server.dto.event.ChannelEvent;
 import com.example.server.dto.event.ServerMemberEvent;
 import com.example.server.entity.enums.RedisChannelConstants;
 import com.example.server.entity.enums.UserStatus;
@@ -67,5 +68,10 @@ public class EventPublisher {
 
     public void publishInviteEvent(Object event, Long targetUserId) {
         redisTemplate.convertAndSend(RedisChannelConstants.INVITE_CHANGE, event);
+    }
+
+    public void publishChannelEvent(ChannelEvent event) {
+        redisTemplate.convertAndSend(RedisChannelConstants.CHANNEL_CHANGE, event);
+        messagingTemplate.convertAndSend("/topic/server." + event.getServerId() + ".channels", event);
     }
 }
