@@ -2,6 +2,10 @@ import React, { useState, useRef, useMemo, useEffect } from "react";
 import axiosInstance from "../lib/axiosInstance";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { useNavigate } from "react-router-dom";
+import SlidePopup from "./slidePopup";
+import LoginForm from "./loginForm";
+import RegisterForm from "./registerForm";
 
 const emojis = ["😀", "😂", "😍", "🔥", "😢", "👍", "👎", "💯"];
 
@@ -9,6 +13,8 @@ export default function ReplyForm({ bno, parentRno = null, onSubmit }) {
   const [emoticonOpen, setEmoticonOpen] = useState(false);
   const [emojiOpen, setEmojiOpen] = useState(false);
   const [veryConOpen, setVeryConOpen] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [showRegister, setShowRegister] = useState(false);
 
   const [content, setContent] = useState(""); // 순수 텍스트만
   const [selectedEmote, setSelectedEmote] = useState(null); // {type:'image'|'emoji', alt?, url?, text?}
@@ -16,6 +22,7 @@ export default function ReplyForm({ bno, parentRno = null, onSubmit }) {
   const [verrycons, setVerrycons] = useState([]); // [{ id, imagePath, categoryName, ... }]
   const [loadingVerrycon, setLoadingVerrycon] = useState(false);
   const [verryconError, setVerryconError] = useState(null);
+  const navigate = useNavigate();
 
   // 탭 상태
   const [activeCat, setActiveCat] = useState("전체");
@@ -103,9 +110,31 @@ export default function ReplyForm({ bno, parentRno = null, onSubmit }) {
         <p className="text-gray-600">
           <span className="text-red-500 font-semibold">로그인</span> 후 댓글을 작성할 수 있습니다.
         </p>
-        <a href="/login" className="inline-block mt-4 px-4 py-2 text-sm bg-red-400 text-white rounded hover:bg-red-500">
+        <button
+          className="inline-block mt-4 px-4 py-2 text-sm bg-red-400 text-white rounded hover:bg-red-500"
+          onClick={() => {
+            setShowLogin(true);
+            console.log(showLogin);
+          }}
+        >
           로그인하러 가기
-        </a>
+        </button>
+        <SlidePopup show={showLogin} onClose={() => setShowLogin(false)}>
+          <LoginForm
+            onSwitchToRegister={() => {
+              setShowLogin(false);
+              setShowRegister(true);
+            }}
+          />
+        </SlidePopup>
+        <SlidePopup show={showRegister} onClose={() => setShowRegister(false)}>
+          <RegisterForm
+            onSwitchToLogin={() => {
+              setShowRegister(false);
+              setShowLogin(true);
+            }}
+          />
+        </SlidePopup>
       </div>
     );
   }

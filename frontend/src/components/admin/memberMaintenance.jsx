@@ -15,12 +15,19 @@ export default function MemberMaintenance() {
   const [sortKey, setSortKey] = useState("id");
   const [sortDir, setSortDir] = useState("asc");
 
+  /* ---------- 고스트 판별 유틸 ---------- */
+  const GHOST_EMAIL = "deleted@local";
+  const isGhost = (m) => m?.ghost === true || m?.email === GHOST_EMAIL;
+
   /* ---------- 데이터 로드 ---------- */
   const loadMembers = async () => {
     setLoading(true);
     try {
       const res = await axiosInstance.get("/members/admin/list");
-      setMembers(res.data);
+      const data = Array.isArray(res.data) ? res.data : [];
+      // ✅ 리스트에서 고스트 계정 제외
+      const safe = data.filter((m) => !isGhost(m));
+      setMembers(safe);
     } catch (err) {
       console.error("회원 목록 로딩 실패", err);
     } finally {
@@ -33,11 +40,11 @@ export default function MemberMaintenance() {
   }, []);
 
   /* ---------- 삭제 ---------- */
-  const handleDelete = async (id) => {
+  const handleDelete = async (email) => {
     if (!window.confirm("정말로 삭제하시겠습니까?")) return;
     try {
-      await axiosInstance.delete(`/members/admin/${id}`);
-      setMembers((prev) => prev.filter((m) => m.id !== id));
+      await axiosInstance.delete(`/members/admin/${email}`);
+      setMembers((prev) => prev.filter((m) => m.email !== email));
     } catch (err) {
       console.error("회원 삭제 실패", err);
     }
@@ -151,7 +158,7 @@ export default function MemberMaintenance() {
                         variant="destructive"
                         size="sm"
                         className="rounded-md bg-red-500 hover:bg-red-600 text-white"
-                        onClick={() => handleDelete(m.id)}
+                        onClick={() => handleDelete(m.email)}
                       >
                         삭제
                       </Button>

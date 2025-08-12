@@ -11,7 +11,9 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.IntStream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -43,5 +45,30 @@ class MemberTest {
         assertNotNull(saved.getId(), "ID가 생성돼야 합니다");
         assertTrue(saved.getRoles().contains(MemberRole.ADMIN), "ADMIN 권한이 포함돼야 합니다");
         assertEquals(1, saved.getRoles().size(), "불필요한 추가 권한이 없어야 합니다");
+    }
+
+    @Test
+    @DisplayName("일반(USER) 회원 10명이 정상적으로 저장된다")
+    void createTenUserMembers() {
+        List<Member> users = IntStream.rangeClosed(1, 10)
+                .mapToObj(i -> Member.builder()
+                        .email(String.format("user%02d@test.com", i))
+                        .nickname(String.format("사용자%02d", i))
+                        .password(passwordEncoder.encode("1111"))
+                        .roles(new HashSet<>(Set.of(MemberRole.USER)))
+                        .emailVerified(true)
+                        .agree(true)
+
+                        .build())
+                .toList();
+
+        List<Member> saved = memberRepository.saveAll(users);
+
+        assertEquals(10, saved.size(), "10명이 저장돼야 합니다");
+        saved.forEach(u -> {
+            assertNotNull(u.getId(), "ID가 생성돼야 합니다");
+            assertTrue(u.getRoles().contains(MemberRole.USER), "USER 권한이 포함돼야 합니다");
+            assertEquals(1, u.getRoles().size(), "불필요한 추가 권한이 없어야 합니다");
+        });
     }
 }

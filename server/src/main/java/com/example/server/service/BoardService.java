@@ -53,10 +53,6 @@ public class BoardService {
     private final BoardLikeRepository boardLikeRepository;
     private final BoardViewLogRepository boardViewLogRepository;
 
-    private static final Long TOP_STRAWBERRY_CHANNEL_ID = 3L;
-    // 좋아요 기준치
-    private static final Long LIKE_THRESHOLD = 1L;
-
     private static final ObjectMapper objectMapper = new ObjectMapper();
 
     @Transactional
@@ -165,6 +161,7 @@ public class BoardService {
                 .channelName((String) en[8])
                 .pinned((Boolean) en[9])
                 .pinScope(en[10] != null ? ((PinScope) en[10]).name() : "NONE")
+                .memberid((Long) en[11])
                 .build());
 
         return PageResultDTO.<BoardDTO>withAll()
@@ -250,6 +247,9 @@ public class BoardService {
                 .boardLikeCount((Long) en[6])
                 .channelId((Long) en[7])
                 .channelName((String) en[8])
+                .pinned((Boolean) en[9])
+                .pinScope(en[10] != null ? ((PinScope) en[10]).name() : "NONE")
+                .memberid((Long) en[11])
                 .build();
 
         // 5) PageResultDTO 빌드하여 리턴
@@ -301,6 +301,7 @@ public class BoardService {
                 .channelName((String) en[8])
                 .pinned((Boolean) en[9])
                 .pinScope(en[10] != null ? ((PinScope) en[10]).name() : "NONE")
+                .memberid((Long) en[11])
                 .build();
 
         // 5) PageResultDTO 빌드하여 리턴

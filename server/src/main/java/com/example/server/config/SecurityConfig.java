@@ -57,6 +57,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/", "/assets/**", "/css/**", "/js/**", "/upload/**",
                                                                 "/uploads/**", "/api/uploads/**")
                                                 .permitAll()
+                                                .requestMatchers("/api/passwordreset/**").permitAll()
                                                 .requestMatchers("/reviews/**", "/upload/display/**", "/img/**",
                                                                 "/error", "/api/auth/**")
                                                 .permitAll()

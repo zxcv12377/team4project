@@ -4,6 +4,7 @@ import LoginForm from "./loginForm";
 import RegisterForm from "./registerForm";
 import SlidePopup from "./slidePopup";
 import axiosInstance from "../lib/axiosInstance";
+import PasswordResetModal from "./passwordResetModal";
 import BWButton from "./BWButton/BWbutton";
 import { useUserContext } from "../context/UserContext";
 
@@ -14,6 +15,9 @@ export default function Navbar() {
   const [nickname, setNickname] = useState("");
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+
   const { user } = useUserContext();
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
@@ -30,7 +34,6 @@ export default function Navbar() {
         .get("/members/me")
         .then((res) => {
           setProfileImage(res.data.profileimg);
-          console.log(uploadURL + "/" + profileImage);
           setNickname(res.data.nickname);
         })
         .catch(() => {
@@ -214,6 +217,11 @@ export default function Navbar() {
             setShowLogin(false);
             setShowRegister(true);
           }}
+          onSwitchToReset={(email) => {
+            setShowLogin(false);
+            setResetEmail(email || "");
+            setShowForgot(true);
+          }}
         />
       </SlidePopup>
 
@@ -222,6 +230,21 @@ export default function Navbar() {
           onSwitchToLogin={() => {
             setShowRegister(false);
             setShowLogin(true);
+          }}
+          onSwitchToReset={(email) => {
+            setShowLogin(false);
+            setResetEmail(email || "");
+            setShowForgot(true);
+          }}
+        />
+      </SlidePopup>
+      <SlidePopup show={showForgot} onClose={() => setShowForgot(false)}>
+        <PasswordResetModal
+          defaultEmail={resetEmail}
+          onCancel={() => setShowForgot(false)}
+          onDone={() => {
+            setShowForgot(false);
+            setShowLogin(true); // 변경 후 로그인 모달로 유도
           }}
         />
       </SlidePopup>
