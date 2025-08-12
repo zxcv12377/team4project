@@ -28,10 +28,15 @@ function PinControls({ bno, channelName, fetchPost }) {
     try {
       await axiosInstance.post(`/boards/${bno}/pin`, { scope, order: 0 });
       await fetchPost?.();
-      alert(scope === "GLOBAL" ? "전역으로 고정했습니다." : "채널에 고정했습니다.");
+      alert(
+        scope === "GLOBAL" ? "전역으로 고정했습니다." : "채널에 고정했습니다."
+      );
     } catch (e) {
       // 백엔드에서도 정책을 막고 있으므로, 서버가 400/메시지를 주면 그대로 보여줌
-      const msg = e?.response?.data?.message || e?.response?.data || "핀 고정에 실패했습니다";
+      const msg =
+        e?.response?.data?.message ||
+        e?.response?.data ||
+        "핀 고정에 실패했습니다";
       alert(msg);
       console.error(e);
     }
@@ -43,7 +48,10 @@ function PinControls({ bno, channelName, fetchPost }) {
       await fetchPost?.();
       alert("핀 해제 완료");
     } catch (e) {
-      const msg = e?.response?.data?.message || e?.response?.data || "핀 해제에 실패했습니다";
+      const msg =
+        e?.response?.data?.message ||
+        e?.response?.data ||
+        "핀 해제에 실패했습니다";
       alert(msg);
       console.error(e);
     }
@@ -51,10 +59,16 @@ function PinControls({ bno, channelName, fetchPost }) {
 
   return (
     <div className="flex gap-2 mt-2">
-      <button className="px-2 py-1 border rounded" onClick={() => setPin("CHANNEL")}>
+      <button
+        className="px-2 py-1 border rounded"
+        onClick={() => setPin("CHANNEL")}
+      >
         채널 고정
       </button>
-      <button className="px-2 py-1 border rounded" onClick={() => setPin("GLOBAL")}>
+      <button
+        className="px-2 py-1 border rounded"
+        onClick={() => setPin("GLOBAL")}
+      >
         전역 고정
       </button>
       <button className="px-2 py-1 border rounded" onClick={unpin}>
@@ -112,8 +126,18 @@ const BoardDetail = () => {
       .finally(() => setLoading(false));
   }, [bno]);
 
-  if (loading) return <div className="text-center mt-10 text-gray-500">⏳ 게시글을 불러오는 중입니다...</div>;
-  if (!post) return <div className="text-center mt-10 text-red-500">❌ 게시글이 존재하지 않습니다.</div>;
+  if (loading)
+    return (
+      <div className="text-center mt-10 text-gray-500">
+        ⏳ 게시글을 불러오는 중입니다...
+      </div>
+    );
+  if (!post)
+    return (
+      <div className="text-center mt-10 text-red-500">
+        ❌ 게시글이 존재하지 않습니다.
+      </div>
+    );
 
   const formattedDate = (date) =>
     date
@@ -172,10 +196,14 @@ const BoardDetail = () => {
           )}
           <span className="ml-2 text-sm text-gray-500">[{post.bno}]</span>
         </h2>
-        <PinControls bno={post.bno} channelName={post.channelName} fetchPost={fetchPost} />
+        <PinControls
+          bno={post.bno}
+          channelName={post.channelName}
+          fetchPost={fetchPost}
+        />
         <div className="text-sm text-gray-600 mb-1">
-          작성자: {post.nickname || "알 수 없음"} | 조회수: {post.viewCount ?? 0} | 작성일:{" "}
-          {formattedDate(post.createdDate)}
+          작성자: {post.nickname || "알 수 없음"} | 조회수:{" "}
+          {post.viewCount ?? 0} | 작성일: {formattedDate(post.createdDate)}
         </div>
 
         <article
@@ -216,14 +244,17 @@ const BoardDetail = () => {
         {/* 추천 및 버튼 그룹 */}
         <div className="flex justify-between items-center mb-6">
           <div className="text-sm text-gray-700">
-            추천 수: <span className="font-bold text-pink-500">{likeCount}</span>
+            추천 수:{" "}
+            <span className="font-bold text-pink-500">{likeCount}</span>
           </div>
 
           <div className="flex gap-2">
             <button
               onClick={boardLike}
               className={`px-4 py-2 rounded-full transition ${
-                like ? "bg-pink-500 text-white hover:bg-pink-600" : "bg-gray-300 text-gray-800 hover:bg-gray-400"
+                like
+                  ? "bg-pink-500 text-white hover:bg-pink-600"
+                  : "bg-gray-300 text-gray-800 hover:bg-gray-400"
               }`}
             >
               {like ? "❤️ 추천 취소" : "👍 추천하기"}
@@ -238,10 +269,16 @@ const BoardDetail = () => {
 
             {(isAdmin || user?.id === post.memberid) && (
               <>
-                <button onClick={goUpdate} className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
+                <button
+                  onClick={goUpdate}
+                  className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+                >
                   수정
                 </button>
-                <button onClick={handleDelete} className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600">
+                <button
+                  onClick={handleDelete}
+                  className="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+                >
                   삭제
                 </button>
               </>
