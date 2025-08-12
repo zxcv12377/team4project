@@ -24,11 +24,6 @@ export default function AdminPage() {
             </Link>
           </li>
           <li>
-            <Link to="/admin/boardChannels/delete" className="text-blue-600 hover:underline">
-              채널 삭제
-            </Link>
-          </li>
-          <li>
             <Link to="/admin/verrycon" className="text-blue-600 hover:underline">
               베리콘
             </Link>

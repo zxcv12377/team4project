@@ -14,6 +14,7 @@ export default function BoardList() {
   const [totalPages, setTotalPages] = useState(1);
   const [banner, setBanner] = useState();
   const [channelName, setChannelName] = useState("전체 게시판");
+  const [hasBanner, setHasBanner] = useState();
   const { user } = useUserContext();
   const navigate = useNavigate();
 
@@ -26,27 +27,30 @@ export default function BoardList() {
     return Boolean(item?.pinned) || (item?.pinScope && item.pinScope !== "NONE");
   };
   useEffect(() => {
-    if (!channelId) return;
+  if (!channelId) return;
+  let canceled = false;
 
-    let ignore = false; // 언마운트 안전장치
-
-    (async () => {
-      try {
-        const { data } = await axiosInstance.get(`/banner/${channelId}`);
-        // console.log(data);
-        if (!ignore) {
-          setBanner(data); // setBanner(res) 말고 data만
+  (async () => {
+    try {
+      // 실제 백엔드 경로에 맞춰 수정: /banners/{id} 일 가능성 큼
+      const { data } = await axiosInstance.get(`/banner/${channelId}`);
+      if (!canceled) {
+        setBanner(data);           // data 구조가 {path: "..."}인지 확인 필요
+        setHasBanner(!!data?.path);
+        if (data?.path) {
+          console.log(domain_url + (data.path.startsWith("/") ? "" : "/") + data.path);
         }
-      } catch (e) {
-        console.error("GET /banner 실패:", e);
       }
-      console.log(domain_url + banner.path);
-    })();
-
-    return () => {
-      ignore = true;
-    };
-  }, [channelId]);
+    } catch (e) {
+      console.error("GET /banner 실패:", e?.response?.status, e?.response?.data);
+      if (!canceled) {
+        setBanner(null);
+        setHasBanner(false);
+      }
+    }
+  })();
+  return () => { canceled = true; };
+}, [channelId]);
 
   // 채널 이름 로딩
   useEffect(() => {
@@ -110,8 +114,14 @@ export default function BoardList() {
   return (
     <>
       <div className="relative w-[1200px] h-[200px] mx-auto rounded-xl overflow-hidden">
-        <img src={`${domain_url}${banner.path}`} alt="banner" className="absolute inset-0 w-full h-full object-cover" />
-      </div>
+  {hasBanner && banner?.path ? (
+    <img
+      src={`${domain_url}${banner.path.startsWith("/") ? "" : "/"}${banner.path}`}
+      alt="banner"
+      className="absolute inset-0 w-full h-full object-cover"
+    />
+  ) : null}
+</div>
       <div className="min-h-screen">
         <main className="max-w-6xl mx-auto p-6 pt-10">
           {/* 🔹 상단 등록 버튼 */}
