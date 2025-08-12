@@ -41,4 +41,6 @@ public interface MemberService {
     Long ensureGhostMember();
 
     void deleteByAdmin(String email);
+
+    long count();
 }

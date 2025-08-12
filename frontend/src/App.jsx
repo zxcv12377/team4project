@@ -18,8 +18,6 @@ import BoardList from "./components/boardList";
 import BoardCreate from "./components/boardCreate";
 import BoardDetail from "./components/boardDetail";
 import BoardModify from "./components/boardModify";
-import ForgotPasswordPage from "./components/forgotPasswordPage";
-import ResetPasswordPage from "./components/resetPasswordPage";
 import MyBoard from "./components/myBoard";
 import MyReply from "./components/myReply";
 import MainPage from "./components/mainPage";
@@ -33,6 +31,7 @@ import VerryconForm from "./components/verrycon/verryconForm";
 import VerryConDeleteButton from "./components/verrycon/VerryConDeleteButton";
 import VerryConEditForm from "./components/verrycon/VerryConEditForm";
 import VerryConManager from "./components/verrycon/VerryConManager";
+import BoardChannelEdit from "./components/admin/BoardChannelEdit";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -114,6 +113,7 @@ function App() {
                     {/* 어드민 페이지 */}
                     <Route path="/admin" element={<AdminPage />} />
                     <Route path="/admin/members" element={<MemberMaintenance />} />
+                    <Route path="/admin/channels/edit/:id" element={<BoardChannelEdit />} />
                     <Route path="/admin/boardChannels/create" element={<CreateBoardChannel />} />
                     {/* 베리콘 페이지 */}
                     <Route path="/admin/verrycon/uploads" element={<VerryconForm />} />
@@ -123,9 +123,6 @@ function App() {
                     {/* 검색 */}
                     <Route path="/boards/search" element={<BoardSearch />} />
                   </Route>
-                  {/* 비밀번호 찾기, 비밀번호 재설정 */}
-                  <Route path="/passwordreset" element={<ForgotPasswordPage />} />
-                  <Route path="/passwordreset/confirm" element={<ResetPasswordPage />} />
                 </Routes>
               </BrowserRouter>
             </RealtimeProvider>

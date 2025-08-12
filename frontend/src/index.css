@@ -3,6 +3,9 @@
 @tailwind utilities;
 
 body {
-  padding-top: 6rem;
   background-color: rgb(255, 245, 245);
+}
+
+body.with-navbar {
+  padding-top: 6rem;
 }

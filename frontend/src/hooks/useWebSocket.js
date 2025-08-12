@@ -3,6 +3,8 @@ import Stomp from "stompjs";
 import refreshAxios from "@/lib/axiosInstance"; // refreshAxios 사용
 
 export const useWebSocket = (token, onConnect) => {
+  console.log("[WS] VITE_WEB_SOCKET_URL=", import.meta.env.VITE_WEB_SOCKET_URL);
+  console.log("[WS] init token? ", !!token, token?.slice?.(0, 20));
   const stompRef = useRef(null);
   const [connected, setConnected] = useState(false);
   const [reconnectTrigger, setReconnectTrigger] = useState(0);
@@ -10,7 +12,7 @@ export const useWebSocket = (token, onConnect) => {
   const reconnectAttempt = useRef(0);
   const reconnectTimer = useRef(null);
 
-  const webSocketURL = import.meta.env.VITE_WEB_WOCKET_URL;
+  const webSocketURL = import.meta.env.VITE_WEB_SOCKET_URL;
 
   useEffect(() => {
     tokenRef.current = token;
@@ -56,12 +58,14 @@ export const useWebSocket = (token, onConnect) => {
 
   const connect = useCallback(
     async (tokenArg, callback) => {
+      console.log("[WS] connect() called");
        if (stompRef.current?.connected) {
       console.log("⚠️ 이미 STOMP 연결되어 있음. connect() 중복 호출 무시");
       return;
       }
       
       let authToken = tokenArg || tokenRef.current;
+      console.log("[WS] resolved token? ", !!authToken, authToken?.slice?.(0, 20));
       if (!authToken) return;
 
       // ✅ 기존 stomp 인스턴스 제거 (중복 방지)
@@ -75,11 +79,14 @@ export const useWebSocket = (token, onConnect) => {
       }
 
       const socket = new WebSocket(`${webSocketURL}/ws-chat`);
+      socket.onopen = () => console.log("[WS] native WebSocket OPEN to", `${webSocketURL}/ws-chat`);
+   socket.onerror = (e) => console.log("[WS] native WebSocket onerror", e);
+   socket.onclose = (e) => console.log("[WS] native WebSocket onclose", e);
       const client = Stomp.over(socket);
 
       client.heartbeat.outgoing = 10000;
       client.heartbeat.incoming = 10000;
-      client.debug = () => {};
+      client.debug = (msg) => console.log("[STOMP]", msg);
       stompRef.current = client;
 
       client.onWebSocketError = (e) => {

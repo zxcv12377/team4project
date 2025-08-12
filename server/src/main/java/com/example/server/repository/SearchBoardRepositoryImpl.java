@@ -66,7 +66,8 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 channel.id,
                                                 channel.name,
                                                 board.pinned,
-                                                board.pinScope);
+                                                board.pinScope,
+                                                member.id);
 
                 if (type != null && keyword != null && !keyword.isBlank()) {
                         BooleanBuilder builder = new BooleanBuilder();
@@ -120,7 +121,8 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 t.get(channel.id),
                                                 t.get(channel.name),
                                                 t.get(board.pinned),
-                                                t.get(board.pinScope)
+                                                t.get(board.pinScope),
+                                                t.get(member.id)
                                 })
                                 .collect(Collectors.toList());
 
@@ -162,7 +164,8 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 channel.id,
                                                 channel.name,
                                                 board.pinned,
-                                                board.pinScope);
+                                                board.pinScope,
+                                                member.id);
 
                 // 1) 채널 글 + 전역 핀 포함
                 query.where(
@@ -223,7 +226,8 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 t.get(channel.id),
                                                 t.get(channel.name),
                                                 t.get(board.pinned),
-                                                t.get(board.pinScope)
+                                                t.get(board.pinScope),
+                                                t.get(member.id)
                                 })
                                 .collect(Collectors.toList());
 
@@ -280,7 +284,8 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 channel.id,
                                                 channel.name,
                                                 board.pinned,
-                                                board.pinScope)
+                                                board.pinScope,
+                                                member.id)
                                 // 👍 베스트 조건(좋아요 기준)은 그대로 유지
                                 .where(board.boardLikeCount.goe(minlike));
 
@@ -338,7 +343,9 @@ public class SearchBoardRepositoryImpl extends QuerydslRepositorySupport impleme
                                                 t.get(channel.id),
                                                 t.get(channel.name),
                                                 t.get(board.pinned),
-                                                t.get(board.pinScope)
+                                                t.get(board.pinScope),
+                                                t.get(member.id)
+
                                 })
                                 .collect(Collectors.toList());
 

@@ -4,6 +4,7 @@ import LoginForm from "./loginForm";
 import RegisterForm from "./registerForm";
 import SlidePopup from "./slidePopup";
 import axiosInstance from "../lib/axiosInstance";
+import PasswordResetModal from "./passwordResetModal";
 import BWButton from "./BWButton/BWbutton";
 import { useUserContext } from "../context/UserContext";
 
@@ -14,12 +15,22 @@ export default function Navbar() {
   const [nickname, setNickname] = useState("");
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+
   const { user } = useUserContext();
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const isAdmin = user?.roles?.includes("ADMIN");
 
   const uploadURL = import.meta.env.VITE_FILE_UPLOADS_URL;
+
+  useEffect(() => {
+    document.body.classList.add("with-navbar");
+    return () => {
+      document.body.classList.remove("with-navbar");
+    };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -84,7 +95,12 @@ export default function Navbar() {
               <Link to="/boardChannels" className="text-gray-700 hover:text-blue-500">
                 채널목록
               </Link>
-              <Link to="/chatting" className="text-gray-700 hover:text-blue-500">
+              <Link
+                to="/chatting"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-700 hover:text-blue-500"
+              >
                 Chatting
               </Link>
               {isAdmin && (
@@ -142,7 +158,12 @@ export default function Navbar() {
               <Link to="/boardChannels" className="text-gray-700 hover:text-blue-500">
                 채널목록
               </Link>
-              <Link to="/chatting" className="text-gray-700 hover:text-blue-500">
+              <Link
+                to="/chatting"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-700 hover:text-blue-500"
+              >
                 Chatting
               </Link>
               {isAdmin && (
@@ -213,6 +234,11 @@ export default function Navbar() {
             setShowLogin(false);
             setShowRegister(true);
           }}
+          onSwitchToReset={(email) => {
+            setShowLogin(false);
+            setResetEmail(email || "");
+            setShowForgot(true);
+          }}
         />
       </SlidePopup>
 
@@ -221,6 +247,21 @@ export default function Navbar() {
           onSwitchToLogin={() => {
             setShowRegister(false);
             setShowLogin(true);
+          }}
+          onSwitchToReset={(email) => {
+            setShowLogin(false);
+            setResetEmail(email || "");
+            setShowForgot(true);
+          }}
+        />
+      </SlidePopup>
+      <SlidePopup show={showForgot} onClose={() => setShowForgot(false)}>
+        <PasswordResetModal
+          defaultEmail={resetEmail}
+          onCancel={() => setShowForgot(false)}
+          onDone={() => {
+            setShowForgot(false);
+            setShowLogin(true); // 변경 후 로그인 모달로 유도
           }}
         />
       </SlidePopup>

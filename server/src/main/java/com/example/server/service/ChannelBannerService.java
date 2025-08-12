@@ -60,7 +60,7 @@ public class ChannelBannerService {
 
         return ChannelBannerUploadDTO.builder()
                 .id(banner.getId())
-                .path(banner.getPath())
+                .paths(banner.getPath())
                 .channelId(channelId)
                 .build();
     }
@@ -80,13 +80,13 @@ public class ChannelBannerService {
                         .boardChannel(channel)
                         .build());
 
-        banner.changePath(dto.getPath());
+        banner.changePath(dto.getPaths());
 
         ChannelBanner saved = channelBannerRepository.save(banner);
 
         return ChannelBannerUploadDTO.builder()
                 .id(saved.getId())
-                .path(saved.getPath())
+                .paths(saved.getPath())
                 .channelId(channelId)
                 .build();
     }
