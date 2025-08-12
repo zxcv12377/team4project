@@ -1,47 +1,38 @@
 package com.example.server.entity;
 
-import java.util.Locale.Category;
-
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
-import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-@Entity
-@Getter
 @NoArgsConstructor
 @AllArgsConstructor
+@Getter
 @Builder
-public class VerryCon {
+@Entity
+public class ChannelBanner {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    // 상대 경로 또는 절대 URL
-    @Column(nullable = false)
-    private String imagePath;
+    private String path;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "category_id", nullable = false)
+    @OneToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "board_channel_id", nullable = false, unique = true)
     @OnDelete(action = OnDeleteAction.CASCADE)
-    private VerryconCategory verryconCategory;
+    private BoardChannel boardChannel;
 
-    public void changeImagePath(String imagePath) {
-        this.imagePath = imagePath;
-    }
-
-    public void changeVerryconCategory(VerryconCategory verryconCategory) {
-        this.verryconCategory = verryconCategory;
+    public void changePath(String path) {
+        this.path = path;
     }
 }

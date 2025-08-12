@@ -23,7 +23,7 @@ export default function Navbar() {
   const [keyword, setKeyword] = useState("");
   const isAdmin = user?.roles?.includes("ADMIN");
 
-  const uploadURL = import.meta.env.VITE_FILE_UPLOAD_URL;
+  const uploadURL = import.meta.env.VITE_FILE_UPLOADS_URL;
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -34,7 +34,6 @@ export default function Navbar() {
         .get("/members/me")
         .then((res) => {
           setProfileImage(res.data.profileimg);
-          console.log(uploadURL + "/" + profileImage);
           setNickname(res.data.nickname);
         })
         .catch(() => {

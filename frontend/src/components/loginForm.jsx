@@ -32,7 +32,8 @@ export default function LoginForm({ onSwitchToRegister, onSwitchToReset }) {
         headers: { Authorization: `Bearer ${token}` },
       });
       setUser(meRes.data);
-      navigate("/");
+      // navigate(-1);
+      window.location.reload();
     } catch (err) {
       console.error(err);
       setErrMsg("이메일 또는 비밀번호를 다시 확인해주세요.");

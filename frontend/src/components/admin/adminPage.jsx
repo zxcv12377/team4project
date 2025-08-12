@@ -11,24 +11,39 @@ export default function AdminPage() {
       <h1 className="mb-8 text-3xl font-bold">관리자 대시보드</h1>
 
       {/* ✅ 채널 관리 메뉴 */}
-      <ul className="space-y-2">
-        <li>
-          <Link to="/admin/members" className="text-blue-600 hover:underline">
-            회원 관리
-          </Link>
-        </li>
-        <li>
-          <Link to="/admin/boardChannels/create" className="text-blue-600 hover:underline">
-            채널 생성
-          </Link>
-        </li>
-
-        <li>
-          <Link to="/admin/verrycon/uploads" className="text-blue-600 hover:underline">
-            베리콘 업로드
-          </Link>
-        </li>
-      </ul>
+      <div>
+        <ul className="space-y-2">
+          <li>
+            <Link to="/admin/members" className="text-blue-600 hover:underline">
+              회원 관리
+            </Link>
+          </li>
+          <li>
+            <Link to="/admin/boardChannels/create" className="text-blue-600 hover:underline">
+              채널 생성
+            </Link>
+          </li>
+          <li>
+            <Link to="/admin/boardChannels/delete" className="text-blue-600 hover:underline">
+              채널 삭제
+            </Link>
+          </li>
+          <li>
+            <Link to="/admin/verrycon" className="text-blue-600 hover:underline">
+              베리콘
+            </Link>
+          </li>
+        </ul>
+      </div>
+      {/* <div>
+        <ul>
+          <li>
+            <Link to="/admin/banner" className="text-blue-600 hover:underline">
+              배너 업데이트
+            </Link>
+          </li>
+        </ul>
+      </div> */}
     </div>
   );
 }

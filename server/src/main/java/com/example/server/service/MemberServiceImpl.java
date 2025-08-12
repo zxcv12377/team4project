@@ -206,4 +206,35 @@ public class MemberServiceImpl implements MemberService {
                     return ghost.getId();
                 });
     }
+
+    @Transactional
+    @Override
+    public void deleteByAdmin(String email) {
+        Member member = memberRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
+        //
+        Long ghostId = ensureGhostMember();
+
+        if (member.getId().equals(ghostId)) {
+            throw new IllegalStateException("고스트 계정은 삭제할 수 없습니다.");
+        }
+        Long memberId = member.getId();
+        // 1) 멤버십/조인 제거
+        chatRoomMemberRepository.deleteMemberships(memberId);
+        channelMemberRepository.deleteMemberships(memberId);
+        serverMemberRepository.deleteMemberships(memberId);
+
+        // 2) 참여데이터 보존: member_id = NULL
+        boardLikeRepository.nullMemberByMemberId(memberId);
+        replyLikeRepository.nullMemberByMemberId(memberId);
+        boardViewLogRepository.nullMemberByMemberId(memberId);
+
+        // 3) 콘텐츠/로그 재할당 (작성자/발신자 → 고스트)
+        chatMessageRepository.reassignSender(ghostId, memberId);
+        replyRepository.reassignAuthor(ghostId, memberId);
+        boardRepository.reassignAuthor(ghostId, memberId);
+
+        tokenRepository.deleteByEmail(member.getEmail());
+        memberRepository.delete(member);
+    }
 }

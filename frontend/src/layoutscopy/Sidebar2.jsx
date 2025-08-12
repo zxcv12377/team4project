@@ -34,7 +34,7 @@ export default function Sidebar2({
   const [speakingUsers, setSpeakingUsers] = useState([]);
   const dmRooms = state.dmRooms;
 
-  const uploadURL = import.meta.env.VITE_FILE_UPLOAD_URL;
+  const uploadURL = import.meta.env.VITE_FILE_UPLOADS_URL;
 
   useEffect(() => {
     console.log("🔥 DM Rooms 응답:", dmRooms);

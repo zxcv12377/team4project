@@ -3,6 +3,8 @@ import { useNavigate, useParams } from "react-router-dom";
 import axiosInstance from "../lib/axiosInstance";
 import { useUserContext } from "../context/UserContext";
 
+const domain_url = import.meta.env.VITE_API_BASE_URL;
+
 export default function BoardList() {
   const { channelId } = useParams(); // /channels/:channelId
   const navigate = useNavigate();
@@ -12,6 +14,7 @@ export default function BoardList() {
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [banner, setBanner] = useState();
   const [channelName, setChannelName] = useState("전체 게시판");
   const [channelType, setChannelType] = useState(null); // 'INQUIRY' | 'NOTICE' | 'NORMAL'
 
@@ -20,7 +23,33 @@ export default function BoardList() {
   const userReady = useMemo(() => (token ? !!user : true), [token, user]);
   const isAdmin = !!user?.roles?.includes("ADMIN");
 
-  const isPinned = (item) => Boolean(item?.pinned) || (item?.pinScope && item.pinScope !== "NONE");
+  const DT_CHANNEL_ID = 1; // 사용 중이면 유지
+  const isPinned = (item) => {
+    // 서버가 내려준 pinned/pinScope 사용
+    return Boolean(item?.pinned) || (item?.pinScope && item.pinScope !== "NONE");
+  };
+  useEffect(() => {
+    if (!channelId) return;
+
+    let ignore = false; // 언마운트 안전장치
+
+    (async () => {
+      try {
+        const { data } = await axiosInstance.get(`/banner/${channelId}`);
+        // console.log(data);
+        if (!ignore) {
+          setBanner(data); // setBanner(res) 말고 data만
+        }
+      } catch (e) {
+        console.error("GET /banner 실패:", e);
+      }
+      console.log(domain_url + banner.path);
+    })();
+
+    return () => {
+      ignore = true;
+    };
+  }, [channelId]);
 
   // 채널 정보 로딩(이름/타입)
   useEffect(() => {
@@ -115,17 +144,22 @@ export default function BoardList() {
 
   return (
     <>
-      <div className="max-w-6xl mx-auto shadow-inner shadow-slate-800 rounded-xl min-h-44">
-        <div className="flex justify-start min-h-40 items-center">
-          <img src="" alt="banner" className="w-[10rem] min-h-40 object-cover p-2" />
-          <div className="w-full min-h-40 p-2">나야나</div>
-        </div>
+      <div className="relative w-[1200px] h-[200px] mx-auto rounded-xl overflow-hidden">
+        {/* <img src={`${domain_url}${banner.path}`} alt="banner" className="absolute inset-0 w-full h-full object-cover" /> */}
       </div>
       <div className="min-h-screen">
         <main className="max-w-6xl mx-auto p-6 pt-10">
           {/* 상단 등록 버튼 (기존 유지) */}
           {token && channelId !== "1" && channelId !== "3" && channelId && (
             <div className="flex justify-end mb-4">
+              {isAdmin && (
+                <button
+                  className="rounded bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600 mr-2"
+                  onClick={() => navigate(`/banner/register/${channelId}`)}
+                >
+                  배너 등록
+                </button>
+              )}
               <button
                 className="rounded bg-blue-500 px-4 py-2 font-semibold text-white hover:bg-blue-600"
                 onClick={() => navigate(`/channels/${channelId}/create`)}

@@ -26,7 +26,11 @@ import AdminPage from "./components/admin/adminPage";
 import BoardChannelList from "./components/boardChannelList";
 import CreateBoardChannel from "./components/admin/createBoardChannel";
 import BoardSearch from "./components/boardSearch";
-import VerryconForm from "./components/verryconForm";
+import BannerControlPage from "./components/admin/BannerControlPage";
+import VerryconForm from "./components/verrycon/verryconForm";
+import VerryConDeleteButton from "./components/verrycon/VerryConDeleteButton";
+import VerryConEditForm from "./components/verrycon/VerryConEditForm";
+import VerryConManager from "./components/verrycon/VerryConManager";
 import BoardChannelEdit from "./components/admin/BoardChannelEdit";
 
 function App() {
@@ -111,7 +115,11 @@ function App() {
                     <Route path="/admin/members" element={<MemberMaintenance />} />
                     <Route path="/admin/channels/edit/:id" element={<BoardChannelEdit />} />
                     <Route path="/admin/boardChannels/create" element={<CreateBoardChannel />} />
+                    {/* 베리콘 페이지 */}
                     <Route path="/admin/verrycon/uploads" element={<VerryconForm />} />
+                    <Route path="/admin/verrycon" element={<VerryConManager />} />
+                    {/* 배너 페이지 */}
+                    <Route path="/banner/register/:channelId" element={<BannerControlPage />} />
                     {/* 검색 */}
                     <Route path="/boards/search" element={<BoardSearch />} />
                   </Route>

@@ -247,7 +247,9 @@ public class BoardService {
                 .boardLikeCount((Long) en[6])
                 .channelId((Long) en[7])
                 .channelName((String) en[8])
-                .memberid((Long) en[9])
+                .pinned((Boolean) en[9])
+                .pinScope(en[10] != null ? ((PinScope) en[10]).name() : "NONE")
+                .memberid((Long) en[11])
                 .build();
 
         // 5) PageResultDTO 빌드하여 리턴

@@ -29,6 +29,7 @@ import com.example.server.repository.VerryConRepository;
 import com.example.server.repository.VerryconCategoryRepository;
 import com.ibm.icu.text.Transliterator;
 
+import io.micrometer.common.lang.Nullable;
 import jakarta.annotation.PostConstruct;
 
 import java.awt.image.BufferedImage;
@@ -108,6 +109,20 @@ public class VerryConService {
                                         HttpStatus.BAD_REQUEST,
                                         "GIF는 200x200 이하만 업로드할 수 있습니다.");
                 }
+        }
+
+        /** /uploads/ 이후의 상대경로를 디스크 경로로 변환 */
+        private Path webPathToDiskPath(String webPath) {
+                int idx = webPath.indexOf("/uploads/");
+                if (idx < 0)
+                        throw new IllegalArgumentException("웹 경로가 올바르지 않습니다: " + webPath);
+                String relative = webPath.substring(idx + "/uploads/".length());
+                return Paths.get(uploadDir, relative.replace("/", File.separator));
+        }
+
+        /** 상대경로(uploads 이하)를 웹 경로로 변환 */
+        private String buildWebPath(String relativePath) {
+                return pathOrigins + "/uploads/" + relativePath.replace(File.separator, "/");
         }
 
         // 다중 업로드
@@ -200,46 +215,160 @@ public class VerryConService {
 
                 return result;
         }
+
+        public VerryConResponseDTO updateVerryCon(Long id, @Nullable String newCategoryName,
+                        @Nullable MultipartFile newFile)
+                        throws IOException {
+
+                VerryCon con = verryConRepository.findById(id)
+                                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                                "베리콘을 찾을 수 없습니다."));
+
+                // 현재 파일/확장자
+                String oldWebPath = con.getImagePath();
+                Path oldDiskPath = webPathToDiskPath(oldWebPath);
+                String oldFileName = oldDiskPath.getFileName().toString(); // uuid.ext
+                String ext = FilenameUtils.getExtension(oldFileName); // png or gif
+
+                // 목표 카테고리 확정
+                VerryconCategory targetCategory = con.getVerryconCategory();
+                String targetSlug = targetCategory.getSlug();
+                String targetCategoryDisplayName = targetCategory.getName();
+
+                if (newCategoryName != null && !newCategoryName.isBlank()) {
+                        String slug = toSlug(newCategoryName);
+                        targetCategory = categoryRepository.findBySlug(slug)
+                                        .orElseGet(() -> categoryRepository.save(
+                                                        VerryconCategory.builder().name(newCategoryName).slug(slug)
+                                                                        .build()));
+                        targetSlug = targetCategory.getSlug();
+                        targetCategoryDisplayName = targetCategory.getName();
+                }
+
+                // 새 파일이 들어온 경우엔 "업로드 로직"을 재사용해 교체 저장
+                if (newFile != null && !newFile.isEmpty()) {
+                        String uuid = UUID.randomUUID().toString();
+
+                        // GIF 업로드이면 사이즈 검증 후 .gif로, 아니면 200px 이하로 png 저장
+                        if (isGif(newFile.getOriginalFilename())) {
+                                try (InputStream is = newFile.getInputStream()) {
+                                        ensureUnderMaxDimForGif(is);
+                                }
+
+                                String newName = uuid + ".gif";
+                                Path newDir = Paths.get(uploadDir, "verrycon", targetSlug);
+                                Files.createDirectories(newDir);
+                                Path newDiskPath = newDir.resolve(newName);
+
+                                try (InputStream is = newFile.getInputStream()) {
+                                        Files.copy(is, newDiskPath, StandardCopyOption.REPLACE_EXISTING);
+                                }
+
+                                // DB 업데이트
+                                String newWebPath = buildWebPath("verrycon/" + targetSlug + "/" + newName);
+                                con.changeVerryconCategory(targetCategory);
+                                con.changeImagePath(newWebPath);
+
+                                // 기존 파일 삭제
+                                Files.deleteIfExists(oldDiskPath);
+                        } else {
+                                // 정지 이미지 → PNG로 리사이즈 저장
+                                BufferedImage output;
+                                try (InputStream is = newFile.getInputStream()) {
+                                        BufferedImage original = ImageIO.read(is);
+                                        if (original == null)
+                                                throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                                                                "이미지 형식을 인식할 수 없습니다.");
+
+                                        int w = original.getWidth(), h = original.getHeight();
+                                        if (w <= MAX_DIM && h <= MAX_DIM) {
+                                                output = original;
+                                        } else {
+                                                output = Thumbnails.of(original).size(MAX_DIM, MAX_DIM)
+                                                                .keepAspectRatio(true).asBufferedImage();
+                                        }
+                                }
+
+                                String newName = uuid + ".png";
+                                Path newDir = Paths.get(uploadDir, "verrycon", targetSlug);
+                                Files.createDirectories(newDir);
+                                File outFile = newDir.resolve(newName).toFile();
+                                ImageIO.write(output, "png", outFile);
+
+                                String newWebPath = buildWebPath("verrycon/" + targetSlug + "/" + newName);
+                                con.changeVerryconCategory(targetCategory);
+                                con.changeImagePath(newWebPath);
+
+                                // 기존 파일 삭제
+                                Files.deleteIfExists(oldDiskPath);
+                        }
+                } else if (!targetSlug.equals(con.getVerryconCategory().getSlug())) {
+                        // 파일은 그대로 두고 카테고리만 바뀐 경우 → 파일 이동
+                        Path newDir = Paths.get(uploadDir, "verrycon", targetSlug);
+                        Files.createDirectories(newDir);
+
+                        String newName = oldFileName; // 파일명 유지 (uuid.ext)
+                        Path newDiskPath = newDir.resolve(newName);
+
+                        // 충돌 시 uuid 새로
+                        if (Files.exists(newDiskPath)) {
+                                String uuid = UUID.randomUUID().toString();
+                                newName = uuid + "." + ext;
+                                newDiskPath = newDir.resolve(newName);
+                        }
+
+                        Files.createDirectories(newDiskPath.getParent());
+                        Files.move(oldDiskPath, newDiskPath, StandardCopyOption.REPLACE_EXISTING);
+
+                        String newWebPath = buildWebPath("verrycon/" + targetSlug + "/" + newName);
+                        con.changeVerryconCategory(targetCategory);
+                        con.changeImagePath(newWebPath);
+                }
+
+                VerryCon saved = verryConRepository.save(con);
+                return new VerryConResponseDTO(saved.getId(), saved.getImagePath(), targetCategoryDisplayName);
+        }
+
+        // ====== 삭제 ======
+        public void deleteVerryCon(Long id) throws IOException {
+                VerryCon con = verryConRepository.findById(id)
+                                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                                "베리콘을 찾을 수 없습니다."));
+
+                // 파일 먼저 정리(실패해도 DB 삭제는 진행)
+                try {
+                        Path diskPath = webPathToDiskPath(con.getImagePath());
+                        Files.deleteIfExists(diskPath);
+                } catch (Exception e) {
+                        // 로그만 남기고 계속
+                        System.err.println("파일 삭제 실패: " + e.getMessage());
+                }
+
+                verryConRepository.delete(con);
+        }
+
+        // ====== (선택) 카테고리 일괄 삭제 ======
+        public int deleteByCategory(String categoryName) throws IOException {
+                VerryconCategory category = categoryRepository.findByName(categoryName)
+                                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                                                "카테고리가 존재하지 않습니다."));
+                List<VerryCon> list = verryConRepository.findByVerryconCategory(category);
+
+                int count = 0;
+                for (VerryCon con : list) {
+                        try {
+                                Files.deleteIfExists(webPathToDiskPath(con.getImagePath()));
+                        } catch (Exception e) {
+                                /* ignore */ }
+                        verryConRepository.delete(con);
+                        count++;
+                }
+                // 비어있으면 폴더도 정리(필요 시)
+                Path dir = Paths.get(uploadDir, "verrycon", category.getSlug());
+                try {
+                        Files.delete(dir);
+                } catch (Exception ignore) {
+                }
+                return count;
+        }
 }
-// // 단일 업로드
-// public VerryConResponseDTO uploadVerryCon(String name, MultipartFile file)
-// throws IOException {
-// // 파일명 및 경로 준비
-// String uuid = UUID.randomUUID().toString();
-// String fileName = uuid + ".png";
-// String dirPath = uploadDir + "/verrycon/";
-// String webPath = "/uploads/verrycon/" + fileName;
-
-// Files.createDirectories(Paths.get(dirPath));
-// File outputFile = new File(dirPath + fileName);
-
-// // 이미지 리사이징 (100x100)
-// BufferedImage originalImage = ImageIO.read(file.getInputStream());
-// BufferedImage resized = Thumbnails.of(originalImage)
-// .size(100, 100)
-// .asBufferedImage();
-
-// // png 저장 (ImageWriter 직접 사용)
-// Iterator<ImageWriter> writers = ImageIO.getImageWritersByFormatName("png");
-// if (!writers.hasNext()) {
-// throw new IllegalStateException("❌ png writer를 찾을 수 없습니다.");
-// }
-
-// ImageWriter writer = writers.next();
-// try (ImageOutputStream ios = ImageIO.createImageOutputStream(outputFile)) {
-// writer.setOutput(ios);
-// writer.write(resized);
-// }
-// writer.dispose();
-
-// System.out.println("✅ png 저장 성공: " + outputFile.getAbsolutePath());
-
-// // DB 저장
-// VerryCon verryCon = verryConRepository.save(VerryCon.builder()
-// .name(name)
-// .imagePath(webPath)
-// .build());
-
-// return new VerryConResponseDTO(verryCon.getId(), verryCon.getName(),
-// verryCon.getImagePath());
-// }

@@ -1,11 +1,17 @@
 package com.example.server.controller;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -15,6 +21,7 @@ import com.example.server.service.VerryConService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 
 @RestController
 @RequiredArgsConstructor
@@ -23,8 +30,13 @@ public class VerryConController {
     private final VerryConService verryConService;
 
     @GetMapping
-    public List<VerryConResponseDTO> getAll(String category) {
-        return verryConService.getAllVerryCons(category);
+    public ResponseEntity<List<VerryConResponseDTO>> list(
+            @RequestParam(value = "category", required = false) String categoryName) {
+        if (categoryName == null || categoryName.isBlank()) {
+            return ResponseEntity.ok(verryConService.getAllVerryCons(null));
+        } else {
+            return ResponseEntity.ok(verryConService.getVerryconByCategory(categoryName));
+        }
     }
 
     @GetMapping("/")
@@ -44,6 +56,32 @@ public class VerryConController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
+    }
+
+    @PutMapping(value = "/{id}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<VerryConResponseDTO> update(
+            @PathVariable Long id,
+            @RequestParam(value = "categoryName", required = false) String categoryName,
+            @RequestPart(value = "file", required = false) MultipartFile file) throws IOException {
+
+        return ResponseEntity.ok(verryConService.updateVerryCon(id, categoryName, file));
+    }
+
+    // 삭제
+    @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> delete(@PathVariable Long id) throws IOException {
+        verryConService.deleteVerryCon(id);
+        return ResponseEntity.noContent().build();
+    }
+
+    // (선택) 카테고리 일괄 삭제
+    @DeleteMapping("/category")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Map<String, Object>> deleteByCategory(@RequestParam String categoryName) throws IOException {
+        int count = verryConService.deleteByCategory(categoryName);
+        return ResponseEntity.ok(Map.of("deleted", count));
     }
 }
 
