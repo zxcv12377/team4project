@@ -1,7 +1,20 @@
+// lib/mediasoup.js 예시
 const mediasoup = require("mediasoup");
 
 async function createMediasoupWorkerAndRouter() {
-  const worker = await mediasoup.createWorker();
+  const min = Number(process.env.RTC_MIN_PORT || 40000);
+  const max = Number(process.env.RTC_MAX_PORT || 49999);
+
+  const worker = await mediasoup.createWorker({
+    rtcMinPort: min,
+    rtcMaxPort: max,
+  });
+
+  worker.on("died", () => {
+    console.error("mediasoup worker died, exiting in 2s...");
+    setTimeout(() => process.exit(1), 2000);
+  });
+
   const router = await worker.createRouter({
     mediaCodecs: [
       {
@@ -12,6 +25,7 @@ async function createMediasoupWorkerAndRouter() {
       },
     ],
   });
+
   return { worker, router };
 }
 

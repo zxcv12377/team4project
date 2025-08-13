@@ -1,7 +1,7 @@
 // src/hooks/useMediasoupVoice.js
 import * as mediasoupClient from "mediasoup-client";
 import { useEffect, useRef, useState } from "react";
-import { getSocket } from "../../lib/socketSingleton";
+import { socket } from "../../lib/socket";
 
 export default function useMediasoupVoice(roomId, me, { baseURL } = {}) {
   const [joined, setJoined] = useState(false);
@@ -17,9 +17,7 @@ export default function useMediasoupVoice(roomId, me, { baseURL } = {}) {
 
   // speaking 합치기
   const mergeSpeaking = (list, speakingList) => {
-    const speakingSet = new Set(
-      (speakingList || []).filter(Boolean).map((x) => x.memberId)
-    );
+    const speakingSet = new Set((speakingList || []).filter(Boolean).map((x) => x.memberId));
     return (list || []).map((p) => ({
       ...p,
       speaking: speakingSet.has(p.memberId),
@@ -30,18 +28,13 @@ export default function useMediasoupVoice(roomId, me, { baseURL } = {}) {
     if (!roomId || !me) return;
     let canceled = false;
 
-    const socket = getSocket(
-      import.meta.env.MODE === "production"
-        ? undefined
-        : baseURL || import.meta.env.VITE_SOCKET_URL || "http://localhost:3001",
-      { path: "/socket.io", transports: ["websocket"], withCredentials: true }
-    );
-    socketRef.current = socket;
+    const s = socket;
+    socketRef.current = s;
 
     // ask helper (ack 기반)
     const ask = (event, data) =>
       new Promise((resolve, reject) => {
-        socket.emit(event, data ?? null, (res) => {
+        s.emit(event, data ?? null, (res) => {
           if (res && res.error) return reject(new Error(res.error));
           resolve(res);
         });
@@ -59,9 +52,9 @@ export default function useMediasoupVoice(roomId, me, { baseURL } = {}) {
       lastSpeaking = speakingList || [];
       setParticipants(mergeSpeaking(lastParticipants, lastSpeaking));
     };
-    socket.on("voiceRoomParticipants", onParticipants);
-    socket.on("userCount", onCount);
-    socket.on("speaking-users", onSpeaking);
+    s.on("voiceRoomParticipants", onParticipants);
+    s.on("userCount", onCount);
+    s.on("speaking-users", onSpeaking);
 
     // 새 producer → consume
     const getRecvTransport = async (device) => {
@@ -71,18 +64,13 @@ export default function useMediasoupVoice(roomId, me, { baseURL } = {}) {
       recvTransportRef.current = rt;
 
       rt.on("connect", ({ dtlsParameters }, cb, errCb) => {
-        socket.emit(
-          "connectRecvTransport",
-          { dtlsParameters, transportId: rt.id },
-          (res) => {
-            if (res === "ok") cb();
-            else errCb(new Error(res?.error || "connectRecvTransport failed"));
-          }
-        );
+        s.emit("connectRecvTransport", { dtlsParameters, transportId: rt.id }, (res) => {
+          if (res === "ok") cb();
+          else errCb(new Error(res?.error || "connectRecvTransport failed"));
+        });
       });
       rt.on("connectionstatechange", (s) => {
-        if (s === "failed" || s === "disconnected")
-          console.warn("recvTransport:", s);
+        if (s === "failed" || s === "disconnected") console.warn("recvTransport:", s);
       });
       return rt;
     };
@@ -92,7 +80,7 @@ export default function useMediasoupVoice(roomId, me, { baseURL } = {}) {
       try {
         const rt = await getRecvTransport(deviceRef.current);
         const data = await new Promise((res, rej) => {
-          socket.emit(
+          s.emit(
             "consume",
             {
               rtpCapabilities: deviceRef.current.rtpCapabilities,
@@ -125,7 +113,7 @@ export default function useMediasoupVoice(roomId, me, { baseURL } = {}) {
         console.error("consume failed:", e);
       }
     };
-    socket.on("newProducer", onNewProducer);
+    s.on("newProducer", onNewProducer);
 
     // 서버가 알려주는 producer 종료 → 오디오 정리
     const onProducerClosed = ({ producerId }) => {
@@ -139,7 +127,7 @@ export default function useMediasoupVoice(roomId, me, { baseURL } = {}) {
       entry.audio.remove?.();
       delete producerAudiosRef.current[producerId];
     };
-    socket.on("producerClosed", onProducerClosed);
+    s.on("producerClosed", onProducerClosed);
 
     // init: join → device → send transport → produce
     (async () => {
@@ -174,7 +162,7 @@ export default function useMediasoupVoice(roomId, me, { baseURL } = {}) {
           analyser.getByteFrequencyData(buf);
           const avg = buf.reduce((a, b) => a + b, 0) / buf.length;
           const speaking = avg > 15;
-          socket.emit("speaking", { roomId, memberId: me.memberId, speaking });
+          s.emit("speaking", { roomId, memberId: me.memberId, speaking });
           requestAnimationFrame(tick);
         };
         tick();
@@ -188,12 +176,12 @@ export default function useMediasoupVoice(roomId, me, { baseURL } = {}) {
         const st = device.createSendTransport(sendInfo);
         sendTransportRef.current = st;
         st.on("connect", ({ dtlsParameters }, cb, errCb) => {
-          socket.emit("connectTransport", { dtlsParameters }, (res) =>
+          s.emit("connectTransport", { dtlsParameters }, (res) =>
             res === "ok" ? cb() : errCb(new Error("connectTransport failed"))
           );
         });
         st.on("produce", ({ kind, rtpParameters }, cb) => {
-          socket.emit("produce", { kind, rtpParameters }, ({ id, error }) => {
+          s.emit("produce", { kind, rtpParameters }, ({ id, error }) => {
             if (error) return console.error("produce error:", error);
             cb({ id });
           });
@@ -208,12 +196,12 @@ export default function useMediasoupVoice(roomId, me, { baseURL } = {}) {
       canceled = true;
       setJoined(false);
 
-      socket.emit("leaveRoom", roomId);
-      socket.off("voiceRoomParticipants", onParticipants);
-      socket.off("userCount", onCount);
-      socket.off("speaking-users", onSpeaking);
-      socket.off("newProducer", onNewProducer);
-      socket.off("producerClosed", onProducerClosed);
+      s.emit("leaveRoom", roomId);
+      s.off("voiceRoomParticipants", onParticipants);
+      s.off("userCount", onCount);
+      s.off("speaking-users", onSpeaking);
+      s.off("newProducer", onNewProducer);
+      s.off("producerClosed", onProducerClosed);
 
       try {
         sendTransportRef.current && sendTransportRef.current.close();
@@ -228,8 +216,7 @@ export default function useMediasoupVoice(roomId, me, { baseURL } = {}) {
       }
       recvTransportRef.current = null;
       try {
-        localStreamRef.current &&
-          localStreamRef.current.getTracks().forEach((t) => t.stop());
+        localStreamRef.current && localStreamRef.current.getTracks().forEach((t) => t.stop());
       } catch {
         console.log();
       }
@@ -237,15 +224,14 @@ export default function useMediasoupVoice(roomId, me, { baseURL } = {}) {
 
       Object.values(producerAudiosRef.current).forEach((v) => {
         try {
-          v.audio.srcObject &&
-            v.audio.srcObject.getTracks().forEach((t) => t.stop());
+          v.audio.srcObject && v.audio.srcObject.getTracks().forEach((t) => t.stop());
         } catch {
           console.log();
         }
         v.audio.remove?.();
       });
       producerAudiosRef.current = {};
-      socket.disconnect();
+      s.disconnect();
     };
   }, [roomId, me, baseURL]);
 
