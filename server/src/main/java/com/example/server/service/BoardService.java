@@ -28,6 +28,7 @@ import com.example.server.entity.BoardLike;
 import com.example.server.entity.Member;
 import com.example.server.entity.BoardViewLog;
 import com.example.server.entity.Reply;
+import com.example.server.entity.enums.PinScope;
 import com.example.server.repository.BoardChannelRepository;
 import com.example.server.repository.BoardLikeRepository;
 import com.example.server.repository.BoardRepository;
@@ -158,6 +159,9 @@ public class BoardService {
                 .boardLikeCount((Long) en[6])
                 .channelId((Long) en[7])
                 .channelName((String) en[8])
+                .pinned((Boolean) en[9])
+                .pinScope(en[10] != null ? ((PinScope) en[10]).name() : "NONE")
+                .memberid((Long) en[11])
                 .build());
 
         return PageResultDTO.<BoardDTO>withAll()
@@ -243,6 +247,9 @@ public class BoardService {
                 .boardLikeCount((Long) en[6])
                 .channelId((Long) en[7])
                 .channelName((String) en[8])
+                .pinned((Boolean) en[9])
+                .pinScope(en[10] != null ? ((PinScope) en[10]).name() : "NONE")
+                .memberid((Long) en[11])
                 .build();
 
         // 5) PageResultDTO 빌드하여 리턴
@@ -292,6 +299,9 @@ public class BoardService {
                 .boardLikeCount((Long) en[6])
                 .channelId((Long) en[7])
                 .channelName((String) en[8])
+                .pinned((Boolean) en[9])
+                .pinScope(en[10] != null ? ((PinScope) en[10]).name() : "NONE")
+                .memberid((Long) en[11])
                 .build();
 
         // 5) PageResultDTO 빌드하여 리턴
@@ -301,6 +311,27 @@ public class BoardService {
                 .pageRequestDTO(pageRequestDTO)
                 .build();
 
+    }
+
+    @Transactional
+    public void pinBoard(Long bno, PinScope scope, Integer order) {
+        Board board = boardRepository.findById(bno)
+                .orElseThrow(() -> new NoSuchElementException("게시글을 찾을 수 없습니다. bno=" + bno));
+
+        if (scope == PinScope.GLOBAL && !"공지사항".equals(board.getChannel().getName())) {
+            throw new IllegalArgumentException("전역 핀은 공지 채널 글만 허용됩니다.");
+        }
+
+        board.pin(scope, order);
+        boardRepository.save(board);
+    }
+
+    @Transactional
+    public void unpinBoard(Long bno) {
+        Board board = boardRepository.findById(bno)
+                .orElseThrow(() -> new NoSuchElementException("게시글을 찾을 수 없습니다. bno=" + bno));
+        board.unpin();
+        boardRepository.save(board);
     }
 
     public List<BoardDTO> getBoardsByWriterEmail(String email) {
@@ -328,6 +359,10 @@ public class BoardService {
                 .boardLikeCount(board.getBoardLikeCount())
                 .channelId(board.getChannel().getId())
                 .channelName(board.getChannel().getName())
+                .pinned(board.isPinned())
+                .pinScope(board.getPinScope() != null ? board.getPinScope().name() : "NONE")
+                .pinOrder(board.getPinOrder())
+                .pinnedAt(board.getPinnedAt())
                 .build();
     }
 

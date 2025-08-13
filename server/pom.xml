@@ -30,13 +30,21 @@
       <java.version>17</java.version>
    </properties>
    <dependencies>
-
+      <!-- 영어를 한글로 변환 -->
+      <dependency>
+         <groupId>com.ibm.icu</groupId>
+         <artifactId>icu4j</artifactId>
+         <version>75.1</version>
+      </dependency>
       <dependency>
          <groupId>org.springframework.boot</groupId>
          <artifactId>spring-boot-starter-actuator</artifactId>
       </dependency>
-
-
+      <dependency>
+         <groupId>commons-io</groupId>
+         <artifactId>commons-io</artifactId>
+         <version>2.15.1</version>
+      </dependency>
       <dependency>
          <groupId>net.coobird</groupId>
          <artifactId>thumbnailator</artifactId>
@@ -48,10 +56,10 @@
          <version>8.0.33</version>
       </dependency>
       <dependency>
-  <groupId>org.apache.commons</groupId>
-  <artifactId>commons-text</artifactId>
-  <version>1.10.0</version>
-</dependency>
+         <groupId>org.apache.commons</groupId>
+         <artifactId>commons-text</artifactId>
+         <version>1.10.0</version>
+      </dependency>
 
 
     <!-- JWT (JJWT 라이브러리) -->

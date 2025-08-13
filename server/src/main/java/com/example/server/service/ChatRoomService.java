@@ -1,6 +1,7 @@
 package com.example.server.service;
 
 import com.example.server.dto.ChatRoomResponseDTO;
+import com.example.server.dto.event.ChannelEvent;
 import com.example.server.entity.ChannelMember;
 import com.example.server.entity.ChatRoom;
 import com.example.server.entity.Server;
@@ -14,6 +15,8 @@ import com.example.server.repository.ServerRepository;
 import com.example.server.security.DuplicateChatRoomException;
 
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -27,7 +30,9 @@ public class ChatRoomService {
     private final ChatMessageRepository chatMessageRepository;
     private final ChannelMemberRepository channelMemberRepository;
     private final ServerRepository serverRepository;
+    private final ApplicationEventPublisher publisher;
 
+    @Transactional
     public ChatRoomResponseDTO createRoom(Long serverId, Long ownerId, String name, String description,
             ChannelType type, ChatRoomType roomType) {
 
@@ -60,6 +65,13 @@ public class ChatRoomService {
             channelMemberService.joinChannel(ownerId, saved.getId(), ChannelRole.ADMIN);
         }
 
+        publisher.publishEvent(new ChannelEvent(
+                "CHANNEL_CREATED",
+                server.getId(),
+                saved.getId(),
+                saved.getName(),
+                saved.getType().name()));
+
         return ChatRoomResponseDTO.builder()
                 .id(saved.getId())
                 .name(saved.getName())
@@ -80,17 +92,29 @@ public class ChatRoomService {
         ChannelMember cm = channelMemberRepository.findByRoomIdAndMemberId(roomId, currentUserId)
                 .orElseThrow(() -> new IllegalArgumentException("채널에 참여한 적이 없음"));
 
+        ChatRoom room = chatRoomRepository.findById(roomId)
+                .orElseThrow(() -> new IllegalArgumentException("채널 없음"));
+
+        Long serverId = room.getServer() != null ? room.getServer().getId() : null;
+
         if (cm.getRole() != ChannelRole.ADMIN) {
             throw new IllegalStateException("방장만 방을 삭제할 수 있습니다.");
         }
 
         // 1. 메시지 삭제
         chatMessageRepository.deleteByRoomId(roomId);
-
         // 2. 참여자 삭제
         channelMemberRepository.deleteByRoomId(roomId);
-
         // 3. 방 삭제
         chatRoomRepository.deleteById(roomId);
+
+        if (serverId != null) {
+            publisher.publishEvent(new ChannelEvent(
+                    "CHANNEL_DELETED",
+                    serverId,
+                    roomId,
+                    room.getName(),
+                    room.getType().name()));
+        }
     }
 }

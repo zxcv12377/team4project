@@ -3,6 +3,7 @@ package com.example.server.controller;
 import java.util.List;
 
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -43,6 +44,7 @@ public class ServerMemberController {
 
     // 강퇴
     @DeleteMapping("/{memberId}")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> removeServerMember(
             @PathVariable Long serverId,
             @PathVariable Long memberId) {
@@ -52,6 +54,7 @@ public class ServerMemberController {
 
     // 권한 변경
     @PatchMapping("/{memberId}/role")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> changeServerMemberRole(
             @PathVariable Long serverId,
             @PathVariable Long memberId,

@@ -36,4 +36,12 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
     @Modifying
     @Query("UPDATE Reply r SET r.text = '삭제된 댓글입니다' WHERE r.deleted = true")
     void updateDeletedReplies();
+
+    boolean existsByParentRno(Long parentRno);
+
+    long countByParentRno(Long parentRno);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Reply r set r.member.id = :ghostId where r.member.id = :memberId")
+    int reassignAuthor(@Param("ghostId") Long ghostId, @Param("memberId") Long memberId);
 }

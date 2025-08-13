@@ -12,8 +12,17 @@ export default function Sidebar1({ onSelectDM, onSelectServer, onLeaveOrDeleteSe
   const [serverName, setServerName] = useState("");
   const [joinCode, setJoinCode] = useState("");
   const { user } = useUserContext();
-  const { subscribeServerMember, dispatch: realtimeDispatch } = useRealtime();
-  const fetchServers = () => axiosInstance.get("/servers/my").then((res) => setServers(res.data));
+  const { subscribeServerMember,
+          unsubscribeServerMember, 
+          fetchAndSetServerMembers, 
+          dispatch: realtimeDispatch } = useRealtime();
+
+  const fetchServers = () =>
+    axiosInstance.get("/servers/my").then((res) => {
+     const list = res.data || [];
+     setServers(list);
+     realtimeDispatch({ type: "PRUNE_SERVER_KEYS", payload: list.map(s => s.id) });
+   });
 
   useEffect(() => {
     fetchServers();
@@ -22,10 +31,16 @@ export default function Sidebar1({ onSelectDM, onSelectServer, onLeaveOrDeleteSe
   // 서버 개설
   const handleCreate = async () => {
     if (!serverName.trim()) return;
-    await axiosInstance.post("/servers", { name: serverName });
+    const res = await axiosInstance.post("/servers", { name: serverName });
+    const newServerId = res.data?.id;
     setServerName("");
     setShowCreate(false);
     fetchServers();
+    if (newServerId) {
+    subscribeServerMember(newServerId);
+    onSelectServer(newServerId);
+    await fetchAndSetServerMembers(newServerId);
+  }
   };
 
   // 서버 참여
@@ -42,18 +57,7 @@ export default function Sidebar1({ onSelectDM, onSelectServer, onLeaveOrDeleteSe
       if (joinedServerId) {
         subscribeServerMember(joinedServerId);
         onSelectServer(joinedServerId);
-      }
-      try {
-        const res = await axiosInstance.get(`/servers/${joinedServerId}/members`);
-        realtimeDispatch({
-          type: "SET_SERVER_MEMBERS",
-          payload: {
-            serverId: joinedServerId,
-            members: res.data,
-          },
-        });
-      } catch (err) {
-        console.warn("❌ 참여자 목록 강제 fetch 실패", err);
+        await fetchAndSetServerMembers(joinedServerId);
       }
     } catch (err) {
       toast({
@@ -81,9 +85,11 @@ export default function Sidebar1({ onSelectDM, onSelectServer, onLeaveOrDeleteSe
         await axiosInstance.delete(`/servers/${serverId}/members/leave`);
       }
       toast({ title: "알림", description: isAdmin ? "서버를 삭제했습니다." : "서버에서 나갔습니다." });
-      fetchServers(); // ✅ 성공 시에만
-      // 상태 초기화 함수
-      onLeaveOrDeleteServer();
+      unsubscribeServerMember(serverId);
+      realtimeDispatch({ type: "CLEAR_SERVER_MEMBERS", payload: { serverId } });
+      onSelectServer?.(null);
+       fetchServers();
+      onLeaveOrDeleteServer?.();
     } catch (err) {
       console.error("❌ 서버 탈퇴/삭제 실패", err);
       toast({

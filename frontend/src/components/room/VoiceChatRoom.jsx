@@ -1,37 +1,33 @@
-import { Client } from "@stomp/stompjs";
-import SockJS from "sockjs-client";
-import { useUserContext } from "./../../context/UserContext";
-import useMultiPeerConnection from "../../hooks/useMultiPeerConnection";
-import useVoiceChannelSpeaking from "@/hooks/useVoiceChannelSpeaking";
-import { useEffect } from "react";
+// 이 코드도 stomp를 기반으로 사용함
 
-export default function VoiceChatRoom({ room }) {
-  const { user } = useUserContext();
-  const { startConnection, stopConnection } = useMultiPeerConnection();
-  const { speakingUsers, connectSpeakingSocket, disconnectSpeakingSocket } = useVoiceChannelSpeaking();
+// import { useEffect, useRef } from "react";
+// import useStompWebRTC from "../hooks/useStompWebRTC";
 
-  useEffect(() => {
-    // WebRTC + STOMP signaling 연결 시작
-    startConnection(room.roomKey, user.mno);
-    connectSpeakingSocket(room.roomKey, user.mno);
+// export default function VoiceRoom({ roomId, user }) {
+//   const audioRef = useRef(null);
+//   const { remoteStream } = useStompWebRTC({
+//     roomId,
+//     userId: String(user.id ?? user.mno),
+//     baseUrl: "", // 같은 도메인이면 빈 문자열
+//     turn: {
+//       host: "strongberry.p-e.kr",
+//       port: 3478,
+//       tls: 5349, // TLS 사용 시
+//       username: "<TURN-USER>",
+//       credential: "<TURN-PASS>",
+//     },
+//   });
 
-    return () => {
-      stopConnection();
-      disconnectSpeakingSocket();
-    };
-  }, [room.roomKey, user.mno]);
+//   useEffect(() => {
+//     if (audioRef.current && remoteStream) {
+//       audioRef.current.srcObject = remoteStream;
+//     }
+//   }, [remoteStream]);
 
-  return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">{room.name}</h2>
-      <div className="space-y-2">
-        {Object.entries(speakingUsers).map(([memberId, isSpeaking]) => (
-          <div key={memberId} className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full" style={{ background: isSpeaking ? "green" : "gray" }} />
-            <span>{memberId}</span>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
+//   return (
+//     <div className="p-4">
+//       <h2 className="text-xl font-bold">Room: {roomId}</h2>
+//       <audio ref={audioRef} autoPlay playsInline />
+//     </div>
+//   );
+// }

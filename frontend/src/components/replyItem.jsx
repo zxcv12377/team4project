@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import ReplyForm from "./replyForm";
 import axiosInstance from "../lib/axiosInstance";
 import { useUserContext } from "../context/UserContext";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
   const [showReplyForm, setShowReplyForm] = useState(false);
@@ -44,6 +46,10 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
     }
   };
 
+  const markdownComponents = {
+    img: (props) => <img {...props} alt={props.alt ?? ""} className="inline-block max-w-full h-auto align-middle" />,
+  };
+
   return (
     <div className={`mb-6 ${depth ? "border-l-2 border-gray-200 pl-4" : ""}`} style={{ marginLeft: depth * 8 }}>
       {editing ? (
@@ -53,6 +59,16 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
             value={editedText}
             onChange={(e) => setEditedText(e.target.value)}
           />
+          {editedText.trim() && (
+            <div className="mt-3 p-3 border rounded bg-gray-50">
+              <div className="text-xs text-gray-500 mb-2">미리보기</div>
+              <div className="prose max-w-none">
+                <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                  {editedText}
+                </ReactMarkdown>
+              </div>
+            </div>
+          )}
           <div className="flex gap-2 mt-2 text-xs">
             <button onClick={handleEditSubmit} className="px-3 py-1 bg-indigo-500 text-white rounded">
               저장
@@ -93,7 +109,11 @@ export default function ReplyItem({ reply, bno, refresh, depth = 0 }) {
             </div>
           </div>
 
-          <div className="mt-1 text-gray-800" dangerouslySetInnerHTML={{ __html: reply.text }} />
+          <div className="mt-1 text-gray-800 prose max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+              {reply.text}
+            </ReactMarkdown>
+          </div>
 
           <div className="flex justify-between items-center mt-2 mb-1">
             <button

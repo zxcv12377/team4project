@@ -13,12 +13,11 @@ const MyProfile = () => {
 
   const navigate = useNavigate();
 
-  const uploadURL = import.meta.env.VITE_FILE_UPLOAD_URL;
+  const uploadURL = import.meta.env.VITE_FILE_UPLOADS_URL;
 
   useEffect(() => {
     fetchProfile();
     fetchCounts();
-    console.log(uploadURL);
   }, []);
 
   const fetchProfile = async () => {
@@ -64,7 +63,7 @@ const MyProfile = () => {
   if (!profile) return <div className="text-center mt-10 text-xl">로딩 중... ⏳</div>;
 
   return (
-    <div className="max-w-md mx-auto p-6 bg-white shadow-lg rounded-2xl border-2 border-green-500 border-solid space-y-6 mt-10">
+    <div className="max-w-md mx-auto p-6 bg-white shadow-lg rounded-2xl border-2 border-black border-solid space-y-6 mt-10">
       <h2 className="text-4xl font-extrabold text-center text-red-500"> MY PROFILE</h2>
 
       <img
@@ -76,7 +75,7 @@ const MyProfile = () => {
       <p className="text-center text-2xl font-bold text-gray-800">{profile.nickname}</p>
 
       <div className="-mx-6">
-        <hr className="border-t border-green-500 my-6" />
+        <hr className="border-t border-black my-6" />
       </div>
       {/* 게시글/댓글 수 */}
 
@@ -89,7 +88,7 @@ const MyProfile = () => {
           <span className="text-base font-bold">{boardCount}</span>
         </Link>
 
-        <div className="w-px h-12 bg-green-500 mx-4" />
+        <div className="w-px h-12 bg-black mx-4" />
 
         <Link
           to="/myreply"
@@ -101,11 +100,11 @@ const MyProfile = () => {
       </div>
 
       <div className="-mx-6">
-        <hr className="border-t border-green-500 my-6" />
+        <hr className="border-t border-black my-6" />
       </div>
 
       {/* 소개 영역 */}
-      <div className="bg-green-50 p-4 rounded-xl border-2 border-green-500 space-y-3 shadow-sm">
+      <div className="bg-green-50 p-4 rounded-xl border-2 border-black space-y-3 shadow-sm">
         <label className="block text-lg font-semibold text-pink-700"> 내 소개</label>
 
         <textarea

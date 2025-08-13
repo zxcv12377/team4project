@@ -18,7 +18,7 @@ public interface ReplyLikeRepository extends JpaRepository<ReplyLike, Long> {
 
     Long countByReply(Reply reply);
 
-    @Modifying
-    @Query("UPDATE ReplyLike rl SET rl.member = NULL WHERE rl.member.id = :memberId")
-    void setMemberToNullByMemberId(@Param("memberId") Long memberId);
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update ReplyLike rl set rl.member = null where rl.member.id = :memberId")
+    int nullMemberByMemberId(@Param("memberId") Long memberId);
 }

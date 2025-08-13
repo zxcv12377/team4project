@@ -20,14 +20,45 @@ const initialState = {
   loadingServerMembers: new Set(),
 };
 
+function normalizeEmail(ev) {
+  return (ev?.email || ev?.Email || ev?.userEmail || "").toLowerCase();
+}
+
+function normalizeOnlineList(arr) {
+  // /friends/online 응답이 문자열 배열 또는 객체 배열 모두 처리
+  if (!Array.isArray(arr)) return [];
+  return arr.map((x) =>
+    typeof x === "string" ? x.toLowerCase() : normalizeEmail(x)
+  ).filter(Boolean);
+}
+
 function realtimeReducer(state, action) {
   switch (action.type) {
+
+    case "CLEAR_SERVER_MEMBERS": {
+     const { serverId } = action.payload || {};
+     if (!serverId) return state;
+     const next = { ...state.serverMembers };
+     delete next[serverId];
+     return { ...state, serverMembers: next };
+   }
+   case "PRUNE_SERVER_KEYS": {
+     // 보유중인 서버 id 목록으로 캐시 가지치기
+     const valid = new Set(action.payload || []);
+     const next = {};
+     Object.keys(state.serverMembers).forEach((k) => {
+       if (valid.has(Number(k))) next[k] = state.serverMembers[k];
+     });
+     return { ...state, serverMembers: next };
+   }
     case "SET_ONLINE_USERS":
-      return { ...state, onlineUsers: new Set(action.payload) };
+     return { ...state, onlineUsers: new Set(normalizeOnlineList(action.payload)) };
     case "USER_STATUS_CHANGE": {
-      const newSet = new Set(state.onlineUsers);
-      if (action.payload.status === "ONLINE") newSet.add(action.payload.email);
-      else if (action.payload.status === "OFFLINE") newSet.delete(action.payload.email);
+     const email = normalizeEmail(action.payload);
+     if (!email) return state;
+     const newSet = new Set(state.onlineUsers);
+     if ((action.payload.status || "").toUpperCase() === "ONLINE") newSet.add(email);
+     else if ((action.payload.status || "").toUpperCase() === "OFFLINE") newSet.delete(email);
       return { ...state, onlineUsers: newSet };
     }
     case "ADD_NOTIFICATION":
@@ -50,14 +81,18 @@ function realtimeReducer(state, action) {
       };
     case "SET_DM_ROOMS":
       return { ...state, dmRooms: action.payload };
-    case "SET_SERVER_MEMBERS":
-      return {
-        ...state,
-        serverMembers: {
-          ...state.serverMembers,
-          [action.serverId]: action.payload,
+
+    case "SET_SERVER_MEMBERS":{
+      const { serverId, members } = action.payload || {};
+  if (!serverId) return state;
+  return {
+    ...state,
+    serverMembers: {
+      ...state.serverMembers,
+      [serverId]: Array.isArray(members) ? members : [],
         },
       };
+    }
     case "START_LOADING_SERVER_MEMBERS":
       return {
         ...state,
@@ -81,12 +116,11 @@ function realtimeReducer(state, action) {
 export function RealtimeProvider({ children, socket }) {
   const [state, dispatch] = useReducer(realtimeReducer, initialState);
   const [ready, setReady] = useState(false);
-  const { user } = useContext(UserContext);
-  const email = user?.email;
-  const token = user?.token;
+  const { user, token, loading: userLoading  } = useContext(UserContext);
   const subscribeFnRef = useRef(null);
   const unsubscribeFnRef = useRef(null);
   const { connected, subscribe, connect, disconnect } = socket;
+  const serverUnsubsRef = useRef(new Map()); // serverId -> unsubscribe()
   const { toast } = useToast();
 
   usePing();
@@ -131,21 +165,23 @@ export function RealtimeProvider({ children, socket }) {
       dispatch({
         type: "SET_SERVER_MEMBERS",
         serverId,
-        payload: data.filter((m) => m && typeof m === "object"),
+        payload: { serverId, members: data.filter((m) => m && typeof m === "object") },
       });
     } catch (err) {
       console.error(`❌ 서버 멤버 갱신 실패 (serverId=${serverId}):`, err);
-      dispatch({ type: "SET_SERVER_MEMBERS", serverId, payload: [] });
+      dispatch({ type: "SET_SERVER_MEMBERS",payload: { serverId, members: [] },
+       });
     } finally {
       dispatch({ type: "FINISH_LOADING_SERVER_MEMBERS", payload: serverId });
     }
   };
 
   useEffect(() => {
-    if (token) {
+   if (!userLoading && token && user?.id) {
       console.log("🟥 RealtimeProvider Mounted");
       connect(token, () => {
         console.log("🟢 WebSocket connected → setReady(true)");
+
         subscribeFnRef.current = subscribeAll;
         setReady(true);
         initFriendState();
@@ -155,7 +191,7 @@ export function RealtimeProvider({ children, socket }) {
       unsubscribeFnRef.current?.();
       disconnect();
     };
-  }, [token, user?.id]);
+  }, [userLoading, token, user?.id]);
 
   useEffect(() => {
     if (connected && ready && subscribeFnRef.current) {
@@ -165,6 +201,7 @@ export function RealtimeProvider({ children, socket }) {
   }, [connected]);
 
   function subscribeAll() {
+    const email = user?.email;
     if (!email || !user?.id) {
       console.warn("⚠️ username 또는 user.id 누락 → 구독 스킵");
       return () => {};
@@ -178,8 +215,10 @@ export function RealtimeProvider({ children, socket }) {
     console.log("🔔 WebSocket 구독 시작:", email);
 
     const subStatus = subscribe(`/user/queue/status`, (ev) => {
+      const me = (user?.email || "").toLowerCase();
+      const who = normalizeEmail(ev);
       dispatch({ type: "USER_STATUS_CHANGE", payload: ev });
-      if (ev.email !== email) {
+      if (who && who !== me) {
         toast({
           title: ev.status === "ONLINE" ? "🔔 친구 접속" : "🔕 친구 퇴장",
           description: `${ev.email}님이 ${ev.status} 상태가 되었습니다.`,
@@ -254,6 +293,7 @@ export function RealtimeProvider({ children, socket }) {
             }
           });
           serverSubscriptions.push(sub);
+          fetchAndSetServerMembers(server.id);
         });
       } catch (err) {
         console.error("❌ 서버 멤버 구독 실패:", err);
@@ -269,6 +309,8 @@ export function RealtimeProvider({ children, socket }) {
       subFriend?.unsubscribe?.();
       subDmRestore?.unsubscribe?.();
       serverSubscriptions.forEach((sub) => sub?.unsubscribe?.());
+      serverUnsubsRef.current.forEach((fn) => fn?.());
+      serverUnsubsRef.current.clear();
       console.log("✅ WebSocket 구독 해제 완료");
     };
     unsubscribeFnRef.current = unsubscribe;
@@ -285,12 +327,14 @@ export function RealtimeProvider({ children, socket }) {
       }
     });
 
-    const prevUnsubscribe = unsubscribeFnRef.current;
-    unsubscribeFnRef.current = () => {
-      prevUnsubscribe?.();
-      sub?.unsubscribe?.();
-    };
+    serverUnsubsRef.current.get(serverId)?.();
+    serverUnsubsRef.current.set(serverId, () => sub?.unsubscribe?.());
   };
+
+  const unsubscribeServerMember = (serverId) => {
+    serverUnsubsRef.current.get(serverId)?.(); // 실행
+    serverUnsubsRef.current.delete(serverId);
+    };
 
   return (
     <RealtimeContext.Provider
@@ -301,6 +345,7 @@ export function RealtimeProvider({ children, socket }) {
         refreshDmRooms,
         fetchAndSetServerMembers,
         subscribeServerMember,
+        unsubscribeServerMember,
       }}
     >
       {children}

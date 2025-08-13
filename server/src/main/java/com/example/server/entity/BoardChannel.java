@@ -1,10 +1,16 @@
 package com.example.server.entity;
 
+import com.example.server.entity.enums.BoardChannelType;
+
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToOne;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -26,4 +32,9 @@ public class BoardChannel {
     private String name;
 
     private String description;
+
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    @Column(name = "type", nullable = false, length = 20)
+    private BoardChannelType type = BoardChannelType.NORMAL;
 }

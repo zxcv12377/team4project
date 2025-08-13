@@ -18,8 +18,6 @@ import BoardList from "./components/boardList";
 import BoardCreate from "./components/boardCreate";
 import BoardDetail from "./components/boardDetail";
 import BoardModify from "./components/boardModify";
-import ForgotPasswordPage from "./components/forgotPasswordPage";
-import ResetPasswordPage from "./components/resetPasswordPage";
 import MyBoard from "./components/myBoard";
 import MyReply from "./components/myReply";
 import MainPage from "./components/mainPage";
@@ -110,7 +108,13 @@ function App() {
                     {/* 어드민 페이지 */}
                     <Route path="/admin" element={<AdminPage />} />
                     <Route path="/admin/members" element={<MemberMaintenance />} />
+                    <Route path="/admin/channels/edit/:id" element={<BoardChannelEdit />} />
                     <Route path="/admin/boardChannels/create" element={<CreateBoardChannel />} />
+                    {/* 베리콘 페이지 */}
+                    <Route path="/admin/verrycon/uploads" element={<VerryconForm />} />
+                    <Route path="/admin/verrycon" element={<VerryConManager />} />
+                    {/* 배너 페이지 */}
+                    <Route path="/banner/register/:channelId" element={<BannerControlPage />} />
                     {/* 검색 */}
                     <Route path="/boards/search" element={<BoardSearch />} />
                   </Route>

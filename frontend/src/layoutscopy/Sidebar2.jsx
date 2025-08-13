@@ -34,7 +34,31 @@ export default function Sidebar2({
   const [speakingUsers, setSpeakingUsers] = useState([]);
   const dmRooms = state.dmRooms;
 
-  const uploadURL = import.meta.env.VITE_FILE_UPLOAD_URL;
+  const uploadURL = import.meta.env.VITE_FILE_UPLOADS_URL;
+
+
+  const applyChannelEvent = useCallback((prev, ev) => {
+    const type = (ev?.type || "").toUpperCase();
+      if (type === "CHANNEL_CREATED") {
+    const exists = prev.some(ch => ch.id === ev.channelId);
+    if (exists) return prev;
+    return [
+      ...prev,
+      { id: ev.channelId, name: ev.name, type: (ev.channelType || "").toUpperCase() }
+    ];
+  }
+  if (type === "CHANNEL_DELETED") {
+    return prev.filter(ch => ch.id !== ev.channelId);
+  }
+  if (type === "CHANNEL_UPDATED") {
+    return prev.map(ch =>
+      ch.id === ev.channelId
+        ? { ...ch, name: ev.name ?? ch.name, type: (ev.channelType || ch.type).toUpperCase() }
+        : ch
+    );
+  }
+  return prev;
+}, []);
 
   useEffect(() => {
     console.log("🔥 DM Rooms 응답:", dmRooms);
@@ -242,6 +266,26 @@ export default function Sidebar2({
       alert("마이크 장치를 확인해주세요.");
     }
   };
+
+  useEffect(() => {
+  if (dmMode) return;
+  if (!serverId) return;
+  // ready는 WebSocket 연결 완료 플래그(RealtimeContext에서 내려오는 값) 사용
+  if (!ready) return;
+
+  // 최초 로딩
+  fetchChannels();
+
+  // 채널 변경 이벤트 구독
+  const topic = `/topic/server.${serverId}.channels`;
+  const sub = subscribe(topic, (payload) => {
+    // payload가 ChannelEvent
+    setChannels(prev => applyChannelEvent(prev, payload));
+  });
+
+  // 서버 전환/언마운트 시 구독 해제
+  return () => sub?.unsubscribe?.();
+}, [dmMode, serverId, ready, subscribe, fetchChannels, applyChannelEvent]);
 
   if (dmMode) {
     return (
@@ -474,9 +518,9 @@ export default function Sidebar2({
       <VoiceChannelOuter
         roomId={roomId}
         member={{
-          name: user?.name,
+          name: user?.nickname,
           memberId: user?.id,
-          profile: user?.profile,
+          profile: user?.profileimg,
         }}
         joined={joined}
         onLeave={() => {

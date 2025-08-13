@@ -4,6 +4,7 @@ import LoginForm from "./loginForm";
 import RegisterForm from "./registerForm";
 import SlidePopup from "./slidePopup";
 import axiosInstance from "../lib/axiosInstance";
+import PasswordResetModal from "./passwordResetModal";
 import BWButton from "./BWButton/BWbutton";
 import { useUserContext } from "../context/UserContext";
 
@@ -14,12 +15,22 @@ export default function Navbar() {
   const [nickname, setNickname] = useState("");
   const [showLogin, setShowLogin] = useState(false);
   const [showRegister, setShowRegister] = useState(false);
+  const [showForgot, setShowForgot] = useState(false);
+  const [resetEmail, setResetEmail] = useState("");
+
   const { user } = useUserContext();
   const navigate = useNavigate();
   const [keyword, setKeyword] = useState("");
   const isAdmin = user?.roles?.includes("ADMIN");
 
-  const uploadURL = import.meta.env.VITE_FILE_UPLOAD_URL;
+  const uploadURL = import.meta.env.VITE_FILE_UPLOADS_URL;
+
+  useEffect(() => {
+    document.body.classList.add("with-navbar");
+    return () => {
+      document.body.classList.remove("with-navbar");
+    };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -30,7 +41,6 @@ export default function Navbar() {
         .get("/members/me")
         .then((res) => {
           setProfileImage(res.data.profileimg);
-          console.log(uploadURL + "/" + profileImage);
           setNickname(res.data.nickname);
         })
         .catch(() => {
@@ -42,9 +52,13 @@ export default function Navbar() {
 
   const onSearch = (e) => {
     e.preventDefault();
-    if (!keyword.trim()) return;
-    // type=tc → 제목+내용 검색
-    navigate(`/boards/search?type=tc&keyword=${encodeURIComponent(keyword.trim())}`);
+    const value = keyword.trim();
+    if (!value) return;
+
+    // 모바일 햄버거 닫기
+    setMenuOpen(false);
+    setKeyword("");
+    navigate(`/boards/search?type=tc&keyword=${encodeURIComponent(value)}`);
   };
 
   const handleLogout = () => {
@@ -85,7 +99,12 @@ export default function Navbar() {
               <Link to="/boardChannels" className="text-gray-700 hover:text-blue-500">
                 채널목록
               </Link>
-              <Link to="/chatting" className="text-gray-700 hover:text-blue-500">
+              <Link
+                to="/chatting"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-700 hover:text-blue-500"
+              >
                 Chatting
               </Link>
               {isAdmin && (
@@ -140,10 +159,20 @@ export default function Navbar() {
           {/* 모바일 메뉴 */}
           {menuOpen && (
             <div className="flex flex-col gap-2 mt-4 lg:hidden">
-              <Link to="/boardChannels" className="text-gray-700 hover:text-blue-500">
+              <Link
+                to="/boardChannels"
+                className="text-gray-700 hover:text-blue-500"
+                onClick={() => setMenuOpen(false)}
+              >
                 채널목록
               </Link>
-              <Link to="/chatting" className="text-gray-700 hover:text-blue-500">
+              <Link
+                to="/chatting"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-700 hover:text-blue-500"
+                onClick={() => setMenuOpen(false)}
+              >
                 Chatting
               </Link>
               {isAdmin && (
@@ -157,9 +186,9 @@ export default function Navbar() {
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
                   placeholder="게시글 검색..."
-                  className="flex-1 rounded-l border px-2 py-1"
+                  className="flex-1 rounded-l border px-2 py-1 border-red-500"
                 />
-                <button type="submit" className="rounded-r bg-green-500 px-3 text-white">
+                <button type="submit" className="rounded-r bg-red-500 px-3 text-white">
                   검색
                 </button>
               </form>
@@ -214,6 +243,11 @@ export default function Navbar() {
             setShowLogin(false);
             setShowRegister(true);
           }}
+          onSwitchToReset={(email) => {
+            setShowLogin(false);
+            setResetEmail(email || "");
+            setShowForgot(true);
+          }}
         />
       </SlidePopup>
 
@@ -222,6 +256,21 @@ export default function Navbar() {
           onSwitchToLogin={() => {
             setShowRegister(false);
             setShowLogin(true);
+          }}
+          onSwitchToReset={(email) => {
+            setShowLogin(false);
+            setResetEmail(email || "");
+            setShowForgot(true);
+          }}
+        />
+      </SlidePopup>
+      <SlidePopup show={showForgot} onClose={() => setShowForgot(false)}>
+        <PasswordResetModal
+          defaultEmail={resetEmail}
+          onCancel={() => setShowForgot(false)}
+          onDone={() => {
+            setShowForgot(false);
+            setShowLogin(true); // 변경 후 로그인 모달로 유도
           }}
         />
       </SlidePopup>

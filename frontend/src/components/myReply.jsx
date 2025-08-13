@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import axiosInstance from "../lib/axiosInstance";
 import { useNavigate } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 const fmt = (iso) => iso?.replace("T", " ").slice(0, 19) || "";
 
@@ -20,6 +22,10 @@ export default function MyReply() {
     }
     loadReplies();
   }, []);
+
+  const markdownComponents = {
+    img: (props) => <img {...props} alt={props.alt ?? ""} className="inline-block max-w-full h-auto align-middle" />,
+  };
 
   // const loadReplies = async () => {
   //   const res = await axiosInstance.get("/replies/my");
@@ -56,7 +62,11 @@ export default function MyReply() {
             >
               {/* 왼쪽: 댓글 내용·날짜 */}
               <div>
-                <p className="text-gray-800 text-sm">{reply.text}</p>
+                <div className="text-gray-800 text-sm">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+                    {reply.text}
+                  </ReactMarkdown>
+                </div>
                 <div className="text-sm text-gray-500 mt-1">🗓 {fmt(reply.createdDate)}</div>
               </div>
 

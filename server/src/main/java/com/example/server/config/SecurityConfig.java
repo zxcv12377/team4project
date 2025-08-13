@@ -57,6 +57,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/", "/assets/**", "/css/**", "/js/**", "/upload/**",
                                                                 "/uploads/**", "/api/uploads/**")
                                                 .permitAll()
+                                                .requestMatchers("/api/passwordreset/**").permitAll()
                                                 .requestMatchers("/reviews/**", "/upload/display/**", "/img/**",
                                                                 "/error", "/api/auth/**")
                                                 .permitAll()
@@ -68,12 +69,10 @@ public class SecurityConfig {
 
                                                 .requestMatchers(HttpMethod.POST, "/api/members/register",
                                                                 "/api/members/login", "/api/invite/**",
+                                                                "/api/verrycons/upload",
+                                                                "/api/verrycons/upload-multiple",
                                                                 "/error")
                                                 .permitAll()
-
-                                                // .requestMatchers(HttpMethod.PUT, "/api/members/password/reset",
-                                                // "/api/members/password")
-                                                // .permitAll()
 
                                                 .requestMatchers(HttpMethod.GET,
                                                                 "/api/boards/**",
@@ -83,23 +82,9 @@ public class SecurityConfig {
                                                                 "/api/replies/**",
                                                                 "/api/members/check-nickname",
                                                                 "/api/members/find-id",
-                                                                "/api/servers") // 서버 검색
+                                                                "/api/servers",
+                                                                "/api/verrycons/**") // 서버 검색
                                                 .permitAll()
-
-                                                // .requestMatchers("/api/chatrooms/**").authenticated() // 채팅 rest api
-                                                // .requestMatchers(HttpMethod.GET, "/api/members/me").authenticated()
-
-                                                // .requestMatchers(HttpMethod.POST, "/api/boards", "/api/replies/**")
-                                                // .authenticated()
-
-                                                // .requestMatchers(HttpMethod.PUT, "/api/boards/**", "/api/replies/**",
-                                                // "/api/members/comment",
-                                                // "/api/members/nickname")
-                                                // .authenticated()
-                                                // .requestMatchers(HttpMethod.DELETE, "/api/boards/**",
-                                                // "/api/replies/**",
-                                                // "/api/members/mypage")
-                                                // .authenticated()
                                                 .anyRequest().authenticated());
 
                 http.sessionManagement(seesion -> seesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS));

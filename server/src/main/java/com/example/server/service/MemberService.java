@@ -37,4 +37,10 @@ public interface MemberService {
 
     void deleteByEmail(String email);
 
+    @Transactional
+    Long ensureGhostMember();
+
+    void deleteByAdmin(String email);
+
+    long count();
 }

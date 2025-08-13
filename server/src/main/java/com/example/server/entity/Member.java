@@ -56,7 +56,8 @@ public class Member extends Base {
 
     private boolean agree; // 약관 동의 입니다
 
-    private String profileimg; // 프로필 사진입니다(이미지 경로넣기)
+    @Builder.Default
+    private String profileimg = "default.png"; // 프로필 사진입니다(이미지 경로넣기)
 
     private boolean emailVerified; // 이메일 인증여부
 
@@ -71,15 +72,16 @@ public class Member extends Base {
     @Enumerated(EnumType.STRING)
     private Set<MemberRole> roles = new HashSet<>();
 
+    private boolean ghost;
+
     // 기본 권한 부여 메서드(db 저장 전 호출)
     // 회원가입 시 기본적으로 USER 권한을 부여
     @PrePersist
     public void setDefaultRoleIfEmpty() {
-        if (roles.isEmpty()) {
+        if (roles == null)
+            roles = new HashSet<>(); // ← NPE 방지
+        if (roles.isEmpty() && !ghost) { // ← 고스트엔 기본 롤 부여 금지
             roles.add(MemberRole.USER);
-        }
-        if (profileimg == null) {
-            profileimg = "default.png";
         }
     }
 

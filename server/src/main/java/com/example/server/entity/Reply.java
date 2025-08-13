@@ -40,7 +40,7 @@ public class Reply extends Base {
     private Reply parent;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id", foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
+    @JoinColumn(name = "member_id", nullable = true, foreignKey = @ForeignKey(ConstraintMode.NO_CONSTRAINT))
     private Member member;
 
     @Column(nullable = false)
@@ -57,11 +57,11 @@ public class Reply extends Base {
     private boolean best = false;
 
     @Builder.Default
-    @OneToMany(mappedBy = "parent", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "parent", cascade = { CascadeType.PERSIST, CascadeType.MERGE })
     private List<Reply> children = new ArrayList<>();
 
     @Builder.Default
-    @OneToMany(mappedBy = "reply", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "reply", cascade = CascadeType.REMOVE, orphanRemoval = true)
     private List<ReplyLike> likes = new ArrayList<>();
 
     public void softDelete() {

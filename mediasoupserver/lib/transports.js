@@ -1,11 +1,12 @@
-const listenIps = [{ ip: "127.0.0.1", announcedIp: null }];
-
 async function createWebRtcTransport(router) {
+  const announcedIp = process.env.ANNOUNCED_IP || undefined;
+
   return await router.createWebRtcTransport({
-    listenIps,
+    listenIps: [{ ip: "0.0.0.0", announcedIp }],
     enableUdp: true,
     enableTcp: true,
     preferUdp: true,
+    initialAvailableOutgoingBitrate: 1_000_000,
   });
 }
 

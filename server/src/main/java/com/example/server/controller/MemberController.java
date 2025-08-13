@@ -128,7 +128,14 @@ public class MemberController {
     @DeleteMapping("/admin/{email}")
     @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<?> deleteMemberByEmail(@PathVariable String email) {
-        memberService.delete(email);
+        memberService.deleteByAdmin(email);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/count")
+    @PreAuthorize("hasRole('ADMIN')") // ADMIN만 접근
+    public ResponseEntity<Map<String, Long>> countMembers() {
+        long count = memberService.count();
+        return ResponseEntity.ok(Map.of("count", count)); // { "count": 123 }
     }
 }
