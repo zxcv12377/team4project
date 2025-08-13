@@ -29,4 +29,11 @@ public interface ReplyRepository extends JpaRepository<Reply, Long> {
     @Query("SELECT r FROM Reply r LEFT JOIN r.likes l WHERE r.board.bno = :bno GROUP BY r ORDER BY COUNT(l) DESC")
     List<Reply> findTop3BestReplies(@Param("bno") Long bno);
 
+    @Modifying
+    @Query("UPDATE Reply r SET r.member = NULL WHERE r.member.id = :memberId")
+    void setMemberToNullByMemberId(@Param("memberId") Long memberId);
+
+    @Modifying
+    @Query("UPDATE Reply r SET r.text = '삭제된 댓글입니다' WHERE r.deleted = true")
+    void updateDeletedReplies();
 }

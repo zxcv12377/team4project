@@ -4,6 +4,7 @@ import { clsx } from "clsx";
 import axiosInstance from "../lib/axiosInstance";
 import ReplyList from "./replyList";
 import BoardList from "./boardList";
+import { useUserContext } from "../context/UserContext";
 
 const BoardDetail = () => {
   const { channelId, bno } = useParams();
@@ -13,32 +14,40 @@ const BoardDetail = () => {
   const [loading, setLoading] = useState(true);
   const [like, setLike] = useState(false);
   const [likeCount, setLikeCount] = useState(0);
-
-  // ✅ 사용자 정보 안전 파싱
-  const rawUser = localStorage.getItem("user");
-  const currentUser = rawUser && rawUser !== "null" ? JSON.parse(rawUser) : null;
+  const { user } = useUserContext();
 
   const baseImageUrl = import.meta.env.VITE_IMAGE_BASE_URL;
+  const baseURL = import.meta.env.VITE_API_BASE_URL;
+  const isAdmin = user?.roles?.includes("ADMIN");
 
-  // ✅ 권한 조건
-  const isLoggedIn = !!currentUser;
-  const isAuthor = currentUser?.id === post?.memberid;
-  const isAdmin = currentUser?.role === "ADMIN";
-  const canEditOrDelete = isLoggedIn && (isAuthor || isAdmin);
+  useEffect(() => {
+    if (post) {
+      setLikeCount(post.boardLikeCount);
+      setLike(!!post.like);
+    }
+  });
 
-  console.log("삭제권한 ", canEditOrDelete);
-  console.log("삭제권한 isLoggedIn", isLoggedIn);
-  console.log("삭제권한 isAuthor", isAuthor);
-  console.log("삭제권한 isAdmin", isAdmin);
-  console.log("삭제권한  currentUser?.role", currentUser?.role);
+  const fetchPost = async () => {
+    try {
+      const res = await axiosInstance.get(`/boards/read/${bno}`);
+      setPost(res.data);
+    } catch (err) {
+      console.error("게시글 조회 실패:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
+  /* ─── 게시글 조회 ───────────────────────────────── */
+  //UI에서는 likeCount를 보여줌
   useEffect(() => {
     axiosInstance
       .get(`/boards/read/${bno}`)
       .then((res) => {
         setPost(res.data);
-        setLikeCount(res.data.boardLikeCount || 0);
-        setLike(!!res.data.like);
+        setLikeCount(res.data.boardLikeCount || 0); //boardLikeCount 값을 likeCount 상태로 별도 추출하여 저장함
+        console.log("user", user?.id);
+        console.log("res", res.data.memberid);
       })
       .catch((err) => console.error("게시글 조회 실패:", err))
       .finally(() => setLoading(false));
@@ -71,7 +80,7 @@ const BoardDetail = () => {
   };
 
   const boardLike = async () => {
-    if (!currentUser) {
+    if (!user) {
       alert("로그인 후 이용해 주세요.");
       return;
     }
@@ -164,7 +173,7 @@ const BoardDetail = () => {
               목록
             </button>
 
-            {currentUser?.id === post.memberid && (
+            {(isAdmin || user?.id === post.memberid) && (
               <>
                 <button onClick={goUpdate} className="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600">
                   수정

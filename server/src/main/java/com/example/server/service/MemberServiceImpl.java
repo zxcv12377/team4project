@@ -5,9 +5,11 @@ import com.example.server.dto.MemberResponseDTO;
 import com.example.server.entity.Member;
 import com.example.server.mapper.MemberMapper;
 import com.example.server.repository.BoardLikeRepository;
+import com.example.server.repository.BoardViewLogRepository;
 import com.example.server.repository.EmailVerificationTokenRepository;
 import com.example.server.repository.MemberRepository;
 import com.example.server.repository.ReplyLikeRepository;
+import com.example.server.repository.ReplyRepository;
 
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
@@ -32,6 +34,8 @@ public class MemberServiceImpl implements MemberService {
     // 멤버가 삭제되어도 좋아요는 사라지지 않고 좋아요의 member값만 null로 바꾸도록 함
     private final BoardLikeRepository boardLikeRepository;
     private final ReplyLikeRepository replyLikeRepository;
+    private final BoardViewLogRepository boardViewLogRepository;
+    private final ReplyRepository replyRepository;
 
     // 회원 가입시 이메일 중복여부 확인
     @Override
@@ -83,8 +87,12 @@ public class MemberServiceImpl implements MemberService {
     public void delete(String email) {
         Member member = memberRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("회원 정보를 찾을 수 없습니다."));
+        //
         boardLikeRepository.setMemberToNullByMemberId(member.getId());
         replyLikeRepository.setMemberToNullByMemberId(member.getId());
+        boardViewLogRepository.setMemberToNullByMemberId(member.getId());
+        replyRepository.setMemberToNullByMemberId(member.getId());
+
         tokenRepository.deleteByEmail(member.getEmail());
         memberRepository.delete(member);
     }
