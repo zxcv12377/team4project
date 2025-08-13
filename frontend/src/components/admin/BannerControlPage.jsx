@@ -4,6 +4,7 @@ import axiosInstance from "../../lib/axiosInstance";
 
 const UPLOAD_URL = import.meta.env.VITE_FILE_UPLOAD_URL;
 const HTTP = import.meta.env.VITE_HTTP_URL;
+const BASE_URL = import.meta.env.VITE_IMAGE_BASE_URL;
 
 export default function BannerControlPage() {
   const { channelId: channelIdParam } = useParams();
@@ -48,7 +49,7 @@ export default function BannerControlPage() {
 
   const currentPreviewUrl = useMemo(() => {
     if (file) return URL.createObjectURL(file);
-    if (pathInput) return pathInput.startsWith(`${HTTP}`) ? pathInput : `${pathInput}`;
+    if (pathInput) return pathInput.startsWith(`${HTTP}`) ? pathInput : `${BASE_URL}${pathInput}`;
     return "";
   }, [file, pathInput]);
 
@@ -106,9 +107,10 @@ export default function BannerControlPage() {
     // 서버 구현에 맞게 디렉토리 힌트 전달(선택):
     fd.append("dir", `channel-banners/${channelId}`);
 
-    const { data } = await axiosInstance.post(UPLOAD_URL, fd, {
-      headers: { "Content-Type": "multipart/form-data" },
-    });
+    // const { data } = await axiosInstance.post(UPLOAD_URL, fd, {
+    //   headers: { "Content-Type": "multipart/form-data" },
+    // });
+    const { data } = await axiosInstance.post(UPLOAD_URL, fd);
 
     const uploadedPath = data?.path || data?.url || (typeof data === "string" ? data : "");
     if (!uploadedPath) throw new Error("업로드 응답에 path/url이 없습니다.");

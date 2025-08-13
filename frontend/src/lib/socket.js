@@ -7,7 +7,7 @@ const baseSocketURL =
 
 export const socket = io(baseSocketURL, {
   path: "/socket.io",
-  transports: ["websocket"], // ws 고정
+  transports: ["polling", "websocket"], // ws 고정
   withCredentials: true, // 서버 CORS credentials 지원
   reconnectionAttempts: 5, // 최대 재연결 시도
   reconnectionDelay: 1000, // 재연결 딜레이(ms)

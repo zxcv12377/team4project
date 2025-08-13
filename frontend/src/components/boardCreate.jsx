@@ -3,32 +3,91 @@ import React, { useRef, useState, useEffect } from "react";
 import { Editor } from "@toast-ui/react-editor";
 import "@toast-ui/editor/dist/toastui-editor.css";
 import axiosInstance from "../lib/axiosInstance";
-// / (URL 기반 이미지 삽입 방식의 BOARD CREATE)
+import { useWebSocket } from "../hooks/useWebSocket";
 
 const MAX_FILE_SIZE = 3 * 1024 * 1024; // 3MB
 
 export default function BoardCreate() {
   const editorRef = useRef();
-  const Navigate = useNavigate();
-  const { channelId: paramChannelId } = useParams(); // /channels/:channelId/create
+  const mountedRef = useRef(true);
+  const { channelId: paramChannelId } = useParams();
+  const navigate = useNavigate();
 
   const [channels, setChannels] = useState([]);
   const [channelId, setChannelId] = useState(Number(paramChannelId) || "");
   const [title, setTitle] = useState("");
-  const [content, setContent] = useState("");
+  const [attachments, setAttachments] = useState([]);
 
-  const [attachments, setAttachments] = useState([]); // 이미지 정보 리스트
-  const navigate = useNavigate();
+  const baseImageUrl = import.meta.env.VITE_IMAGE_BASE_URL;
 
-  // 이미지 출력용 URL은 /api 없이
-  const baseImageUrl = import.meta.env.VITE_IMAGE_BASE_URL; // 예: http://localhost:8080
+  const { subscribe } = useWebSocket();
 
-  // 🔄 에디터 초기화(새 글 작성 시 editor 초기화)
   useEffect(() => {
-    editorRef.current?.getInstance().setHTML("");
+    // BoardCreate에서 필요한 경우만 구독
+    const sub = subscribe("/topic/board-notifications", (msg) => {
+      console.log("게시판 알림:", msg);
+    });
+
+    // 페이지 나갈 때 구독만 해제, 연결은 끊지 않음
+    return () => {
+      sub.unsubscribe();
+    };
+  }, [subscribe]);
+
+  // 마운트/언마운트 여부 추적
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      // Editor hook 제거
+      editorRef.current?.getInstance()?.removeHook?.("addImageBlobHook");
+    };
   }, []);
 
-  // 📥 드래그 앤 드롭 이미지 업로드
+  // 채널 목록 로드
+  useEffect(() => {
+    axiosInstance.get("/board-channels").then((res) => {
+      if (mountedRef.current) setChannels(res.data);
+    });
+  }, []);
+
+  // 이미지 업로드 함수
+  const imageUploadHook = async (blob, callback) => {
+    const formData = new FormData();
+    formData.append("file", blob);
+
+    try {
+      const res = await axiosInstance.post("/images/upload", formData);
+
+      const imageUrl = res.data.originalUrl.startsWith(import.meta.env.VITE_HTTP_URL)
+        ? res.data.originalUrl
+        : `${baseImageUrl}${res.data.originalUrl}`;
+
+      if (mountedRef.current) {
+        callback(imageUrl, blob.name);
+        setAttachments((prev) => [...prev, res.data]);
+      }
+    } catch (err) {
+      if (mountedRef.current) {
+        console.error("❌ 에디터 이미지 업로드 실패:", err);
+        alert("이미지 업로드에 실패했습니다.");
+      }
+    }
+  };
+
+  // Editor hook 등록
+  useEffect(() => {
+    const editorInstance = editorRef.current?.getInstance();
+    if (editorInstance) {
+      editorInstance.addHook("addImageBlobHook", async (blob, callback) => {
+        if (!blob) return false;
+        await imageUploadHook(blob, callback);
+        return false; // 기본 업로드 로직 방지
+      });
+    }
+  }, []);
+
+  // 드래그앤드롭 업로드
   const handleDrop = async (e) => {
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files);
@@ -52,13 +111,12 @@ export default function BoardCreate() {
       try {
         const res = await axiosInstance.post("/images/upload", formData);
 
-        // 이미지 src는 baseImageUrl로 출력
-        const imageUrl = res.data.originalUrl.startsWith("http")
+        const imageUrl = res.data.originalUrl.startsWith(import.meta.env.VITE_HTTP_URL)
           ? res.data.originalUrl
           : `${baseImageUrl}${res.data.originalUrl}`;
 
-        editor.insertText(`![${file.name}](${imageUrl})\n`);
-        setAttachments((prev) => [...prev, res.data]); // 썸네일, 원본 경로 저장
+        editor?.insertText(`![${file.name}](${imageUrl})\n`);
+        setAttachments((prev) => [...prev, res.data]);
       } catch (err) {
         console.error("❌ 이미지 업로드 실패:", err);
         alert(`이미지 업로드 실패: ${file.name}`);
@@ -66,31 +124,7 @@ export default function BoardCreate() {
     }
   };
 
-  /* 1) 채널 목록 로딩 */
-  useEffect(() => {
-    axiosInstance.get("/board-channels").then((res) => setChannels(res.data));
-  }, []);
-  // 🖼️ Toast UI Editor 내에서 이미지 삽입 시 자동 업로드
-  const imageUploadHook = async (blob, callback) => {
-    const formData = new FormData();
-    formData.append("file", blob);
-
-    try {
-      const res = await axiosInstance.post("/images/upload", formData);
-
-      const imageUrl = res.data.originalUrl.startsWith("http")
-        ? res.data.originalUrl
-        : `${baseImageUrl}${res.data.originalUrl}`;
-
-      callback(imageUrl, blob.name);
-      setAttachments((prev) => [...prev, res.data]);
-    } catch (err) {
-      console.error("❌ 에디터 이미지 업로드 실패:", err);
-      alert("이미지 업로드에 실패했습니다.");
-    }
-  };
-
-  // 게시글 등록 여요청
+  // 게시글 등록
   const handleSubmit = async () => {
     const content = editorRef.current?.getInstance().getHTML();
 
@@ -107,7 +141,7 @@ export default function BoardCreate() {
         attachments,
       });
       alert("게시글이 등록되었습니다.");
-      navigate(`/channels/${channelId}`); // 글 작성 후 목록으로
+      navigate(`/channels/${channelId}`);
     } catch (err) {
       console.error("❌ 게시글 등록 실패:", err);
       alert("게시글 등록에 실패했습니다.");
@@ -121,7 +155,8 @@ export default function BoardCreate() {
       onDragOver={(e) => e.preventDefault()}
     >
       <h2 className="text-2xl font-bold text-red-400 mb-6">📝 게시글 작성</h2>
-      {/* 🔻 채널 선택 */}
+
+      {/* 채널 선택 */}
       <div>
         <label className="block mb-1 font-medium">채널</label>
         <select
@@ -160,9 +195,6 @@ export default function BoardCreate() {
         height="500px"
         initialEditType="wysiwyg"
         placeholder="여기에 본문을 작성하세요..."
-        hooks={{
-          addImageBlobHook: imageUploadHook,
-        }}
       />
 
       <div className="mt-4 flex justify-end">

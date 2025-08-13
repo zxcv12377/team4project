@@ -4,7 +4,6 @@ import MyProfile from "./components/myProfile";
 import Navbar from "./components/navbar";
 import UpdateMyProfile from "./components/updateMyProfile";
 import ReplyList from "./components/replyList";
-import axiosInstance from "./lib/axiosInstance";
 import { useWebSocket } from "./hooks/useWebSocket";
 import ChattingModule from "./components/ChattingModule";
 import { UserContext, UserProvider } from "./context/UserContext";
@@ -26,12 +25,10 @@ import AdminPage from "./components/admin/adminPage";
 import BoardChannelList from "./components/boardChannelList";
 import CreateBoardChannel from "./components/admin/createBoardChannel";
 import BoardSearch from "./components/boardSearch";
-import BannerControlPage from "./components/admin/BannerControlPage";
+import BoardChannelEdit from "./components/BoardChannelEdit";
 import VerryconForm from "./components/verrycon/verryconForm";
-import VerryConDeleteButton from "./components/verrycon/VerryConDeleteButton";
-import VerryConEditForm from "./components/verrycon/VerryConEditForm";
 import VerryConManager from "./components/verrycon/VerryConManager";
-import BoardChannelEdit from "./components/admin/BoardChannelEdit";
+import BannerControlPage from "./components/admin/BannerControlPage";
 
 function App() {
   const [token, setToken] = useState(null);
@@ -123,6 +120,10 @@ function App() {
                     {/* 검색 */}
                     <Route path="/boards/search" element={<BoardSearch />} />
                   </Route>
+                  {/* 비밀번호 찾기, 비밀번호 재설정 */}
+                  {/* <Route path="/passwordreset" element={<ForgotPasswordPage />} />
+                  <Route path="/passwordreset/confirm" element={<ResetPasswordPage />} /> */}
+                  <Route path="/admin/channels/edit/:id" element={<BoardChannelEdit />} />
                 </Routes>
               </BrowserRouter>
             </RealtimeProvider>
