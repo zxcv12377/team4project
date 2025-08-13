@@ -29,6 +29,8 @@ class MemberTest {
     @Test
     @DisplayName("ADMIN 권한 회원이 정상적으로 저장된다")
     void createAdminMember() {
+        String unique = java.util.UUID.randomUUID().toString().substring(0, 8);
+        String email = "admin+" + unique + "@test.com";
         // given
         Member admin = Member.builder()
                 .email("admin@yoo.com")
@@ -38,6 +40,7 @@ class MemberTest {
                 .roles(new HashSet<>(Set.of(MemberRole.ADMIN)))
                 .emailVerified(true)
                 .agree(true)
+
                 .build();
 
         Member saved = memberRepository.save(admin);
