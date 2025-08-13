@@ -75,7 +75,7 @@ export default function MainPage() {
       .filter((c) => c.name !== "최고딸기 게시판")
       .map((c) => ({ ...c, totalViews: c.posts.reduce((sum, p) => sum + (p.viewCount || 0), 0) }))
       .sort((a, b) => b.totalViews - a.totalViews)
-      .slice(0, 8);
+      .slice(0, 7);
 
     const finalSections = [];
     if (best) finalSections.push(best);
