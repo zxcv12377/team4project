@@ -112,7 +112,7 @@ function RegisterForm({ onSwitchToLogin, onSwitchToReset }) {
                   value={formData.email}
                   onChange={handleChange}
                   required
-                  className="pl-10"
+                  className="pl-10 placeholder:text-gray-500"
                   autoComplete="email"
                 />
               </div>
@@ -130,7 +130,7 @@ function RegisterForm({ onSwitchToLogin, onSwitchToReset }) {
                   value={formData.nickname}
                   onChange={handleChange}
                   required
-                  className="pl-10"
+                  className="pl-10 placeholder:text-gray-500"
                   autoComplete="nickname"
                 />
               </div>
@@ -149,7 +149,7 @@ function RegisterForm({ onSwitchToLogin, onSwitchToReset }) {
                   value={formData.password}
                   onChange={handleChange}
                   required
-                  className="pl-10 pr-10"
+                  className="pl-10 pr-10 placeholder:text-gray-500"
                   autoComplete="new-password"
                 />
                 <button

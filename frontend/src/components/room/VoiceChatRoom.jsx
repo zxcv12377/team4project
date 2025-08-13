@@ -1,31 +1,33 @@
-import { useEffect, useRef } from "react";
-import useStompWebRTC from "../hooks/useStompWebRTC";
+// 이 코드도 stomp를 기반으로 사용함
 
-export default function VoiceRoom({ roomId, user }) {
-  const audioRef = useRef(null);
-  const { remoteStream } = useStompWebRTC({
-    roomId,
-    userId: String(user.id ?? user.mno),
-    baseUrl: "", // 같은 도메인이면 빈 문자열
-    turn: {
-      host: "strongberry.p-e.kr",
-      port: 3478,
-      tls: 5349, // TLS 사용 시
-      username: "<TURN-USER>",
-      credential: "<TURN-PASS>",
-    },
-  });
+// import { useEffect, useRef } from "react";
+// import useStompWebRTC from "../hooks/useStompWebRTC";
 
-  useEffect(() => {
-    if (audioRef.current && remoteStream) {
-      audioRef.current.srcObject = remoteStream;
-    }
-  }, [remoteStream]);
+// export default function VoiceRoom({ roomId, user }) {
+//   const audioRef = useRef(null);
+//   const { remoteStream } = useStompWebRTC({
+//     roomId,
+//     userId: String(user.id ?? user.mno),
+//     baseUrl: "", // 같은 도메인이면 빈 문자열
+//     turn: {
+//       host: "strongberry.p-e.kr",
+//       port: 3478,
+//       tls: 5349, // TLS 사용 시
+//       username: "<TURN-USER>",
+//       credential: "<TURN-PASS>",
+//     },
+//   });
 
-  return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold">Room: {roomId}</h2>
-      <audio ref={audioRef} autoPlay playsInline />
-    </div>
-  );
-}
+//   useEffect(() => {
+//     if (audioRef.current && remoteStream) {
+//       audioRef.current.srcObject = remoteStream;
+//     }
+//   }, [remoteStream]);
+
+//   return (
+//     <div className="p-4">
+//       <h2 className="text-xl font-bold">Room: {roomId}</h2>
+//       <audio ref={audioRef} autoPlay playsInline />
+//     </div>
+//   );
+// }

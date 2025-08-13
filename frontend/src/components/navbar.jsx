@@ -177,9 +177,9 @@ export default function Navbar() {
                   value={keyword}
                   onChange={(e) => setKeyword(e.target.value)}
                   placeholder="게시글 검색..."
-                  className="flex-1 rounded-l border px-2 py-1"
+                  className="flex-1 rounded-l border px-2 py-1 border-red-500"
                 />
-                <button type="submit" className="rounded-r bg-green-500 px-3 text-white">
+                <button type="submit" className="rounded-r bg-red-500 px-3 text-white">
                   검색
                 </button>
               </form>

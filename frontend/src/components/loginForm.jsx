@@ -26,7 +26,7 @@ export default function LoginForm({ onSwitchToRegister, onSwitchToReset }) {
     try {
       const res = await axiosInstance.post("/members/login", { email, password });
       const { token, refreshToken } = res.data;
-     onLoginSuccess({ token, refreshToken });
+      onLoginSuccess({ token, refreshToken });
       navigate("/");
     } catch (err) {
       console.error(err);
@@ -70,7 +70,7 @@ export default function LoginForm({ onSwitchToRegister, onSwitchToReset }) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="pl-10"
+                className="pl-10 placeholder:text-gray-500"
                 autoComplete="email"
               />
             </div>
@@ -84,11 +84,11 @@ export default function LoginForm({ onSwitchToRegister, onSwitchToReset }) {
               <Input
                 id="password"
                 type={showPw ? "text" : "password"}
-                placeholder="••••••••"
+                placeholder="••••"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="pl-10 pr-10"
+                className="pl-10 pr-10 placeholder:text-gray-500"
                 autoComplete="current-password"
               />
               <button
