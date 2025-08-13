@@ -132,12 +132,30 @@ export default function BoardList() {
   };
 
   const formatDate = (dateString) => {
-    const d = new Date(dateString);
-    const t = new Date();
-    const isToday = d.getFullYear() === t.getFullYear() && d.getMonth() === t.getMonth() && d.getDate() === t.getDate();
-    return isToday
-      ? d.toLocaleTimeString("ko-KR", { hour: "2-digit", minute: "2-digit", hour12: false })
-      : d.toLocaleDateString("ko-KR");
+    const date = new Date(dateString);
+    const today = new Date();
+
+    const isToday =
+      date.getFullYear() === today.getFullYear() &&
+      date.getMonth() === today.getMonth() &&
+      date.getDate() === today.getDate();
+
+    if (isToday) {
+      // 오늘이면 시간(HH:mm)만 표시
+      return date.toLocaleTimeString("KO-KR", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    } else {
+      // 오늘이 아니면 날짜 + 요일
+      const dayNames = ["일", "월", "화", "수", "목", "금", "토"];
+      const year = date.getFullYear();
+      const month = date.getMonth() + 1;
+      const day = date.getDate();
+      const dayOfWeek = dayNames[date.getDay()];
+      return `${year}. ${month}. ${day}(${dayOfWeek})`;
+    }
   };
 
   if (loading || !userReady) {

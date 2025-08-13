@@ -79,10 +79,9 @@ function PinControls({ bno, channelName, fetchPost }) {
 }
 
 const BoardDetail = () => {
-  /* ─── URL 파라미터 ──────────────────────────────── */
-  const { channelId, bno } = useParams(); // /channels/:channelId/:bno
+  const { channelId, bno } = useParams();
   const navigate = useNavigate();
-  /* ─── 상태 ──────────────────────────────────────── */
+
   const [post, setPost] = useState(null);
   const [loading, setLoading] = useState(true);
   const [like, setLike] = useState(false);
@@ -151,7 +150,6 @@ const BoardDetail = () => {
         })
       : "날짜 없음";
 
-  /* ─── 헬퍼 ──────────────────────────────────────── */
   const goList = () => navigate(`/channels/${channelId}`);
   const goUpdate = () => navigate(`/channels/${channelId}/update/${post.bno}`);
 
@@ -164,25 +162,28 @@ const BoardDetail = () => {
   };
 
   const boardLike = async () => {
+    if (!user) {
+      alert("로그인 후 이용해 주세요.");
+      return;
+    }
+
     try {
       const res = await axiosInstance.post(`/boards/${post.bno}/like`);
       const { liked, likeCount } = res.data;
       setLike(liked);
       setLikeCount(likeCount);
-      // post 상태도 업데이트
+
       setPost((prev) => ({
         ...prev,
+        like: liked,
         boardLikeCount: likeCount,
       }));
-      alert(liked ? "추천 완료" : "추천 취소");
     } catch (error) {
       console.error("추천 에러 : ", error);
       alert("추천 처리 중 오류가 발생했습니다.");
-    } finally {
-      fetchPost();
     }
   };
-  /* ─── 렌더 ──────────────────────────────────────── */
+
   return (
     <>
       <div className="max-w-6xl pt-10 l mx-auto mt-24 p-6 rounded-lg border-2 border-dashed border-gray-300 bg-gray-50">

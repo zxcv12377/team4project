@@ -1,6 +1,7 @@
 package com.example.server.service;
 
 import com.example.server.dto.BoardChannelDTO;
+
 import com.example.server.entity.BoardChannel;
 import com.example.server.repository.BoardChannelRepository;
 
