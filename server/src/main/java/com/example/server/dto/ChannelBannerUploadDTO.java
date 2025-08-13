@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @Getter
 public class ChannelBannerUploadDTO {
     private Long id;
-    private String paths;
+    private String path;
     private Long channelId;
 }

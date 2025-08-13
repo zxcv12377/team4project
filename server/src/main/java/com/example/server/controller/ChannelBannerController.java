@@ -10,10 +10,13 @@ import com.example.server.dto.ChannelBannerUploadDTO;
 import com.example.server.service.ChannelBannerService;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.log4j.Log4j2;
+
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
+@Log4j2
 @RequiredArgsConstructor
 @RequestMapping("/api/banner/{channelId}")
 @RestController
@@ -31,6 +34,7 @@ public class ChannelBannerController {
     public ResponseEntity<ChannelBannerUploadDTO> upsert(
             @PathVariable Long channelId,
             @RequestBody ChannelBannerUploadDTO req) {
+        log.info("qwer : {}", req.getPath());
         return ResponseEntity.ok(service.upsertBanner(req, channelId));
     }
 
