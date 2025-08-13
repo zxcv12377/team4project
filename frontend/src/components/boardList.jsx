@@ -55,7 +55,6 @@ export default function BoardList() {
     })();
 
     return () => {
-      ignore = true;
       canceled = true;
     };
   }, [channelId]);
